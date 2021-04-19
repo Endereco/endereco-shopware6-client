@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/master/src/Core/System/SystemConfig/Schema/config.xsd">
+
+    <card>
+        <title>API Settings</title>
+        <title lang="de-DE">API Einstellungen</title>
+
+        <input-field>
+            <name>enderecoApiKey</name>
+            <label>API Key</label>
+            <label lang="de-DE">API Key</label>
+            <helpText>Lorem ipsum</helpText>
+            <helpText lang="de-DE">Lorem ipsum</helpText>
+        </input-field>
+
+        <input-field type="url">
+            <name>enderecoRemoteUrl</name>
+            <label>Remote API URL</label>
+            <label lang="de-DE">Remote API URL</label>
+            <defaultValue>endereco-service.de/rpc/v1</defaultValue>
+            <placeholder>endereco-service.de/rpc/v1</placeholder>
+            <helpText>Lorem ipsum</helpText>
+            <helpText lang="de-DE">Lorem ipsum</helpText>
+        </input-field>
+    </card>
+
+    <card>
+        <title>Address-Management Service</title>
+
+        <input-field type="bool">
+            <name>enderecoPreselectDefaultCountry</name>
+            <label>Preselect default country</label>
+            <label lang="de-DE">Standardland vorauswählen</label>
+            <defaultValue>false</defaultValue>
+            <helpText>Lorem ipsum</helpText>
+            <helpText lang="de-DE">Lorem ipsum</helpText>
+        </input-field>
+
+        <input-field type="single-select">
+            <name>enderecoPreselectDefaultCountryCode</name>
+            <options>
+                <option>
+                    <id>smtp</id>
+                    <name>English smtp</name>
+                    <name lang="de-DE">German smtp</name>
+                </option>
+                <option>
+                    <id>pop3</id>
+                    <name>English pop3</name>
+                    <name lang="de-DE">German pop3</name>
+                </option>
+            </options>
+            <defaultValue>smtp</defaultValue>
+            <label>Default country</label>
+            <label lang="de-DE">Standardland</label>
+        </input-field>
+
+        <input-field type="bool">
+            <name>enderecoAMSActive</name>
+            <label>AdressCheck and InputAssistant are active</label>
+            <label lang="de-DE">Adressprüfung und Eingabehilfe aktiv</label>
+            <defaultValue>true</defaultValue>
+            <helpText>Lorem ipsum</helpText>
+            <helpText lang="de-DE">Lorem ipsum</helpText>
+        </input-field>
+
+        <input-field type="bool">
+            <name>enderecoSmartAutocomplete</name>
+            <label>Select input prediction automatically</label>
+            <label lang="de-DE">Eingabevorschlag automatisch übernehmen</label>
+            <defaultValue>true</defaultValue>
+            <helpText>Lorem ipsum</helpText>
+            <helpText lang="de-DE">Lorem ipsum</helpText>
+        </input-field>
+    </card>
+
+    <card>
+        <title>Advanced Configuration</title>
+        <title lang="de-DE">Erweiterte Einstellungen</title>
+
+        <input-field type="bool">
+            <name>enderecoTriggerOnBlur</name>
+            <label>Check address imediately after the entry</label>
+            <label lang="de-DE">AdressCheck sofort nach der Eingabe der Adresse ausführen</label>
+            <defaultValue>true</defaultValue>
+            <helpText>Lorem ipsum</helpText>
+            <helpText lang="de-DE">Lorem ipsum</helpText>
+        </input-field>
+
+        <input-field type="bool">
+            <name>enderecoTriggerOnSubmit</name>
+            <label>Check address when the form is submitted</label>
+            <label lang="de-DE">AdressCheck beim Absenden der Form ausführen</label>
+            <defaultValue>true</defaultValue>
+            <helpText>Lorem ipsum</helpText>
+            <helpText lang="de-DE">Lorem ipsum</helpText>
+        </input-field>
+
+        <input-field type="bool">
+            <name>enderecoContinueSubmit</name>
+            <label>Continue submit after the address has been checked</label>
+            <label lang="de-DE">Absenden der Form nach der Adressprüfung fortsetzen</label>
+            <defaultValue>true</defaultValue>
+            <helpText>Lorem ipsum</helpText>
+            <helpText lang="de-DE">Lorem ipsum</helpText>
+        </input-field>
+    </card>
+</config>

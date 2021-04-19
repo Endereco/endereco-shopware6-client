@@ -1,0 +1,31 @@
+{
+    "name": "endereco/endereco-shopware6-client",
+    "description": "Lorem ipsum dolor sit amet",
+    "version": "v1.0.0",
+    "type": "shopware-platform-plugin",
+    "license": "AGPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "(c) Endereco UG (haftungsbeschränkt)",
+            "email": "info@endereco.de",
+            "role": "Manufacturer"
+        }
+    ],
+    "require": {
+        "shopware/core": "6.*"
+    },
+    "extra": {
+        "shopware-plugin-class": "Endereco\\Shopware6Client\\EnderecoShopware6Client",
+        "label": {
+            "de-DE": "Endereco Adress-Services für Shopware (Download)",
+            "en-GB": "Endereco Address-Services for Shopware (Download)"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Endereco\\Shopware6Client\\": "src/"
+        }
+    }
+}
+
+

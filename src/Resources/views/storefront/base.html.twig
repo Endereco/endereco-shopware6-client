@@ -1,0 +1,11 @@
+{% sw_extends '@Storefront/storefront/base.html.twig' %}
+
+{% block base_body_script %}
+    {{ parent() }}
+    <script
+            defer
+            async
+            src="{{ asset('bundles/enderecoshopware6client/endereco.min.js') }}"
+            onload="if(typeof enderecoLoadAMSConfig === 'function'){enderecoLoadAMSConfig();}"
+    ></script>
+{% endblock %}

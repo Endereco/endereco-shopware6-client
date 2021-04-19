@@ -1,0 +1,95 @@
+{% sw_extends '@Storefront/storefront/layout/meta.html.twig' %}
+
+{% block layout_head_javascript_feature %}
+    {{ dump() }}
+    <script>
+        if (undefined === window.EnderecoIntegrator) {
+            window.EnderecoIntegrator = {};
+        }
+        if (!window.EnderecoIntegrator.onLoad) {
+            window.EnderecoIntegrator.onLoad = [];
+        }
+
+        function enderecoInitAMS(prefix, config) {
+            if (undefined !== window.EnderecoIntegrator.initAMS) {
+                window.EnderecoIntegrator.initAMS(prefix, config);
+            } else {
+                window.EnderecoIntegrator.onLoad.push(function () {
+                    window.EnderecoIntegrator.initAMS(prefix, config);
+                });
+            }
+        }
+
+        function enderecoInitES(prefix, config) {
+            if (undefined !== window.EnderecoIntegrator.initEmailServices) {
+                window.EnderecoIntegrator.initEmailServices(prefix, config);
+            } else {
+                window.EnderecoIntegrator.onLoad.push(function () {
+                    window.EnderecoIntegrator.initEmailServices(prefix, config);
+                });
+            }
+        }
+
+        function enderecoInitPS(prefix, config) {
+            if (undefined !== window.EnderecoIntegrator.initEmailServices) {
+                window.EnderecoIntegrator.initPersonServices(prefix, config);
+            } else {
+                window.EnderecoIntegrator.onLoad.push(function () {
+                    window.EnderecoIntegrator.initPersonServices(prefix, config);
+                });
+            }
+        }
+
+        function enderecoLoadAMSConfig() {
+            window.EnderecoIntegrator.themeName = '';
+            window.EnderecoIntegrator.defaultCountrySelect = !!('{{ page.endereco_config.defaultCountrySelect }}');
+            window.EnderecoIntegrator.defaultCountry = '{{ page.endereco_config.defaultCountry }}';
+            window.EnderecoIntegrator.config.apiUrl = '{{ asset('bundles/enderecoshopware6client/io.php') }}';
+            window.EnderecoIntegrator.config.apiKey = '{{ page.endereco_config.enderecoApiKey }}';
+            window.EnderecoIntegrator.config.showDebugInfo = false;
+            window.EnderecoIntegrator.config.remoteApiUrl = 'https://{{ page.endereco_config.enderecoRemoteUrl }}';
+            window.EnderecoIntegrator.config.trigger.onblur = !!('{{ page.endereco_config.enderecoTriggerOnBlur }}');
+            window.EnderecoIntegrator.config.trigger.onsubmit = !!('{{ page.endereco_config.enderecoTriggerOnSubmit }}');
+            window.EnderecoIntegrator.config.ux.smartFill = !!('{{ page.endereco_config.enderecoSmartAutocomplete }}');
+            window.EnderecoIntegrator.config.ux.checkExisting = false;
+            window.EnderecoIntegrator.config.ux.resumeSubmit = !!('{{ page.endereco_config.enderecoContinueSubmit }}');
+            window.EnderecoIntegrator.config.ux.useStandardCss = true;
+            window.EnderecoIntegrator.config.ux.showEmailStatus = false;
+            window.EnderecoIntegrator.config.ux.changeFieldsOrder = true;
+            window.EnderecoIntegrator.countryMappingUrl = '';
+            window.EnderecoIntegrator.config.templates.buttonClasses = 'btn btn-primary btn-block';
+            window.EnderecoIntegrator.config.texts = {
+                popUpHeadline: '',
+                popUpSubline: '',
+                yourInput: '',
+                editYourInput: '',
+                ourSuggestions: '',
+                useSelected: '',
+                popupHeadlines: {
+                    general_address: '',
+                    billing_address: '',
+                    shipping_address: '',
+                },
+                statuses: {
+                    email_not_correct: '',
+                    email_cant_receive: '',
+                    email_syntax_error: '',
+                    email_no_mx: ''
+                }
+            };
+            window.EnderecoIntegrator.activeServices = {
+                ams: true,
+                emailService: true,
+                personService: true
+            }
+
+            // Execute all function that have been called throughout the page.
+            window.EnderecoIntegrator.onLoad.forEach(function (callback) {
+                callback();
+            });
+
+            window.EnderecoIntegrator.ready = true;
+        }
+    </script>
+    {{ parent() }}
+{% endblock %}
