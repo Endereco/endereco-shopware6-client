@@ -1,0 +1,1 @@
+# endereco-shopware6-client
