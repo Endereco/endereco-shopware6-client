@@ -1,0 +1,100 @@
+{% sw_extends '@Storefront/storefront/page/checkout/confirm/index.html.twig' %}
+
+{% block page_checkout_confirm_address %}
+    <div class="confirm-address">
+        {% sw_include '@Storefront/storefront/page/checkout/confirm/confirm-address.html.twig' %}
+        <script>
+            ( function() {
+                var $waitForBillingFormEdit = setInterval( function() {
+                    if (
+                        document.querySelector('[name="changeableAddresses[changeBilling]"]') &&
+                        '1' === document.querySelector('[name="changeableAddresses[changeBilling]"]').value
+                    ) {
+                        console.log("Initiate billing edit!");
+                        enderecoInitAMS({
+                            countryCode: '#address-create-edit #addressAddressCountry',
+                            postalCode: '#address-create-edit #addressAddressZipcode',
+                            locality: '#address-create-edit #addressAddressCity',
+                            streetFull: '#address-create-edit #addressAddressStreet',
+                            streetName: '',
+                            buildingNumber: '',
+                            additionalInfo: ''
+                        }, {
+                            name: 'billing_edit',
+                            addressType: 'billing_address'
+                        });
+                        clearInterval($waitForBillingFormEdit);
+                    }
+                }, 100);
+                var $waitForBillingFormNew = setInterval( function() {
+                    if (
+                        document.querySelector('[name="changeableAddresses[changeBilling]"]') &&
+                        '1' === document.querySelector('[name="changeableAddresses[changeBilling]"]').value
+                    ) {
+                        console.log("Initiate billing new!");
+                        enderecoInitAMS({
+                            countryCode: '#address-create-new #addressAddressCountry',
+                            postalCode: '#address-create-new #addressAddressZipcode',
+                            locality: '#address-create-new #addressAddressCity',
+                            streetFull: '#address-create-new #addressAddressStreet',
+                            streetName: '',
+                            buildingNumber: '',
+                            additionalInfo: ''
+                        }, {
+                            name: 'billing_new',
+                            addressType: 'billing_address'
+                        });
+                        clearInterval($waitForBillingFormNew);
+                    }
+                }, 100)
+            })();
+        </script>
+
+        <script>
+            ( function() {
+                var $waitForShippingFormEdit = setInterval( function() {
+                    if (
+                        document.querySelector('[name="changeableAddresses[changeShipping]"]') &&
+                        '1' === document.querySelector('[name="changeableAddresses[changeShipping]"]').value
+                    ) {
+                        console.log("Initiate shipping edit!");;
+                        enderecoInitAMS({
+                            countryCode: '#address-create-edit #addressAddressCountry',
+                            postalCode: '#address-create-edit #addressAddressZipcode',
+                            locality: '#address-create-edit #addressAddressCity',
+                            streetFull: '#address-create-edit #addressAddressStreet',
+                            streetName: '',
+                            buildingNumber: '',
+                            additionalInfo: ''
+                        }, {
+                            name: 'shipping_edit',
+                            addressType: 'shipping_address'
+                        });
+                        clearInterval($waitForShippingFormEdit);
+                    }
+                }, 100);
+                var $waitForShippingFormNew = setInterval( function() {
+                    if (
+                        document.querySelector('[name="changeableAddresses[changeShipping]"]') &&
+                        '1' === document.querySelector('[name="changeableAddresses[changeShipping]"]').value
+                    ) {
+                        console.log("Initiate shipping new!");
+                        enderecoInitAMS({
+                            countryCode: '#address-create-new #addressAddressCountry',
+                            postalCode: '#address-create-new #addressAddressZipcode',
+                            locality: '#address-create-new #addressAddressCity',
+                            streetFull: '#address-create-new #addressAddressStreet',
+                            streetName: '',
+                            buildingNumber: '',
+                            additionalInfo: ''
+                        }, {
+                            name: 'shipping_new',
+                            addressType: 'shipping_address'
+                        });
+                        clearInterval($waitForShippingFormNew);
+                    }
+                }, 100)
+            })();
+        </script>
+    </div>
+{% endblock %}

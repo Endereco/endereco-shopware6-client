@@ -1,0 +1,19 @@
+{% sw_extends '@Storefront/storefront/component/address/address-form.html.twig' %}
+
+{% block component_address_form_address_fields %}
+    {{ parent() }}
+    <script>
+        enderecoInitAMS({
+            countryCode: '#{{ prefix }}AddressCountry',
+            postalCode: '#{{ prefix }}AddressZipcode',
+            locality: '#{{ prefix }}AddressCity',
+            streetFull: '#{{ prefix }}AddressStreet',
+            streetName: '',
+            buildingNumber: '',
+            additionalInfo: ''
+        }, {
+            name: '{{ prefix|replace({'Address': ''}) }}',
+            addressType: '{{ prefix|replace({'Address': ''}) }}_address'
+        });
+    </script>
+{% endblock %}

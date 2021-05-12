@@ -14,12 +14,12 @@
             <helpText lang="de-DE">Lorem ipsum</helpText>
         </input-field>
 
-        <input-field type="url">
+        <input-field type="text">
             <name>enderecoRemoteUrl</name>
             <label>Remote API URL</label>
             <label lang="de-DE">Remote API URL</label>
-            <defaultValue>endereco-service.de/rpc/v1</defaultValue>
-            <placeholder>endereco-service.de/rpc/v1</placeholder>
+            <defaultValue>https://endereco-service.de/rpc/v1</defaultValue>
+            <placeholder>https://endereco-service.de/rpc/v1</placeholder>
             <helpText>Lorem ipsum</helpText>
             <helpText lang="de-DE">Lorem ipsum</helpText>
         </input-field>
@@ -40,18 +40,257 @@
         <input-field type="single-select">
             <name>enderecoPreselectDefaultCountryCode</name>
             <options>
-                <option>
-                    <id>smtp</id>
-                    <name>English smtp</name>
-                    <name lang="de-DE">German smtp</name>
-                </option>
-                <option>
-                    <id>pop3</id>
-                    <name>English pop3</name>
-                    <name lang="de-DE">German pop3</name>
-                </option>
+                <option><id>AF</id><name>Afghanistan</name><name lang="de-DE">Afghanistan</name></option>
+                <option><id>AX</id><name>Åland Islands</name><name lang="de-DE">Åland-Inseln</name></option>
+                <option><id>AL</id><name>Albania</name><name lang="de-DE">Albanien</name></option>
+                <option><id>DZ</id><name>Algeria</name><name lang="de-DE">Algerien</name></option>
+                <option><id>AS</id><name>American Samoa</name><name lang="de-DE">Amerikanisch-Samoa</name></option>
+                <option><id>AD</id><name>Andorra</name><name lang="de-DE">Andorra</name></option>
+                <option><id>AO</id><name>Angola</name><name lang="de-DE">Angola</name></option>
+                <option><id>AI</id><name>Anguilla</name><name lang="de-DE">Anguilla</name></option>
+                <option><id>AQ</id><name>Antarctica</name><name lang="de-DE">Antarktis</name></option>
+                <option><id>AG</id><name>Antigua and Barbuda</name><name lang="de-DE">Antigua und Barbuda</name></option>
+                <option><id>AR</id><name>Argentina</name><name lang="de-DE">Argentinien</name></option>
+                <option><id>AM</id><name>Armenia</name><name lang="de-DE">Armenien</name></option>
+                <option><id>AW</id><name>Aruba</name><name lang="de-DE">Aruba</name></option>
+                <option><id>AU</id><name>Australia</name><name lang="de-DE">Australien</name></option>
+                <option><id>AT</id><name>Austria</name><name lang="de-DE">Österreich</name></option>
+                <option><id>AZ</id><name>Azerbaijan</name><name lang="de-DE">Aserbaidschan</name></option>
+                <option><id>BS</id><name>Bahamas</name><name lang="de-DE">Bahamas</name></option>
+                <option><id>BH</id><name>Bahrain</name><name lang="de-DE">Bahrain</name></option>
+                <option><id>BD</id><name>Bangladesh</name><name lang="de-DE">Bangladesch</name></option>
+                <option><id>BB</id><name>Barbados</name><name lang="de-DE">Barbados</name></option>
+                <option><id>BY</id><name>Belarus</name><name lang="de-DE">Weißrussland</name></option>
+                <option><id>BE</id><name>Belgium</name><name lang="de-DE">Belgien</name></option>
+                <option><id>BZ</id><name>Belize</name><name lang="de-DE">Belize</name></option>
+                <option><id>BJ</id><name>Benin</name><name lang="de-DE">Benin</name></option>
+                <option><id>BM</id><name>Bermuda</name><name lang="de-DE">Bermuda</name></option>
+                <option><id>BT</id><name>Bhutan</name><name lang="de-DE">Bhutan</name></option>
+                <option><id>BO</id><name>Bolivia (Plurinational State of)</name><name lang="de-DE">Bolivien (Plurinationaler Staat)</name></option>
+                <option><id>BQ</id><name>Bonaire, Sint Eustatius and Saba</name><name lang="de-DE">Bonaire, Sint Eustatius und Saba</name></option>
+                <option><id>BA</id><name>Bosnia and Herzegovina</name><name lang="de-DE">Bosnien und Herzegowina</name></option>
+                <option><id>BW</id><name>Botswana</name><name lang="de-DE">Botswana</name></option>
+                <option><id>BV</id><name>Bouvet Island</name><name lang="de-DE">Bouvetinsel</name></option>
+                <option><id>BR</id><name>Brazil</name><name lang="de-DE">Brasilien</name></option>
+                <option><id>IO</id><name>British Indian Ocean Territory</name><name lang="de-DE">Britisches Territorium im Indischen Ozean</name></option>
+                <option><id>BN</id><name>Brunei Darussalam</name><name lang="de-DE">Brunei Darussalam</name></option>
+                <option><id>BG</id><name>Bulgaria</name><name lang="de-DE">Bulgarien</name></option>
+                <option><id>BF</id><name>Burkina Faso</name><name lang="de-DE">Burkina Faso</name></option>
+                <option><id>BI</id><name>Burundi</name><name lang="de-DE">Burundi</name></option>
+                <option><id>CV</id><name>Cabo Verde</name><name lang="de-DE">Cabo Verde</name></option>
+                <option><id>KH</id><name>Cambodia</name><name lang="de-DE">Kambodscha</name></option>
+                <option><id>CM</id><name>Cameroon</name><name lang="de-DE">Kamerun</name></option>
+                <option><id>CA</id><name>Canada</name><name lang="de-DE">Kanada</name></option>
+                <option><id>KY</id><name>Cayman Islands</name><name lang="de-DE">Cayman-Inseln</name></option>
+                <option><id>CF</id><name>Central African Republic</name><name lang="de-DE">Zentralafrikanische Republik</name></option>
+                <option><id>TD</id><name>Chad</name><name lang="de-DE">Tschad</name></option>
+                <option><id>CL</id><name>Chile</name><name lang="de-DE">Chile</name></option>
+                <option><id>CN</id><name>China</name><name lang="de-DE">China</name></option>
+                <option><id>CX</id><name>Christmas Island</name><name lang="de-DE">Weihnachtsinsel</name></option>
+                <option><id>CC</id><name>Cocos (Keeling) Islands</name><name lang="de-DE">Cocos (Keeling) Inseln</name></option>
+                <option><id>CO</id><name>Colombia</name><name lang="de-DE">Kolumbien</name></option>
+                <option><id>KM</id><name>Comoros</name><name lang="de-DE">Komoren</name></option>
+                <option><id>CG</id><name>Congo</name><name lang="de-DE">Kongo</name></option>
+                <option><id>CD</id><name>Congo, Democratic Republic of the</name><name lang="de-DE">Kongo, Demokratische Republik</name></option>
+                <option><id>CK</id><name>Cook Islands</name><name lang="de-DE">Cook-Inseln</name></option>
+                <option><id>CR</id><name>Costa Rica</name><name lang="de-DE">Costa Rica</name></option>
+                <option><id>CI</id><name>Côte d'Ivoire</name><name lang="de-DE">Côte d'Ivoire</name></option>
+                <option><id>HR</id><name>Croatia</name><name lang="de-DE">Kroatien</name></option>
+                <option><id>CU</id><name>Cuba</name><name lang="de-DE">Kuba</name></option>
+                <option><id>CW</id><name>Curaçao</name><name lang="de-DE">Curaçao</name></option>
+                <option><id>CY</id><name>Cyprus</name><name lang="de-DE">Zypern</name></option>
+                <option><id>CZ</id><name>Czechia</name><name lang="de-DE">Tschechische Republik</name></option>
+                <option><id>DK</id><name>Denmark</name><name lang="de-DE">Dänemark</name></option>
+                <option><id>DJ</id><name>Djibouti</name><name lang="de-DE">Dschibuti</name></option>
+                <option><id>DM</id><name>Dominica</name><name lang="de-DE">Dominica</name></option>
+                <option><id>DO</id><name>Dominican Republic</name><name lang="de-DE">Dominikanische Republik</name></option>
+                <option><id>EC</id><name>Ecuador</name><name lang="de-DE">Ecuador</name></option>
+                <option><id>EG</id><name>Egypt</name><name lang="de-DE">Ägypten</name></option>
+                <option><id>SV</id><name>El Salvador</name><name lang="de-DE">El Salvador</name></option>
+                <option><id>GQ</id><name>Equatorial Guinea</name><name lang="de-DE">Äquatorial-Guinea</name></option>
+                <option><id>ER</id><name>Eritrea</name><name lang="de-DE">Eritrea</name></option>
+                <option><id>EE</id><name>Estonia</name><name lang="de-DE">Estland</name></option>
+                <option><id>SZ</id><name>Eswatini</name><name lang="de-DE">Eswatini</name></option>
+                <option><id>ET</id><name>Ethiopia</name><name lang="de-DE">Äthiopien</name></option>
+                <option><id>FK</id><name>Falkland Islands (Malvinas)</name><name lang="de-DE">Falklandinseln (Malwinen)</name></option>
+                <option><id>FO</id><name>Faroe Islands</name><name lang="de-DE">Färöer Inseln</name></option>
+                <option><id>FJ</id><name>Fiji</name><name lang="de-DE">Fidschi</name></option>
+                <option><id>FI</id><name>Finland</name><name lang="de-DE">Finnland</name></option>
+                <option><id>FR</id><name>France</name><name lang="de-DE">Frankreich</name></option>
+                <option><id>GF</id><name>French Guiana</name><name lang="de-DE">Französisch-Guayana</name></option>
+                <option><id>PF</id><name>French Polynesia</name><name lang="de-DE">Französisch-Polynesien</name></option>
+                <option><id>TF</id><name>French Southern Territories</name><name lang="de-DE">Französische Süd-Territorien</name></option>
+                <option><id>GA</id><name>Gabon</name><name lang="de-DE">Gabun</name></option>
+                <option><id>GM</id><name>Gambia</name><name lang="de-DE">Gambia</name></option>
+                <option><id>GE</id><name>Georgia</name><name lang="de-DE">Georgien</name></option>
+                <option><id>DE</id><name>Germany</name><name lang="de-DE">Deutschland</name></option>
+                <option><id>GH</id><name>Ghana</name><name lang="de-DE">Ghana</name></option>
+                <option><id>GI</id><name>Gibraltar</name><name lang="de-DE">Gibraltar</name></option>
+                <option><id>GR</id><name>Greece</name><name lang="de-DE">Griechenland</name></option>
+                <option><id>GL</id><name>Greenland</name><name lang="de-DE">Grönland</name></option>
+                <option><id>GD</id><name>Grenada</name><name lang="de-DE">Grenada</name></option>
+                <option><id>GP</id><name>Guadeloupe</name><name lang="de-DE">Guadeloupe</name></option>
+                <option><id>GU</id><name>Guam</name><name lang="de-DE">Guam</name></option>
+                <option><id>GT</id><name>Guatemala</name><name lang="de-DE">Guatemala</name></option>
+                <option><id>GG</id><name>Guernsey</name><name lang="de-DE">Guernsey</name></option>
+                <option><id>GN</id><name>Guinea</name><name lang="de-DE">Guinea</name></option>
+                <option><id>GW</id><name>Guinea-Bissau</name><name lang="de-DE">Guinea-Bissau</name></option>
+                <option><id>GY</id><name>Guyana</name><name lang="de-DE">Guyana</name></option>
+                <option><id>HT</id><name>Haiti</name><name lang="de-DE">Haiti</name></option>
+                <option><id>HM</id><name>Heard Island and McDonald Islands</name><name lang="de-DE">Heard-Insel und McDonald-Inseln</name></option>
+                <option><id>VA</id><name>Holy See</name><name lang="de-DE">Heiliger Stuhl</name></option>
+                <option><id>HN</id><name>Honduras</name><name lang="de-DE">Honduras</name></option>
+                <option><id>HK</id><name>Hong Kong</name><name lang="de-DE">Hongkong</name></option>
+                <option><id>HU</id><name>Hungary</name><name lang="de-DE">Ungarn</name></option>
+                <option><id>IS</id><name>Iceland</name><name lang="de-DE">Island</name></option>
+                <option><id>IN</id><name>India</name><name lang="de-DE">Indien</name></option>
+                <option><id>ID</id><name>Indonesia</name><name lang="de-DE">Indonesien</name></option>
+                <option><id>IR</id><name>Iran (Islamic Republic of)</name><name lang="de-DE">Iran (Islamische Republik)</name></option>
+                <option><id>IQ</id><name>Iraq</name><name lang="de-DE">Irak</name></option>
+                <option><id>IE</id><name>Ireland</name><name lang="de-DE">Irland</name></option>
+                <option><id>IM</id><name>Isle of Man</name><name lang="de-DE">Isle of Man</name></option>
+                <option><id>IL</id><name>Israel</name><name lang="de-DE">Israel</name></option>
+                <option><id>IT</id><name>Italy</name><name lang="de-DE">Italien</name></option>
+                <option><id>JM</id><name>Jamaica</name><name lang="de-DE">Jamaika</name></option>
+                <option><id>JP</id><name>Japan</name><name lang="de-DE">Japan</name></option>
+                <option><id>JE</id><name>Jersey</name><name lang="de-DE">Jersey</name></option>
+                <option><id>JO</id><name>Jordan</name><name lang="de-DE">Jordanien</name></option>
+                <option><id>KZ</id><name>Kazakhstan</name><name lang="de-DE">Kasachstan</name></option>
+                <option><id>KE</id><name>Kenya</name><name lang="de-DE">Kenia</name></option>
+                <option><id>KI</id><name>Kiribati</name><name lang="de-DE">Kiribati</name></option>
+                <option><id>KP</id><name>Korea (Democratic People's Republic of)</name><name lang="de-DE">Korea (Demokratische Volksrepublik)</name></option>
+                <option><id>KR</id><name>Korea, Republic of</name><name lang="de-DE">Korea, Republik</name></option>
+                <option><id>KW</id><name>Kuwait</name><name lang="de-DE">Kuwait</name></option>
+                <option><id>KG</id><name>Kyrgyzstan</name><name lang="de-DE">Kirgisistan</name></option>
+                <option><id>LA</id><name>Lao People's Democratic Republic</name><name lang="de-DE">Laotische Demokratische Volksrepublik</name></option>
+                <option><id>LV</id><name>Latvia</name><name lang="de-DE">Lettland</name></option>
+                <option><id>LB</id><name>Lebanon</name><name lang="de-DE">Libanon</name></option>
+                <option><id>LS</id><name>Lesotho</name><name lang="de-DE">Lesotho</name></option>
+                <option><id>LR</id><name>Liberia</name><name lang="de-DE">Liberia</name></option>
+                <option><id>LY</id><name>Libya</name><name lang="de-DE">Libyen</name></option>
+                <option><id>LI</id><name>Liechtenstein</name><name lang="de-DE">Liechtenstein</name></option>
+                <option><id>LT</id><name>Lithuania</name><name lang="de-DE">Litauen</name></option>
+                <option><id>LU</id><name>Luxembourg</name><name lang="de-DE">Luxemburg</name></option>
+                <option><id>MO</id><name>Macao</name><name lang="de-DE">Macao</name></option>
+                <option><id>MG</id><name>Madagascar</name><name lang="de-DE">Madagaskar</name></option>
+                <option><id>MW</id><name>Malawi</name><name lang="de-DE">Malawi</name></option>
+                <option><id>MY</id><name>Malaysia</name><name lang="de-DE">Malaysia</name></option>
+                <option><id>MV</id><name>Maldives</name><name lang="de-DE">Malediven</name></option>
+                <option><id>ML</id><name>Mali</name><name lang="de-DE">Mali</name></option>
+                <option><id>MT</id><name>Malta</name><name lang="de-DE">Malta</name></option>
+                <option><id>MH</id><name>Marshall Islands</name><name lang="de-DE">Marshall-Inseln</name></option>
+                <option><id>MQ</id><name>Martinique</name><name lang="de-DE">Martinique</name></option>
+                <option><id>MR</id><name>Mauritania</name><name lang="de-DE">Mauretanien</name></option>
+                <option><id>MU</id><name>Mauritius</name><name lang="de-DE">Mauritius</name></option>
+                <option><id>YT</id><name>Mayotte</name><name lang="de-DE">Mayotte</name></option>
+                <option><id>MX</id><name>Mexico</name><name lang="de-DE">Mexiko</name></option>
+                <option><id>FM</id><name>Micronesia (Federated States of)</name><name lang="de-DE">Mikronesien (Föderierte Staaten von)</name></option>
+                <option><id>MD</id><name>Moldova, Republic of</name><name lang="de-DE">Moldawien, Republik</name></option>
+                <option><id>MC</id><name>Monaco</name><name lang="de-DE">Monaco</name></option>
+                <option><id>MN</id><name>Mongolia</name><name lang="de-DE">Mongolei</name></option>
+                <option><id>ME</id><name>Montenegro</name><name lang="de-DE">Montenegro</name></option>
+                <option><id>MS</id><name>Montserrat</name><name lang="de-DE">Montserrat</name></option>
+                <option><id>MA</id><name>Morocco</name><name lang="de-DE">Marokko</name></option>
+                <option><id>MZ</id><name>Mozambique</name><name lang="de-DE">Mosambik</name></option>
+                <option><id>MM</id><name>Myanmar</name><name lang="de-DE">Myanmar</name></option>
+                <option><id>NA</id><name>Namibia</name><name lang="de-DE">Namibia</name></option>
+                <option><id>NR</id><name>Nauru</name><name lang="de-DE">Nauru</name></option>
+                <option><id>NP</id><name>Nepal</name><name lang="de-DE">Nepal</name></option>
+                <option><id>NL</id><name>Netherlands</name><name lang="de-DE">Niederlande</name></option>
+                <option><id>NC</id><name>New Caledonia</name><name lang="de-DE">Neukaledonien</name></option>
+                <option><id>NZ</id><name>New Zealand</name><name lang="de-DE">Neu Seeland</name></option>
+                <option><id>NI</id><name>Nicaragua</name><name lang="de-DE">Nicaragua</name></option>
+                <option><id>NE</id><name>Niger</name><name lang="de-DE">Niger</name></option>
+                <option><id>NG</id><name>Nigeria</name><name lang="de-DE">Nigeria</name></option>
+                <option><id>NU</id><name>Niue</name><name lang="de-DE">Niue</name></option>
+                <option><id>NF</id><name>Norfolk Island</name><name lang="de-DE">Norfolkinsel</name></option>
+                <option><id>MK</id><name>North Macedonia</name><name lang="de-DE">Nord-Mazedonien</name></option>
+                <option><id>MP</id><name>Northern Mariana Islands</name><name lang="de-DE">Nördliche Marianen</name></option>
+                <option><id>NO</id><name>Norway</name><name lang="de-DE">Norwegen</name></option>
+                <option><id>OM</id><name>Oman</name><name lang="de-DE">Oman</name></option>
+                <option><id>PK</id><name>Pakistan</name><name lang="de-DE">Pakistan</name></option>
+                <option><id>PW</id><name>Palau</name><name lang="de-DE">Palau</name></option>
+                <option><id>PS</id><name>Palestine, State of</name><name lang="de-DE">Palästina, Staat</name></option>
+                <option><id>PA</id><name>Panama</name><name lang="de-DE">Panama</name></option>
+                <option><id>PG</id><name>Papua New Guinea</name><name lang="de-DE">Papua-Neuguinea</name></option>
+                <option><id>PY</id><name>Paraguay</name><name lang="de-DE">Paraguay</name></option>
+                <option><id>PE</id><name>Peru</name><name lang="de-DE">Peru</name></option>
+                <option><id>PH</id><name>Philippines</name><name lang="de-DE">Philippinen</name></option>
+                <option><id>PN</id><name>Pitcairn</name><name lang="de-DE">Pitcairn</name></option>
+                <option><id>PL</id><name>Poland</name><name lang="de-DE">Polen</name></option>
+                <option><id>PT</id><name>Portugal</name><name lang="de-DE">Portugal</name></option>
+                <option><id>PR</id><name>Puerto Rico</name><name lang="de-DE">Puerto Rico</name></option>
+                <option><id>QA</id><name>Qatar</name><name lang="de-DE">Katar</name></option>
+                <option><id>RE</id><name>Réunion</name><name lang="de-DE">Réunion</name></option>
+                <option><id>RO</id><name>Romania</name><name lang="de-DE">Rumänien</name></option>
+                <option><id>RU</id><name>Russian Federation</name><name lang="de-DE">Russische Föderation</name></option>
+                <option><id>RW</id><name>Rwanda</name><name lang="de-DE">Ruanda</name></option>
+                <option><id>BL</id><name>Saint Barthélemy</name><name lang="de-DE">St. Barthélemy</name></option>
+                <option><id>SH</id><name>Saint Helena, Ascension and Tristan da Cunha</name><name lang="de-DE">St. Helena, Ascension und Tristan da Cunha</name></option>
+                <option><id>KN</id><name>Saint Kitts and Nevis</name><name lang="de-DE">St. Kitts und Nevis</name></option>
+                <option><id>LC</id><name>Saint Lucia</name><name lang="de-DE">St. Lucia</name></option>
+                <option><id>MF</id><name>Saint Martin (French part)</name><name lang="de-DE">St. Martin (französischer Teil)</name></option>
+                <option><id>PM</id><name>Saint Pierre and Miquelon</name><name lang="de-DE">St. Pierre und Miquelon</name></option>
+                <option><id>VC</id><name>Saint Vincent and the Grenadines</name><name lang="de-DE">St. Vincent und die Grenadinen</name></option>
+                <option><id>WS</id><name>Samoa</name><name lang="de-DE">Samoa</name></option>
+                <option><id>SM</id><name>San Marino</name><name lang="de-DE">San Marino</name></option>
+                <option><id>ST</id><name>Sao Tome and Principe</name><name lang="de-DE">Sao Tome und Principe</name></option>
+                <option><id>SA</id><name>Saudi Arabia</name><name lang="de-DE">Saudi-Arabien</name></option>
+                <option><id>SN</id><name>Senegal</name><name lang="de-DE">Senegal</name></option>
+                <option><id>RS</id><name>Serbia</name><name lang="de-DE">Serbien</name></option>
+                <option><id>SC</id><name>Seychelles</name><name lang="de-DE">Seychellen</name></option>
+                <option><id>SL</id><name>Sierra Leone</name><name lang="de-DE">Sierra Leone</name></option>
+                <option><id>SG</id><name>Singapore</name><name lang="de-DE">Singapur</name></option>
+                <option><id>SX</id><name>Sint Maarten (Dutch part)</name><name lang="de-DE">Sint Maarten (Niederländischer Teil)</name></option>
+                <option><id>SK</id><name>Slovakia</name><name lang="de-DE">Slowakei</name></option>
+                <option><id>SI</id><name>Slovenia</name><name lang="de-DE">Slowenien</name></option>
+                <option><id>SB</id><name>Solomon Islands</name><name lang="de-DE">Salomon-Inseln</name></option>
+                <option><id>SO</id><name>Somalia</name><name lang="de-DE">Somalia</name></option>
+                <option><id>ZA</id><name>South Africa</name><name lang="de-DE">Südafrika</name></option>
+                <option><id>GS</id><name>South Georgia and the South Sandwich Islands</name><name lang="de-DE">Südgeorgien und die Südlichen Sandwichinseln</name></option>
+                <option><id>SS</id><name>South Sudan</name><name lang="de-DE">Südsudan</name></option>
+                <option><id>ES</id><name>Spain</name><name lang="de-DE">Spanien</name></option>
+                <option><id>LK</id><name>Sri Lanka</name><name lang="de-DE">Sri Lanka</name></option>
+                <option><id>SD</id><name>Sudan</name><name lang="de-DE">Sudan</name></option>
+                <option><id>SR</id><name>Suriname</name><name lang="de-DE">Surinam</name></option>
+                <option><id>SJ</id><name>Svalbard and Jan Mayen</name><name lang="de-DE">Svalbard und Jan Mayen</name></option>
+                <option><id>SE</id><name>Sweden</name><name lang="de-DE">Schweden</name></option>
+                <option><id>CH</id><name>Switzerland</name><name lang="de-DE">Schweiz</name></option>
+                <option><id>SY</id><name>Syrian Arab Republic</name><name lang="de-DE">Syrien, Arabische Republik</name></option>
+                <option><id>TW</id><name>Taiwan, Province of China</name><name lang="de-DE">Taiwan, Provinz China</name></option>
+                <option><id>TJ</id><name>Tajikistan</name><name lang="de-DE">Tadschikistan</name></option>
+                <option><id>TZ</id><name>Tanzania, United Republic of</name><name lang="de-DE">Tansania, Vereinigte Republik</name></option>
+                <option><id>TH</id><name>Thailand</name><name lang="de-DE">Thailand</name></option>
+                <option><id>TL</id><name>Timor-Leste</name><name lang="de-DE">Timor-Leste</name></option>
+                <option><id>TG</id><name>Togo</name><name lang="de-DE">Togo</name></option>
+                <option><id>TK</id><name>Tokelau</name><name lang="de-DE">Tokelau</name></option>
+                <option><id>TO</id><name>Tonga</name><name lang="de-DE">Tonga</name></option>
+                <option><id>TT</id><name>Trinidad and Tobago</name><name lang="de-DE">Trinidad und Tobago</name></option>
+                <option><id>TN</id><name>Tunisia</name><name lang="de-DE">Tunesien</name></option>
+                <option><id>TR</id><name>Turkey</name><name lang="de-DE">Türkei</name></option>
+                <option><id>TM</id><name>Turkmenistan</name><name lang="de-DE">Turkmenistan</name></option>
+                <option><id>TC</id><name>Turks and Caicos Islands</name><name lang="de-DE">Turks- und Caicosinseln</name></option>
+                <option><id>TV</id><name>Tuvalu</name><name lang="de-DE">Tuvalu</name></option>
+                <option><id>UG</id><name>Uganda</name><name lang="de-DE">Uganda</name></option>
+                <option><id>UA</id><name>Ukraine</name><name lang="de-DE">Ukraine</name></option>
+                <option><id>AE</id><name>United Arab Emirates</name><name lang="de-DE">Vereinigte Arabische Emirate</name></option>
+                <option><id>GB</id><name>United Kingdom of Great Britain and Northern Ireland</name><name lang="de-DE">Vereinigtes Königreich von Großbritannien und Nordirland</name></option>
+                <option><id>US</id><name>United States of America</name><name lang="de-DE">Vereinigte Staaten von Amerika</name></option>
+                <option><id>UM</id><name>United States Minor Outlying Islands</name><name lang="de-DE">Vereinigte Staaten von Amerika Minor Outlying Islands</name></option>
+                <option><id>UY</id><name>Uruguay</name><name lang="de-DE">Uruguay</name></option>
+                <option><id>UZ</id><name>Uzbekistan</name><name lang="de-DE">Usbekistan</name></option>
+                <option><id>VU</id><name>Vanuatu</name><name lang="de-DE">Vanuatu</name></option>
+                <option><id>VE</id><name>Venezuela (Bolivarian Republic of)</name><name lang="de-DE">Venezuela (Bolivarische Republik)</name></option>
+                <option><id>VN</id><name>Viet Nam</name><name lang="de-DE">Vietnam</name></option>
+                <option><id>VG</id><name>Virgin Islands (British)</name><name lang="de-DE">Jungferninseln (Britisch)</name></option>
+                <option><id>VI</id><name>Virgin Islands (U.S.)</name><name lang="de-DE">Jungferninseln (U.S.)</name></option>
+                <option><id>WF</id><name>Wallis and Futuna</name><name lang="de-DE">Wallis und Futuna</name></option>
+                <option><id>EH</id><name>Western Sahara</name><name lang="de-DE">Westsahara</name></option>
+                <option><id>YE</id><name>Yemen</name><name lang="de-DE">Jemen</name></option>
+                <option><id>ZM</id><name>Zambia</name><name lang="de-DE">Sambia</name></option>
+                <option><id>ZW</id><name>Zimbabwe</name><name lang="de-DE">Simbabwe</name></option>
             </options>
-            <defaultValue>smtp</defaultValue>
+            <defaultValue>DE</defaultValue>
             <label>Default country</label>
             <label lang="de-DE">Standardland</label>
         </input-field>
@@ -61,6 +300,24 @@
             <label>AdressCheck and InputAssistant are active</label>
             <label lang="de-DE">Adressprüfung und Eingabehilfe aktiv</label>
             <defaultValue>true</defaultValue>
+            <helpText>Lorem ipsum</helpText>
+            <helpText lang="de-DE">Lorem ipsum</helpText>
+        </input-field>
+
+        <input-field type="bool">
+            <name>enderecoAllowCloseIcon</name>
+            <label>Allow user to close address modal</label>
+            <label lang="de-DE">Das Schließen des Modals erlauben</label>
+            <defaultValue>true</defaultValue>
+            <helpText>Lorem ipsum</helpText>
+            <helpText lang="de-DE">Lorem ipsum</helpText>
+        </input-field>
+
+        <input-field type="bool">
+            <name>enderecoConfirmWithCheckbox</name>
+            <label>Customer must confirm an incorrect address with a checkbox</label>
+            <label lang="de-DE">Kunde muss eine fehlerhafte Adresse mit einer Checkbox bestätigen</label>
+            <defaultValue>false</defaultValue>
             <helpText>Lorem ipsum</helpText>
             <helpText lang="de-DE">Lorem ipsum</helpText>
         </input-field>
