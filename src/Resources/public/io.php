@@ -44,7 +44,7 @@ $http = array(
 );
 
 if ('POST' === $_SERVER['REQUEST_METHOD']) {
-    $agent_info  = "Endereco Shopware6 Client v1.0.0";
+    $agent_info  = trim($_SERVER['HTTP_X_AGENT']);
     $post_data   = json_decode(file_get_contents('php://input'), true);
     $api_key     = trim($_SERVER['HTTP_X_AUTH_KEY']);
     $data_string = json_encode($post_data);
@@ -86,6 +86,7 @@ if ('POST' === $_SERVER['REQUEST_METHOD']) {
         header($http[500]);
     }
 
+    curl_close($ch);
     echo $result;
 } else {
     echo 'We expect a POST request here.';

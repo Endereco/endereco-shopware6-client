@@ -5,7 +5,7 @@
     <script
             defer
             async
-            src="{{ asset('bundles/enderecoshopware6client/endereco.min.js') }}"
+            src="{{ asset('bundles/enderecoshopware6client/endereco.min.js') }}?var={{ page.endereco_config.enderecoVersion }}"
             onload="if(typeof enderecoLoadAMSConfig === 'function'){enderecoLoadAMSConfig();}"
     ></script>
 {% endblock %}

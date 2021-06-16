@@ -5,11 +5,13 @@
     <services>
         <service id="Endereco\Shopware6Client\Service\EnderecoService" >
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="plugin.repository"/>
             <tag name="kernel.event_subscriber" />
         </service>
         <service id="Endereco\Shopware6Client\Service\AddDataToPage" >
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="country.repository"/>
+            <argument type="service" id="plugin.repository"/>
             <tag name="kernel.event_subscriber" />
         </service>
     </services>

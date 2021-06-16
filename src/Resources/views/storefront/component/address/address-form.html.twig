@@ -13,7 +13,7 @@
             additionalInfo: ''
         }, {
             name: '{{ prefix|replace({'Address': ''}) }}',
-            addressType: '{{ prefix|replace({'Address': ''}) }}_address'
+            addressType: '{{ prefix|replace({'Address': ''})|replace({'address': 'general'}) }}_address'
         });
     </script>
 {% endblock %}

@@ -1,8 +1,11 @@
 import Promise from 'promise-polyfill';
 import merge from 'lodash.merge';
 import axios from 'axios';
-import EnderecoIntegrator from '../js-sdk/modules/integrator';
+
+// for development uncomment this
+import EnderecoIntegrator from '../js-sdk/modules/integrator'; // JS-SDK 1.1.0-rc.5
 import css from '../js-sdk/themes/default-theme.scss'
+
 import 'polyfill-array-includes';
 
 if ('NodeList' in window && !NodeList.prototype.forEach) {
@@ -69,6 +72,49 @@ EnderecoIntegrator.resolvers.salutationRead = function (value) {
         resolve(mapping[value]);
     });
 }
+
+EnderecoIntegrator.onAjaxFormHandler.push( function(EAO) {
+    EAO.forms.forEach( function(form) {
+        var submitButtons = form.querySelectorAll('[type="submit"]');
+        submitButtons.forEach( function(buttonElement) {
+            buttonElement.addEventListener('click', function(e) {
+                if (EAO.util.shouldBeChecked()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (window.EnderecoIntegrator && !window.EnderecoIntegrator.submitResume) {
+                        window.EnderecoIntegrator.submitResume = function() {
+                            if(form.dispatchEvent(
+                                new EAO.util.CustomEvent(
+                                    'submit',
+                                    {
+                                        'bubbles': true,
+                                        'cancelable': true
+                                    }
+                                )
+                            )) {
+                                form.submit();
+                            }
+                            window.EnderecoIntegrator.submitResume = undefined;
+                        }
+                    }
+
+                    EAO.util.checkAddress()
+                        .catch(function() {
+                            EAO.waitForAllPopupsToClose().then(function() {
+                                if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
+                                    window.EnderecoIntegrator.submitResume();
+                                }
+                            }).catch()
+                        });
+
+                    return false;
+                }
+            })
+        })
+    })
+
+});
 
 EnderecoIntegrator.afterAMSActivation.push( function(EAO) {
 

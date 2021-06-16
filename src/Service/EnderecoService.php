@@ -8,6 +8,10 @@ use Shopware\Core\Checkout\Customer\CustomerEvents;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityWrittenEvent;
 use GuzzleHttp\Exception\RequestException;
 
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+
 class EnderecoService implements EventSubscriberInterface
 {
     /**
@@ -16,19 +20,18 @@ class EnderecoService implements EventSubscriberInterface
     private $systemConfigService;
     private $httpClient;
     private $apiKey;
-    private $info;
     private $serviceUrl;
-    private $version;
+    private $pluginRepository;
 
-    public function __construct(SystemConfigService $systemConfigService)
+    public function __construct(SystemConfigService $systemConfigService, $pluginRepository)
     {
         $this->systemConfigService = $systemConfigService;
         $this->httpClient = new \GuzzleHttp\Client(['timeout' => 3.0, 'connection_timeout' => 2.0]);
 
         $this->apiKey = $systemConfigService->get('EnderecoShopware6Client.config.enderecoApiKey');
-        $this->info = 'Endereco Shopware6 Client v0.0.1';
-        $this->serviceUrl = 'https://' . $systemConfigService->get('EnderecoShopware6Client.config.enderecoRemoteUrl');
-        $this->version = '0.0.1';
+        $this->serviceUrl = $systemConfigService->get('EnderecoShopware6Client.config.enderecoRemoteUrl');
+
+        $this->pluginRepository = $pluginRepository;
     }
 
     public static function getSubscribedEvents(): array
@@ -54,7 +57,7 @@ class EnderecoService implements EventSubscriberInterface
             $accountableSessionIds = array_keys($accountableSessionIds);
 
             if (!empty($accountableSessionIds)) {
-                $this->closeSessions($accountableSessionIds);
+                $this->closeSessions($accountableSessionIds, $event);
             }
         }
     }
@@ -67,9 +70,14 @@ class EnderecoService implements EventSubscriberInterface
         return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 
-    public function closeSessions($sessionIds = [])
+    public function closeSessions($sessionIds = [], $event)
     {
         $anyDoAccounting = false;
+
+        $context = $event->getContext();
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('name', 'EnderecoShopware6Client'));
+        $enderecoAgentInfo = 'Endereco Shopware6 Client v' . $this->pluginRepository->search($criteria, $context)->first()->getVersion();
 
         foreach ($sessionIds as $sessionId) {
             try {
@@ -86,7 +94,7 @@ class EnderecoService implements EventSubscriberInterface
                     'X-Auth-Key' => $this->apiKey,
                     'X-Transaction-Id' => $sessionId,
                     'X-Transaction-Referer' => $_SERVER['HTTP_REFERER']?$_SERVER['HTTP_REFERER']:__FILE__,
-                    'X-Agent' => $this->info,
+                    'X-Agent' => $enderecoAgentInfo,
                 );
                 $this->httpClient->post(
                     $this->serviceUrl,
@@ -122,7 +130,7 @@ class EnderecoService implements EventSubscriberInterface
                     'X-Auth-Key' => $this->apiKey,
                     'X-Transaction-Id' => 'not_required',
                     'X-Transaction-Referer' => $_SERVER['HTTP_REFERER']?$_SERVER['HTTP_REFERER']:__FILE__,
-                    'X-Agent' => $this->info,
+                    'X-Agent' => $enderecoAgentInfo,
                 );
                 $this->httpClient->post(
                     $this->serviceUrl,

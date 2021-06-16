@@ -6,6 +6,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 
 class AddDataToPage implements EventSubscriberInterface
 {
@@ -15,11 +16,13 @@ class AddDataToPage implements EventSubscriberInterface
     private $systemConfigService;
 
     private $countryRepository;
+    private $pluginRepository;
 
-    public function __construct(SystemConfigService $systemConfigService, $countryRepository)
+    public function __construct(SystemConfigService $systemConfigService, $countryRepository, $pluginRepository)
     {
         $this->systemConfigService = $systemConfigService;
         $this->countryRepository = $countryRepository;
+        $this->pluginRepository = $pluginRepository;
     }
 
     public static function getSubscribedEvents(): array
@@ -31,7 +34,14 @@ class AddDataToPage implements EventSubscriberInterface
 
     public function addEnderecoConfigToPage(GenericPageLoadedEvent $event)
     {
+        $context = $event->getContext();
         $configContainer = new \stdClass();
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('name', 'EnderecoShopware6Client'));
+        $version = $this->pluginRepository->search($criteria, $context)->first()->getVersion();
+        $configContainer->enderecoAgentInfo = 'Endereco Shopware6 Client v' . $version;
+        $configContainer->enderecoVersion = $version;
+        $configContainer->defaultCountrySelect = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoPreselectDefaultCountry');
         $configContainer->defaultCountrySelect = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoPreselectDefaultCountry');
         $configContainer->defaultCountry = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoPreselectDefaultCountryCode');
         $configContainer->enderecoApiKey = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoApiKey');
@@ -41,7 +51,7 @@ class AddDataToPage implements EventSubscriberInterface
         $configContainer->enderecoSmartAutocomplete = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoSmartAutocomplete');
         $configContainer->enderecoContinueSubmit = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoContinueSubmit');
 
-        $context = $event->getContext();
+
         $countries = $this->countryRepository->search(new Criteria(), $context);
 
         $mapping = [];

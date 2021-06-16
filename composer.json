@@ -1,7 +1,7 @@
 {
     "name": "endereco/endereco-shopware6-client",
     "description": "Lorem ipsum dolor sit amet",
-    "version": "v1.0.0",
+    "version": "1.0.0",
     "type": "shopware-platform-plugin",
     "license": "AGPL-3.0-or-later",
     "authors": [
