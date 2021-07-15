@@ -7,6 +7,7 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 
 class AddDataToPage implements EventSubscriberInterface
 {
@@ -15,16 +16,28 @@ class AddDataToPage implements EventSubscriberInterface
      */
     private $systemConfigService;
 
+    /**
+     * @var EntityRepository
+     */
     private $countryRepository;
+
+    /**
+     * @var EntityRepository
+     */
     private $pluginRepository;
 
-    public function __construct(SystemConfigService $systemConfigService, $countryRepository, $pluginRepository)
+    public function __construct(
+        SystemConfigService $systemConfigService,
+        EntityRepository $countryRepository,
+        EntityRepository $pluginRepository
+    )
     {
         $this->systemConfigService = $systemConfigService;
         $this->countryRepository = $countryRepository;
         $this->pluginRepository = $pluginRepository;
     }
 
+    /** @return array<string, string> */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -32,16 +45,15 @@ class AddDataToPage implements EventSubscriberInterface
         ];
     }
 
-    public function addEnderecoConfigToPage(GenericPageLoadedEvent $event)
+    public function addEnderecoConfigToPage(GenericPageLoadedEvent $event): void
     {
         $context = $event->getContext();
         $configContainer = new \stdClass();
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('name', 'EnderecoShopware6Client'));
         $version = $this->pluginRepository->search($criteria, $context)->first()->getVersion();
-        $configContainer->enderecoAgentInfo = 'Endereco Shopware6 Client v' . $version;
+        $configContainer->enderecoAgentInfo = 'Endereco Shopware6 Client (Download) v' . $version;
         $configContainer->enderecoVersion = $version;
-        $configContainer->defaultCountrySelect = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoPreselectDefaultCountry');
         $configContainer->defaultCountrySelect = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoPreselectDefaultCountry');
         $configContainer->defaultCountry = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoPreselectDefaultCountryCode');
         $configContainer->enderecoApiKey = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoApiKey');
@@ -50,7 +62,8 @@ class AddDataToPage implements EventSubscriberInterface
         $configContainer->enderecoTriggerOnSubmit = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoTriggerOnSubmit');
         $configContainer->enderecoSmartAutocomplete = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoSmartAutocomplete');
         $configContainer->enderecoContinueSubmit = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoContinueSubmit');
-
+        $configContainer->enderecoAllowCloseIcon = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoAllowCloseIcon');
+        $configContainer->enderecoConfirmWithCheckbox = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoConfirmWithCheckbox');
 
         $countries = $this->countryRepository->search(new Criteria(), $context);
 

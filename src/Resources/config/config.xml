@@ -10,19 +10,25 @@
             <name>enderecoApiKey</name>
             <label>API Key</label>
             <label lang="de-DE">API Key</label>
-            <helpText>Lorem ipsum</helpText>
-            <helpText lang="de-DE">Lorem ipsum</helpText>
+            <helpText>Access key for the Endereco API.</helpText>
+            <helpText lang="de-DE">Zugriffsschlüssel für die Endereco Schnittstelle.</helpText>
         </input-field>
 
         <input-field type="text">
             <name>enderecoRemoteUrl</name>
-            <label>Remote API URL</label>
-            <label lang="de-DE">Remote API URL</label>
+            <label>API URL</label>
+            <label lang="de-DE">API URL</label>
             <defaultValue>https://endereco-service.de/rpc/v1</defaultValue>
             <placeholder>https://endereco-service.de/rpc/v1</placeholder>
-            <helpText>Lorem ipsum</helpText>
-            <helpText lang="de-DE">Lorem ipsum</helpText>
+            <helpText>Access URL for the Endereco API.</helpText>
+            <helpText lang="de-DE">URL der Endereco API.</helpText>
         </input-field>
+
+        <component name="endereco-api-check-button">
+            <name>enderecoApiTest</name>
+            <label>Check API connection</label>
+            <label lang="de-DE">API Verbindung prüfen</label>
+        </component>
     </card>
 
     <card>
@@ -33,8 +39,8 @@
             <label>Preselect default country</label>
             <label lang="de-DE">Standardland vorauswählen</label>
             <defaultValue>false</defaultValue>
-            <helpText>Lorem ipsum</helpText>
-            <helpText lang="de-DE">Lorem ipsum</helpText>
+            <helpText>If this function is active, the selected default country is automatically set when loading an address form.</helpText>
+            <helpText lang="de-DE">Ist diese Funktion aktiv, wird automatisch beim Laden eines Adressformulars das gewählte Standardland gesetzt.</helpText>
         </input-field>
 
         <input-field type="single-select">
@@ -298,19 +304,17 @@
         <input-field type="bool">
             <name>enderecoAMSActive</name>
             <label>AdressCheck and InputAssistant are active</label>
-            <label lang="de-DE">Adressprüfung und Eingabehilfe aktiv</label>
+            <label lang="de-DE">Adressprüfung und Eingabe-Assistent aktivieren</label>
             <defaultValue>true</defaultValue>
-            <helpText>Lorem ipsum</helpText>
-            <helpText lang="de-DE">Lorem ipsum</helpText>
         </input-field>
 
         <input-field type="bool">
             <name>enderecoAllowCloseIcon</name>
-            <label>Allow user to close address modal</label>
-            <label lang="de-DE">Das Schließen des Modals erlauben</label>
+            <label>Allow closing the correction window</label>
+            <label lang="de-DE">Schließen der Korrekturhinweise erlauben</label>
             <defaultValue>true</defaultValue>
-            <helpText>Lorem ipsum</helpText>
-            <helpText lang="de-DE">Lorem ipsum</helpText>
+            <helpText>If this function is active, a user can skip address suggestions of the address check without having to make a selection.</helpText>
+            <helpText lang="de-DE">Ist diese Funktion aktiv, kann ein Nutzer Adressvorschläge der Adressprüfung übergehen ohne eine Auswahl treffen zu müssen.</helpText>
         </input-field>
 
         <input-field type="bool">
@@ -318,17 +322,17 @@
             <label>Customer must confirm an incorrect address with a checkbox</label>
             <label lang="de-DE">Kunde muss eine fehlerhafte Adresse mit einer Checkbox bestätigen</label>
             <defaultValue>false</defaultValue>
-            <helpText>Lorem ipsum</helpText>
-            <helpText lang="de-DE">Lorem ipsum</helpText>
+            <helpText>If this function is active, the user must confirm his entered address if he does not want to accept an address suggestion from Endereco.</helpText>
+            <helpText lang="de-DE">Ist diese Funktion aktiv, muss der Nutzer seine eingegebene Adresse bestätigen, wenn er kein Adressvorschlag von Endereco übernehmen möchte.</helpText>
         </input-field>
 
         <input-field type="bool">
             <name>enderecoSmartAutocomplete</name>
-            <label>Select input prediction automatically</label>
-            <label lang="de-DE">Eingabevorschlag automatisch übernehmen</label>
+            <label>SmartAutocomplete</label>
+            <label lang="de-DE">SmartAutocomplete</label>
             <defaultValue>true</defaultValue>
-            <helpText>Lorem ipsum</helpText>
-            <helpText lang="de-DE">Lorem ipsum</helpText>
+            <helpText>Fill address fields automatically when the prediction is obvious.</helpText>
+            <helpText lang="de-DE">Adressfelder werden bei nur einem möglichen Adressvorschlag automatisch ausgefüllt.</helpText>
         </input-field>
     </card>
 
@@ -338,29 +342,29 @@
 
         <input-field type="bool">
             <name>enderecoTriggerOnBlur</name>
-            <label>Check address imediately after the entry</label>
-            <label lang="de-DE">AdressCheck sofort nach der Eingabe der Adresse ausführen</label>
+            <label>Check address immediately after the entry</label>
+            <label lang="de-DE">Adressprüfung sofort nach der Eingabe der Adresse ausführen</label>
             <defaultValue>true</defaultValue>
-            <helpText>Lorem ipsum</helpText>
-            <helpText lang="de-DE">Lorem ipsum</helpText>
+            <helpText>If the function is active, the address check is triggered immediately after the address is entered.</helpText>
+            <helpText lang="de-DE">Ist die Funktion aktiv, wird die Adressprüfung sofort nach der Eingabe der Adresse angestoßen.</helpText>
         </input-field>
 
         <input-field type="bool">
             <name>enderecoTriggerOnSubmit</name>
             <label>Check address when the form is submitted</label>
-            <label lang="de-DE">AdressCheck beim Absenden der Form ausführen</label>
+            <label lang="de-DE">Adressprüfung beim Absenden des Adressformulars ausführen</label>
             <defaultValue>true</defaultValue>
-            <helpText>Lorem ipsum</helpText>
-            <helpText lang="de-DE">Lorem ipsum</helpText>
+            <helpText>Endereco blocks the sending of the address form and checks the address. If it needs to be corrected, a message box appears with suggested corrections. (This function should be active)</helpText>
+            <helpText lang="de-DE">Endereco blockiert das Absenden des Adressformulars und prüft die Adresse. Falls sie korrigiert werden muss, erscheint ein Hinweisfenster mit Korrekturvorschlägen. (Diese Funktion soll aktiv sein)</helpText>
         </input-field>
 
         <input-field type="bool">
             <name>enderecoContinueSubmit</name>
             <label>Continue submit after the address has been checked</label>
-            <label lang="de-DE">Absenden der Form nach der Adressprüfung fortsetzen</label>
+            <label lang="de-DE">Absenden des Adressformulars nach der Adressprüfung fortsetzen</label>
             <defaultValue>true</defaultValue>
-            <helpText>Lorem ipsum</helpText>
-            <helpText lang="de-DE">Lorem ipsum</helpText>
+            <helpText>If this function is active, after selecting an address from the correction suggestions, the sending of the address form is automatically continued. If it is inactive, the user remains on the same page and has to submit the address form again.</helpText>
+            <helpText lang="de-DE">Ist diese Funktion aktiv, wird nach der Auswahl einer Adresse aus den Korrekturvorschlägen das Absenden des Adressformulars automatisch fortgesetzt. Ist sie inaktiv, bleibt der Nutzer auf der gleichen Seite und muss das Adressformular nochmal absenden.</helpText>
         </input-field>
     </card>
 </config>

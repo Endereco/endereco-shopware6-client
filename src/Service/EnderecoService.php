@@ -1,6 +1,8 @@
 <?php
 namespace Endereco\Shopware6Client\Service;
 
+use GuzzleHttp\Client;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Storefront\Page\GenericPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
@@ -11,6 +13,7 @@ use GuzzleHttp\Exception\RequestException;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Psr\Log\LoggerInterface;
 
 class EnderecoService implements EventSubscriberInterface
 {
@@ -18,22 +21,47 @@ class EnderecoService implements EventSubscriberInterface
      * @var SystemConfigService
      */
     private $systemConfigService;
+
+    /**
+     * @var Client
+     */
     private $httpClient;
+
+    /**
+     * @var string
+     */
     private $apiKey;
+
+    /**
+     * @var string
+     */
     private $serviceUrl;
+
+    /**
+     * @var EntityRepository
+     */
     private $pluginRepository;
 
-    public function __construct(SystemConfigService $systemConfigService, $pluginRepository)
+    /** @var LoggerInterface */
+    private $logger;
+
+    public function __construct(
+        SystemConfigService $systemConfigService,
+        EntityRepository $pluginRepository,
+        LoggerInterface $logger)
     {
         $this->systemConfigService = $systemConfigService;
-        $this->httpClient = new \GuzzleHttp\Client(['timeout' => 3.0, 'connection_timeout' => 2.0]);
+        $this->httpClient = new Client(['timeout' => 3.0, 'connection_timeout' => 2.0]);
 
-        $this->apiKey = $systemConfigService->get('EnderecoShopware6Client.config.enderecoApiKey');
-        $this->serviceUrl = $systemConfigService->get('EnderecoShopware6Client.config.enderecoRemoteUrl');
+        $this->apiKey = $systemConfigService->getString('EnderecoShopware6Client.config.enderecoApiKey') ?? '';
+        $this->serviceUrl = $systemConfigService->getString('EnderecoShopware6Client.config.enderecoRemoteUrl') ?? '';
 
         $this->pluginRepository = $pluginRepository;
+
+        $this->logger = $logger;
     }
 
+    /** @return array<string, string> */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -41,8 +69,11 @@ class EnderecoService implements EventSubscriberInterface
         ];
     }
 
-    public function extractAndAccountSessions(EntityWrittenEvent $event)
+    public function extractAndAccountSessions(EntityWrittenEvent $event): void
     {
+        /**
+         * @var array<string, boolean>
+         */
         $accountableSessionIds = array();
 
         if ('POST' === $_SERVER['REQUEST_METHOD']) {
@@ -54,7 +85,7 @@ class EnderecoService implements EventSubscriberInterface
                 }
             }
 
-            $accountableSessionIds = array_keys($accountableSessionIds);
+            $accountableSessionIds = array_map('strval', array_keys($accountableSessionIds));
 
             if (!empty($accountableSessionIds)) {
                 $this->closeSessions($accountableSessionIds, $event);
@@ -62,15 +93,19 @@ class EnderecoService implements EventSubscriberInterface
         }
     }
 
-    public function generateTid()
+    /** @return string */
+    public function generateTid(): string
     {
         $data = random_bytes(16);
         $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
         $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
         return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
-
-    public function closeSessions($sessionIds = [], $event)
+    /**
+     * @param array<int, string> $sessionIds
+     * @param EntityWrittenEvent $event
+     */
+    public function closeSessions(array $sessionIds = [], EntityWrittenEvent $event): void
     {
         $anyDoAccounting = false;
 
@@ -108,12 +143,12 @@ class EnderecoService implements EventSubscriberInterface
             } catch (RequestException $e) {
                 if ($e->hasResponse()) {
                     $response = $e->getResponse();
-                    if (500 <= $response->getStatusCode()) {
-                        // TODO: log
+                    if ($response && 500 <= $response->getStatusCode()) {
+                        $this->logger->error('Serverside doAccounting failed', ['error' => $e->getMessage()]);
                     }
                 }
             } catch(\Exception $e) {
-                // TODO: log
+                $this->logger->error('Serverside doAccounting failed', ['error' => $e->getMessage()]);
             }
         }
 
@@ -142,15 +177,13 @@ class EnderecoService implements EventSubscriberInterface
             } catch (RequestException $e) {
                 if ($e->hasResponse()) {
                     $response = $e->getResponse();
-                    if (500 <= $response->getStatusCode()) {
-                        // TODO: log
+                    if ($response && 500 <= $response->getStatusCode()) {
+                        $this->logger->warning('Serverside doConversion failed', ['error' => $e->getMessage()]);
                     }
                 }
             } catch(\Exception $e) {
-                // TODO: log
+                $this->logger->warning('Serverside doConversion failed', ['error' => $e->getMessage()]);
             }
         }
-
-        return;
     }
 }

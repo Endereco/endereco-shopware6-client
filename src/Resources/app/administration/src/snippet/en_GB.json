@@ -1,0 +1,8 @@
+{
+  "endereco-api-check-button": {
+    "title": "API Check",
+    "success": "Connection was successfully tested",
+    "error": "Connection could not be established. Please check the api key and the server url",
+    "button": "Test API connection"
+  }
+}

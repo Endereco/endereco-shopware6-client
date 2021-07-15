@@ -45,10 +45,19 @@ $http = array(
 
 if ('POST' === $_SERVER['REQUEST_METHOD']) {
     $agent_info  = trim($_SERVER['HTTP_X_AGENT']);
-    $post_data   = json_decode(file_get_contents('php://input'), true);
+    $raw_json = file_get_contents('php://input');
+    if (empty($raw_json)) {
+        header($http[400]);
+        exit;
+    }
     $api_key     = trim($_SERVER['HTTP_X_AUTH_KEY']);
-    $data_string = json_encode($post_data);
+    $data_string = $raw_json;
     $ch          = curl_init(trim($_SERVER['HTTP_X_REMOTE_API_URL']));
+
+    if (!$ch) {
+        header($http[500]);
+        exit;
+    }
 
     if ($_SERVER['HTTP_X_TRANSACTION_ID']) {
         $tid = $_SERVER['HTTP_X_TRANSACTION_ID'];

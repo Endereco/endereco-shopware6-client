@@ -3,7 +3,7 @@ import merge from 'lodash.merge';
 import axios from 'axios';
 
 // for development uncomment this
-import EnderecoIntegrator from '../js-sdk/modules/integrator'; // JS-SDK 1.1.0-rc.5
+import EnderecoIntegrator from '../js-sdk/modules/integrator'; // JS-SDK 1.1.0-rc.6
 import css from '../js-sdk/themes/default-theme.scss'
 
 import 'polyfill-array-includes';
@@ -27,12 +27,12 @@ EnderecoIntegrator.postfix = {
         postalCode: '[zipcode]',
         locality: '[city]',
         streetFull: '[street]',
-        streetName: '[streetname]',
-        buildingNumber: '[streetnumber]',
-        addressStatus: '[attribute][enderecoamsstatus]',
-        addressTimestamp: '[attribute][enderecoamsts]',
-        addressPredictions: '[attribute][enderecoamsapredictions]',
-        additionalInfo: '[additionalAddressLine2]',
+        streetName: '',
+        buildingNumber: '',
+        addressStatus: '',
+        addressTimestamp: '',
+        addressPredictions: '',
+        additionalInfo: '',
     },
     personServices: {
         salutation: '[salutation]',

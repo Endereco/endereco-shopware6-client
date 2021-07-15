@@ -1,0 +1,8 @@
+<div>
+    <sw-button-process
+            :isLoading="isLoading"
+            :processSuccess="isSaveSuccessful"
+            @process-finish="saveFinish"
+            @click="check"
+    >{{ $tc('endereco-api-check-button.button') }}</sw-button-process>
+</div>

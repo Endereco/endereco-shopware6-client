@@ -4,7 +4,7 @@ namespace Endereco\Shopware6Client;
 
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
-
+use Shopware\Core\Framework\Log\LoggerFactory;
 class EnderecoShopware6Client extends Plugin
 {
     /**
@@ -12,12 +12,12 @@ class EnderecoShopware6Client extends Plugin
      */
     public function uninstall(UninstallContext $context): void
     {
-        if ($context->keepUserData()) {
-            parent::uninstall($context);
+        parent::uninstall($context);
 
+        if ($context->keepUserData()) {
             return;
         }
 
-        // Remove all traces of your plugin
+        // There is nothing to clean up. Yet.
     }
 }

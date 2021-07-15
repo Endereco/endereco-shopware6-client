@@ -3,9 +3,16 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
+        <service id="Endereco\Shopware6Client\Controller\Api\ApiTestController" public="true">
+            <argument type="service" id="Endereco\Shopware6Client\Logger" />
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
         <service id="Endereco\Shopware6Client\Service\EnderecoService" >
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="plugin.repository"/>
+            <argument type="service" id="Endereco\Shopware6Client\Logger" />
             <tag name="kernel.event_subscriber" />
         </service>
         <service id="Endereco\Shopware6Client\Service\AddDataToPage" >
@@ -13,6 +20,11 @@
             <argument type="service" id="country.repository"/>
             <argument type="service" id="plugin.repository"/>
             <tag name="kernel.event_subscriber" />
+        </service>
+        <service id="Endereco\Shopware6Client\Logger" class="Monolog\Logger">
+            <factory service="Shopware\Core\Framework\Log\LoggerFactory" method="createRotating"/>
+
+            <argument type="string">endereco_shopware6_client</argument>
         </service>
     </services>
 </container>
