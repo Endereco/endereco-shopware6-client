@@ -12,12 +12,18 @@
         window.EnderecoIntegrator.countryMapping = JSON.parse('{{ page.endereco_config.countryMapping|raw }}');
         window.EnderecoIntegrator.countryMappingReverse = JSON.parse('{{ page.endereco_config.countryMappingReverse|raw }}');
 
-        function enderecoInitAMS(prefix, config) {
+        function enderecoInitAMS(prefix, config, cb) {
             if (undefined !== window.EnderecoIntegrator.initAMS) {
-                window.EnderecoIntegrator.initAMS(prefix, config);
+                var EAO = window.EnderecoIntegrator.initAMS(prefix, config);
+                if (cb) {
+                    cb(EAO);
+                }
             } else {
                 window.EnderecoIntegrator.onLoad.push(function () {
-                    window.EnderecoIntegrator.initAMS(prefix, config);
+                    var EAO = window.EnderecoIntegrator.initAMS(prefix, config);
+                    if (cb) {
+                        cb(EAO);
+                    }
                 });
             }
         }

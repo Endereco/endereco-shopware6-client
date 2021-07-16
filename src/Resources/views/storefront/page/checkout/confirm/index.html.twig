@@ -23,6 +23,47 @@
                             }, {
                                 name: 'billing_edit',
                                 addressType: 'billing_address'
+                            }, function(EAO) {
+                                document.querySelector('#address-create-edit #addressAddressCountry').closest('form').querySelector('[type="submit"]').addEventListener('click', function(e) {
+
+                                    if (EAO.util.shouldBeChecked()) {
+                                        e.preventDefault();
+
+                                        // Resume click after ac is done.
+                                        window.EnderecoIntegrator.submitResume = function() {
+                                            EAO.waitUntilReady().then( function() {
+                                                if(e.target.dispatchEvent(
+                                                    new EAO.util.CustomEvent(
+                                                        'click',
+                                                        {
+                                                            'bubbles': true,
+                                                            'cancelable': true
+                                                        }
+                                                    )
+                                                )) {
+                                                    e.target.click();
+                                                }
+                                            }).catch();
+                                        }
+
+                                        EAO.util.checkAddress().then().catch(function() {
+                                            EAO.waitUntilReady().then( function() {
+                                                if(e.target.dispatchEvent(
+                                                    new EAO.util.CustomEvent(
+                                                        'click',
+                                                        {
+                                                            'bubbles': true,
+                                                            'cancelable': true
+                                                        }
+                                                    )
+                                                )) {
+                                                    e.target.click();
+                                                }
+                                            }).catch();
+                                        });
+                                        return false;
+                                    }
+                                })
                             });
                             $billigAMSSet = true;
                         }
@@ -48,6 +89,47 @@
                             }, {
                                 name: 'billing_new',
                                 addressType: 'billing_address'
+                            }, function(EAO) {
+                                document.querySelector('#address-create-new #addressAddressCountry').closest('form').querySelector('[type="submit"]').addEventListener('click', function(e) {
+
+                                    if (EAO.util.shouldBeChecked()) {
+                                        e.preventDefault();
+
+                                        // Resume click after ac is done.
+                                        window.EnderecoIntegrator.submitResume = function() {
+                                            EAO.waitUntilReady().then( function() {
+                                                if(e.target.dispatchEvent(
+                                                    new EAO.util.CustomEvent(
+                                                        'click',
+                                                        {
+                                                            'bubbles': true,
+                                                            'cancelable': true
+                                                        }
+                                                    )
+                                                )) {
+                                                    e.target.click();
+                                                }
+                                            }).catch();
+                                        }
+
+                                        EAO.util.checkAddress().then().catch(function() {
+                                            EAO.waitUntilReady().then( function() {
+                                                if(e.target.dispatchEvent(
+                                                    new EAO.util.CustomEvent(
+                                                        'click',
+                                                        {
+                                                            'bubbles': true,
+                                                            'cancelable': true
+                                                        }
+                                                    )
+                                                )) {
+                                                    e.target.click();
+                                                }
+                                            }).catch();
+                                        });
+                                        return false;
+                                    }
+                                })
                             });
                             $billigAMSNewSet = true;
                         }
@@ -78,6 +160,47 @@
                             }, {
                                 name: 'shipping_edit',
                                 addressType: 'shipping_address'
+                            }, function(EAO) {
+                                document.querySelector('#address-create-edit #addressAddressCountry').closest('form').querySelector('[type="submit"]').addEventListener('click', function(e) {
+
+                                    if (EAO.util.shouldBeChecked()) {
+                                        e.preventDefault();
+
+                                        // Resume click after ac is done.
+                                        window.EnderecoIntegrator.submitResume = function() {
+                                            EAO.waitUntilReady().then( function() {
+                                                if(e.target.dispatchEvent(
+                                                    new EAO.util.CustomEvent(
+                                                        'click',
+                                                        {
+                                                            'bubbles': true,
+                                                            'cancelable': true
+                                                        }
+                                                    )
+                                                )) {
+                                                    e.target.click();
+                                                }
+                                            }).catch();
+                                        }
+
+                                        EAO.util.checkAddress().then().catch(function() {
+                                            EAO.waitUntilReady().then( function() {
+                                                if(e.target.dispatchEvent(
+                                                    new EAO.util.CustomEvent(
+                                                        'click',
+                                                        {
+                                                            'bubbles': true,
+                                                            'cancelable': true
+                                                        }
+                                                    )
+                                                )) {
+                                                    e.target.click();
+                                                }
+                                            }).catch();
+                                        });
+                                        return false;
+                                    }
+                                })
                             });
                             $shippingAMSSet = true;
                         }
@@ -88,7 +211,7 @@
                 var $shippingAMSNewSet = false;
                 var $waitForShippingFormNew = setInterval( function() {
                     if (
-                        document.querySelector('[name="changeableAddresses[changeShipping]"]') &&
+                        document.querySelector('#address-create-new [name="changeableAddresses[changeShipping]"]') &&
                         '1' === document.querySelector('[name="changeableAddresses[changeShipping]"]').value
                     ) {
                         if (!$shippingAMSNewSet) {
@@ -103,6 +226,47 @@
                             }, {
                                 name: 'shipping_new',
                                 addressType: 'shipping_address'
+                            }, function(EAO) {
+                                document.querySelector('#address-create-new #addressAddressCountry').closest('form').querySelector('[type="submit"]').addEventListener('click', function(e) {
+
+                                    if (EAO.util.shouldBeChecked()) {
+                                        e.preventDefault();
+
+                                        // Resume click after ac is done.
+                                        window.EnderecoIntegrator.submitResume = function() {
+                                            EAO.waitUntilReady().then( function() {
+                                                if(e.target.dispatchEvent(
+                                                    new EAO.util.CustomEvent(
+                                                        'click',
+                                                        {
+                                                            'bubbles': true,
+                                                            'cancelable': true
+                                                        }
+                                                    )
+                                                )) {
+                                                    e.target.click();
+                                                }
+                                            }).catch();
+                                        }
+
+                                        EAO.util.checkAddress().then().catch(function() {
+                                            EAO.waitUntilReady().then( function() {
+                                                if(e.target.dispatchEvent(
+                                                    new EAO.util.CustomEvent(
+                                                        'click',
+                                                        {
+                                                            'bubbles': true,
+                                                            'cancelable': true
+                                                        }
+                                                    )
+                                                )) {
+                                                    e.target.click();
+                                                }
+                                            }).catch();
+                                        });
+                                        return false;
+                                    }
+                                })
                             });
                             $shippingAMSNewSet = true;
                         }
