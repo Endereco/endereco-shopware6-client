@@ -105,7 +105,7 @@ class EnderecoService implements EventSubscriberInterface
      * @param array<int, string> $sessionIds
      * @param EntityWrittenEvent $event
      */
-    public function closeSessions(array $sessionIds = [], EntityWrittenEvent $event): void
+    public function closeSessions(array $sessionIds, EntityWrittenEvent $event): void
     {
         $anyDoAccounting = false;
 

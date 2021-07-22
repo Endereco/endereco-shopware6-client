@@ -42,21 +42,26 @@ $http = array(
     504 => 'HTTP/1.1 504 Gateway Time-out',
     505 => 'HTTP/1.1 505 HTTP Version Not Supported',
 );
+$message = "";
+try {
+    if ('POST' !== $_SERVER['REQUEST_METHOD']) {
+        header($http[200]);
+        throw new \Exception('We expect a POST request here.');
+    }
 
-if ('POST' === $_SERVER['REQUEST_METHOD']) {
     $agent_info  = trim($_SERVER['HTTP_X_AGENT']);
-    $raw_json = file_get_contents('php://input');
+    $raw_json    = file_get_contents('php://input');
     if (empty($raw_json)) {
         header($http[400]);
-        exit;
+        throw new \Exception('Request body is empty. We expect a valid JSON.');
     }
+
     $api_key     = trim($_SERVER['HTTP_X_AUTH_KEY']);
     $data_string = $raw_json;
     $ch          = curl_init(trim($_SERVER['HTTP_X_REMOTE_API_URL']));
-
     if (!$ch) {
         header($http[500]);
-        exit;
+        throw new \Exception('Could not initiate a curl client.');
     }
 
     if ($_SERVER['HTTP_X_TRANSACTION_ID']) {
@@ -82,13 +87,13 @@ if ('POST' === $_SERVER['REQUEST_METHOD']) {
             'Content-Length: ' . strlen($data_string))
     );
 
-    $result = curl_exec($ch);
+    $message = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $errorCode = curl_errno($ch);
-    header('Content-Type: application/json');
 
     if (0 === $errorCode) {
         if ($http[$httpCode]) {
+            header('Content-Type: application/json');
             header($http[$httpCode]);
         }
     } else {
@@ -96,8 +101,11 @@ if ('POST' === $_SERVER['REQUEST_METHOD']) {
     }
 
     curl_close($ch);
-    echo $result;
-} else {
-    echo 'We expect a POST request here.';
+} catch(\Exception $e) {
+    $message = $e->getMessage();
 }
+
+// Output the message.
+header("X-Robots-Tag: noindex, nofollow");
+echo $message;
 
