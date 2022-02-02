@@ -2,18 +2,16 @@
 
 {% block component_address_form_address_fields %}
     {{ parent() }}
-    <script>
-        enderecoInitAMS({
-            countryCode: '#{{ prefix }}AddressCountry',
-            postalCode: '#{{ prefix }}AddressZipcode',
-            locality: '#{{ prefix }}AddressCity',
-            streetFull: '#{{ prefix }}AddressStreet',
-            streetName: '',
-            buildingNumber: '',
-            additionalInfo: ''
-        }, {
-            name: '{{ prefix|replace({'Address': ''}) }}',
-            addressType: '{{ prefix|replace({'Address': ''})|replace({'address': 'general'}) }}_address'
-        });
-    </script>
+    <input
+            type="hidden"
+            name="endereco_address_form_marker" value="here"
+            data-has-object = "no"
+            data-name = ""
+            data-type = ""
+            data-country-code-selector = "{{ prefix }}[countryId]"
+            data-subdivision-code-selector = "{{ prefix }}[countryStateId]"
+            data-postal-code-selector = "{{ prefix }}[zipcode]"
+            data-locality-selector = "{{ prefix }}[city]"
+            data-street-full-selector = "{{ prefix }}[street]"
+    >
 {% endblock %}
