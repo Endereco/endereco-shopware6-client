@@ -53,7 +53,7 @@
       window.EnderecoIntegrator.defaultCountrySelect = !!('{{ page.endereco_config.defaultCountrySelect }}');
       window.EnderecoIntegrator.defaultCountry = '{{ page.endereco_config.defaultCountry }}';
       window.EnderecoIntegrator.config.agentName = '{{ page.endereco_config.enderecoAgentInfo }}';
-      window.EnderecoIntegrator.config.apiUrl = '{{ asset('bundles/enderecoshopware6clientstore/io.php') }}';
+      window.EnderecoIntegrator.config.apiUrl = '{{ asset('bundles/enderecoshopware6client/io.php') }}';
       window.EnderecoIntegrator.config.apiKey = '{{ page.endereco_config.enderecoApiKey }}';
       window.EnderecoIntegrator.config.showDebugInfo = false;
       window.EnderecoIntegrator.config.remoteApiUrl = '{{ page.endereco_config.enderecoRemoteUrl }}';
@@ -72,34 +72,34 @@
       window.EnderecoIntegrator.config.templates.primaryButtonClasses = 'btn btn-primary btn-lg';
       window.EnderecoIntegrator.config.templates.secondaryButtonClasses = 'btn btn-secondary btn-lg';
       window.EnderecoIntegrator.config.texts = {
-        popUpHeadline: '{{ "enderecoshopware6clientstore.texts.popUpHeadline"|trans|sw_sanitize }}',
-        popUpSubline: '{{ "enderecoshopware6clientstore.texts.popUpSubline"|trans|sw_sanitize }}',
-        mistakeNoPredictionSubline: '{{ "enderecoshopware6clientstore.texts.mistakeNoPredictionSubline"|trans|sw_sanitize }}',
-        confirmMyAddressCheckbox: '{{ "enderecoshopware6clientstore.texts.confirmMyAddressCheckbox"|trans|sw_sanitize }}',
-        notFoundSubline: '{{ "enderecoshopware6clientstore.texts.notFoundSubline"|trans|sw_sanitize }}',
-        yourInput: '{{ "enderecoshopware6clientstore.texts.yourInput"|trans|sw_sanitize }}',
-        editYourInput: '{{ "enderecoshopware6clientstore.texts.editYourInput"|trans|sw_sanitize }}',
-        ourSuggestions: '{{ "enderecoshopware6clientstore.texts.ourSuggestions"|trans|sw_sanitize }}',
-        useSelected: '{{ "enderecoshopware6clientstore.texts.useSelected"|trans|sw_sanitize }}',
-        confirmAddress: '{{ "enderecoshopware6clientstore.texts.confirmAddress"|trans|sw_sanitize }}',
-        editAddress: '{{ "enderecoshopware6clientstore.texts.editAddress"|trans|sw_sanitize }}',
-        warningText: '{{ "enderecoshopware6clientstore.texts.warningText"|trans|sw_sanitize }}',
+        popUpHeadline: '{{ "enderecoshopware6client.texts.popUpHeadline"|trans|sw_sanitize }}',
+        popUpSubline: '{{ "enderecoshopware6client.texts.popUpSubline"|trans|sw_sanitize }}',
+        mistakeNoPredictionSubline: '{{ "enderecoshopware6client.texts.mistakeNoPredictionSubline"|trans|sw_sanitize }}',
+        confirmMyAddressCheckbox: '{{ "enderecoshopware6client.texts.confirmMyAddressCheckbox"|trans|sw_sanitize }}',
+        notFoundSubline: '{{ "enderecoshopware6client.texts.notFoundSubline"|trans|sw_sanitize }}',
+        yourInput: '{{ "enderecoshopware6client.texts.yourInput"|trans|sw_sanitize }}',
+        editYourInput: '{{ "enderecoshopware6client.texts.editYourInput"|trans|sw_sanitize }}',
+        ourSuggestions: '{{ "enderecoshopware6client.texts.ourSuggestions"|trans|sw_sanitize }}',
+        useSelected: '{{ "enderecoshopware6client.texts.useSelected"|trans|sw_sanitize }}',
+        confirmAddress: '{{ "enderecoshopware6client.texts.confirmAddress"|trans|sw_sanitize }}',
+        editAddress: '{{ "enderecoshopware6client.texts.editAddress"|trans|sw_sanitize }}',
+        warningText: '{{ "enderecoshopware6client.texts.warningText"|trans|sw_sanitize }}',
         popupHeadlines: {
-          general_address: '{{ "enderecoshopware6clientstore.texts.general_address"|trans|sw_sanitize }}',
-          billing_address: '{{ "enderecoshopware6clientstore.texts.billing_address"|trans|sw_sanitize }}',
-          shipping_address: '{{ "enderecoshopware6clientstore.texts.shipping_address"|trans|sw_sanitize }}',
+          general_address: '{{ "enderecoshopware6client.texts.general_address"|trans|sw_sanitize }}',
+          billing_address: '{{ "enderecoshopware6client.texts.billing_address"|trans|sw_sanitize }}',
+          shipping_address: '{{ "enderecoshopware6client.texts.shipping_address"|trans|sw_sanitize }}',
         },
         statuses: {
-          email_not_correct: '{{ "enderecoshopware6clientstore.statuses.email_not_correct"|trans|sw_sanitize }}',
-          email_cant_receive: '{{ "enderecoshopware6clientstore.statuses.email_cant_receive"|trans|sw_sanitize }}',
-          email_syntax_error: '{{ "enderecoshopware6clientstore.statuses.email_syntax_error"|trans|sw_sanitize }}',
-          email_no_mx: '{{ "enderecoshopware6clientstore.statuses.email_no_mx"|trans|sw_sanitize }}',
-          building_number_is_missing: '{{ "enderecoshopware6clientstore.statuses.building_number_is_missing"|trans|sw_sanitize }}',
-          building_number_not_found: '{{ "enderecoshopware6clientstore.statuses.building_number_not_found"|trans|sw_sanitize }}',
-          street_name_needs_correction: '{{ "enderecoshopware6clientstore.statuses.street_name_needs_correction"|trans|sw_sanitize }}',
-          locality_needs_correction: '{{ "enderecoshopware6clientstore.statuses.locality_needs_correction"|trans|sw_sanitize }}',
-          postal_code_needs_correction: '{{ "enderecoshopware6clientstore.statuses.postal_code_needs_correction"|trans|sw_sanitize }}',
-          country_code_needs_correction: '{{ "enderecoshopware6clientstore.statuses.country_code_needs_correction"|trans|sw_sanitize }}',
+          email_not_correct: '{{ "enderecoshopware6client.statuses.email_not_correct"|trans|sw_sanitize }}',
+          email_cant_receive: '{{ "enderecoshopware6client.statuses.email_cant_receive"|trans|sw_sanitize }}',
+          email_syntax_error: '{{ "enderecoshopware6client.statuses.email_syntax_error"|trans|sw_sanitize }}',
+          email_no_mx: '{{ "enderecoshopware6client.statuses.email_no_mx"|trans|sw_sanitize }}',
+          building_number_is_missing: '{{ "enderecoshopware6client.statuses.building_number_is_missing"|trans|sw_sanitize }}',
+          building_number_not_found: '{{ "enderecoshopware6client.statuses.building_number_not_found"|trans|sw_sanitize }}',
+          street_name_needs_correction: '{{ "enderecoshopware6client.statuses.street_name_needs_correction"|trans|sw_sanitize }}',
+          locality_needs_correction: '{{ "enderecoshopware6client.statuses.locality_needs_correction"|trans|sw_sanitize }}',
+          postal_code_needs_correction: '{{ "enderecoshopware6client.statuses.postal_code_needs_correction"|trans|sw_sanitize }}',
+          country_code_needs_correction: '{{ "enderecoshopware6client.statuses.country_code_needs_correction"|trans|sw_sanitize }}',
         }
       };
       window.EnderecoIntegrator.activeServices = {
@@ -121,15 +121,19 @@
           start: function() {
             this.loop = setInterval( function() {
               document.querySelectorAll('[name="endereco_address_form_marker"][data-has-object="no"]').forEach( function(MarkerElement) {
-                var formId = (Math.floor(Math.random() * 100) * Date.now()).toString(16);
                 var formElement = MarkerElement.closest('form');
+                var formId = '';
+                if (formElement.getAttribute('data-endereco-ams-form-id')) {
+                  formId = formElement.getAttribute('data-endereco-ams-form-id');
+                } else {
+                  formId = (Math.floor(Math.random() * 100) * Date.now()).toString(16);
+                  formElement.setAttribute('data-endereco-ams-form-id', formId);
+                }
                 var countryCodeSelector = MarkerElement.getAttribute('data-country-code-selector');
                 var postalCodeSelector = MarkerElement.getAttribute('data-postal-code-selector');
                 var localitySelector = MarkerElement.getAttribute('data-locality-selector');
                 var streetFullSelector = MarkerElement.getAttribute('data-street-full-selector');
                 var isAjax = false;
-                formElement.setAttribute('data-endereco-ams-form-id', formId);
-
                 var EAO = window.EnderecoIntegrator.initAMS(
                         {
                           countryCode: `[data-endereco-ams-form-id="${formId}"] [name="${countryCodeSelector}"]`,
