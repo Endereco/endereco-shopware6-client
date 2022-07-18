@@ -1,6 +1,6 @@
 {
-  "name": "endereco-shopware5-client",
-  "version": "1.0.0",
+  "name": "endereco-shopware6-client",
+  "version": "1.0.2",
   "description": "",
   "main": "endereco.js",
   "scripts": {
