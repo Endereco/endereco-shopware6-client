@@ -1,5 +1,5 @@
 .idea/
-node_modules
-vendor
-dist
+node_modules/
+vendor/
+dist/
 package-lock.json

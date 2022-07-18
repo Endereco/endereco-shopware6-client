@@ -1,10 +1,7 @@
 import Promise from 'promise-polyfill';
 import merge from 'lodash.merge';
-import axios from 'axios';
-
-// for development uncomment this
-import EnderecoIntegrator from '../js-sdk/modules/integrator'; // JS-SDK 1.1.0-rc.6
-import css from '../js-sdk/themes/default-theme.scss'
+import EnderecoIntegrator from './node_modules/@endereco/js-sdk/modules/integrator';
+import css from './endereco.scss'
 
 import 'polyfill-array-includes';
 
@@ -24,6 +21,7 @@ if (!window.Promise) {
 EnderecoIntegrator.postfix = {
     ams: {
         countryCode: '[country]',
+        subdivisionCode: '[countryStateId]',
         postalCode: '[zipcode]',
         locality: '[city]',
         streetFull: '[street]',
