@@ -9,8 +9,13 @@
       window.EnderecoIntegrator.onLoad = [];
     }
 
+    window.EnderecoIntegrator.countryCodeToNameMapping = JSON.parse('{{ page.endereco_config.countryCodeToNameMapping|raw }}');
     window.EnderecoIntegrator.countryMapping = JSON.parse('{{ page.endereco_config.countryMapping|raw }}');
     window.EnderecoIntegrator.countryMappingReverse = JSON.parse('{{ page.endereco_config.countryMappingReverse|raw }}');
+
+    window.EnderecoIntegrator.subdivisionCodeToNameMapping = JSON.parse('{{ page.endereco_config.subdivisionCodeToNameMapping|raw }}');
+    window.EnderecoIntegrator.subdivisionMapping = JSON.parse('{{ page.endereco_config.subdivisionMapping|raw }}');
+    window.EnderecoIntegrator.subdivisionMappingReverse = JSON.parse('{{ page.endereco_config.subdivisionMappingReverse|raw }}');
 
     function enderecoInitAMS(prefix, config, cb) {
       if (undefined !== window.EnderecoIntegrator.initAMS) {
@@ -140,6 +145,7 @@
                   var EAO = window.EnderecoIntegrator.initAMS(
                           {
                             countryCode: `[data-endereco-ams-form-id="${formId}"] [name="${countryCodeSelector}"]`,
+                            subdivisionCode:  `[data-endereco-ams-form-id="${formId}"] [name="${subdivisionCodeSelector}"]`,
                             postalCode: `[data-endereco-ams-form-id="${formId}"] [name="${postalCodeSelector}"]`,
                             locality: `[data-endereco-ams-form-id="${formId}"] [name="${localitySelector}"]`,
                             streetFull: `[data-endereco-ams-form-id="${formId}"] [name="${streetFullSelector}"]`,

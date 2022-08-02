@@ -42,16 +42,65 @@ EnderecoIntegrator.postfix = {
 };
 
 EnderecoIntegrator.css = css[0][1];
+
+EnderecoIntegrator.resolvers.countryCodeSetValue = function (subscriber, value) {
+    if (!!jQuery) {
+        jQuery(subscriber.object).val(value).trigger('change');
+    } else {
+        subscriber.object.value = value;
+    }
+}
+
+EnderecoIntegrator.resolvers.subdivisionCodeSetValue = function (subscriber, value) {
+    if (!!jQuery) {
+        jQuery(subscriber.object).val(value).trigger('change');
+    } else {
+        subscriber.object.value = value;
+    }
+}
+
 EnderecoIntegrator.resolvers.countryCodeWrite = function (value) {
     return new Promise(function (resolve, reject) {
-        resolve(window.EnderecoIntegrator.countryMapping[value.toLowerCase()]);
+        var key = window.EnderecoIntegrator.countryMapping[value.toUpperCase()];
+        if (key !== undefined) {
+            resolve(window.EnderecoIntegrator.countryMapping[value.toUpperCase()]);
+        } else {
+            resolve('');
+        }
     });
 }
 EnderecoIntegrator.resolvers.countryCodeRead = function (value) {
     return new Promise(function (resolve, reject) {
-        resolve(window.EnderecoIntegrator.countryMappingReverse[value.toLowerCase()]);
+        var key = window.EnderecoIntegrator.countryMappingReverse[value];
+        if (key !== undefined) {
+            resolve(window.EnderecoIntegrator.countryMappingReverse[value]);
+        } else {
+            resolve('');
+        }
     });
 }
+
+EnderecoIntegrator.resolvers.subdivisionCodeWrite = function (value) {
+    return new Promise(function (resolve, reject) {
+        var key = window.EnderecoIntegrator.subdivisionMapping[value.toUpperCase()];
+        if (key !== undefined) {
+            resolve(window.EnderecoIntegrator.subdivisionMapping[value.toUpperCase()]);
+        } else {
+            resolve('');
+        }
+    });
+}
+EnderecoIntegrator.resolvers.subdivisionCodeRead = function (value) {
+    return new Promise(function (resolve, reject) {
+        var key = window.EnderecoIntegrator.subdivisionMappingReverse[value];
+        if (key !== undefined) {
+            resolve(window.EnderecoIntegrator.subdivisionMappingReverse[value]);
+        } else {
+            resolve('');
+        }
+    });
+}
+
 EnderecoIntegrator.resolvers.salutationWrite = function (value) {
     var mapping = {
         'F': 'ms',

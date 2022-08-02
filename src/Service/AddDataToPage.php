@@ -24,16 +24,23 @@ class AddDataToPage implements EventSubscriberInterface
     /**
      * @var EntityRepository
      */
+    private $stateRepository;
+
+    /**
+     * @var EntityRepository
+     */
     private $pluginRepository;
 
     public function __construct(
         SystemConfigService $systemConfigService,
         EntityRepository $countryRepository,
+        EntityRepository $stateRepository,
         EntityRepository $pluginRepository
     )
     {
         $this->systemConfigService = $systemConfigService;
         $this->countryRepository = $countryRepository;
+        $this->stateRepository = $stateRepository;
         $this->pluginRepository = $pluginRepository;
     }
 
@@ -69,13 +76,30 @@ class AddDataToPage implements EventSubscriberInterface
 
         $mapping = [];
         $mappingReverse = [];
+        $codeToNameMapping = [];
         foreach ($countries as $country) {
-            $mapping[strtolower($country->getIso())] = $country->getId();
-            $mappingReverse[$country->getId()] = strtolower($country->getIso());
+            $mapping[strtoupper($country->getIso())] = $country->getId();
+            $mappingReverse[$country->getId()] = strtoupper($country->getIso());
+            $codeToNameMapping[strtoupper($country->getIso())] = $country->getName();
         }
 
-        $configContainer->countryMapping = json_encode($mapping);
-        $configContainer->countryMappingReverse = json_encode($mappingReverse);
+        $configContainer->countryCodeToNameMapping = str_replace("'", "\'", json_encode($codeToNameMapping));
+        $configContainer->countryMapping = str_replace("'", "\'", json_encode($mapping));
+        $configContainer->countryMappingReverse = str_replace("'", "\'", json_encode($mappingReverse));
+
+        $states = $this->stateRepository->search(new Criteria(), $context);
+        $statesMapping = [];
+        $statesMappingReverse = [];
+        $statesCodeToNameMapping = [];
+        foreach ($states as $state) {
+            $statesMapping[strtoupper($state->getShortCode())] = $state->getId();
+            $statesMappingReverse[$state->getId()] = strtoupper($state->getShortCode());
+            $statesCodeToNameMapping[strtoupper($state->getShortCode())] = $state->getName();
+        }
+
+        $configContainer->subdivisionCodeToNameMapping = str_replace("'", "\'", json_encode($statesCodeToNameMapping));
+        $configContainer->subdivisionMapping = str_replace("'", "\'", json_encode($statesMapping));
+        $configContainer->subdivisionMappingReverse = str_replace("'", "\'", json_encode($statesMappingReverse));
 
         $event->getPage()->assign(['endereco_config' => $configContainer]);
     }
