@@ -325,15 +325,6 @@
             <helpText>If this function is active, the user must confirm his entered address if he does not want to accept an address suggestion from Endereco.</helpText>
             <helpText lang="de-DE">Ist diese Funktion aktiv, muss der Nutzer seine eingegebene Adresse bestätigen, wenn er kein Adressvorschlag von Endereco übernehmen möchte.</helpText>
         </input-field>
-
-        <input-field type="bool">
-            <name>enderecoSmartAutocomplete</name>
-            <label>SmartAutocomplete</label>
-            <label lang="de-DE">SmartAutocomplete</label>
-            <defaultValue>true</defaultValue>
-            <helpText>Fill address fields automatically when the prediction is obvious.</helpText>
-            <helpText lang="de-DE">Adressfelder werden bei nur einem möglichen Adressvorschlag automatisch ausgefüllt.</helpText>
-        </input-field>
     </card>
 
     <card>

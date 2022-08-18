@@ -53,7 +53,7 @@
       }
     }
 
-    function enderecoLoadAMSConfig() {
+    function enderecoSetConfigValues() {
       window.EnderecoIntegrator.themeName = '';
       window.EnderecoIntegrator.defaultCountrySelect = !!('{{ page.endereco_config.defaultCountrySelect }}');
       window.EnderecoIntegrator.defaultCountry = '{{ page.endereco_config.defaultCountry }}';
@@ -64,7 +64,7 @@
       window.EnderecoIntegrator.config.remoteApiUrl = '{{ page.endereco_config.enderecoRemoteUrl }}';
       window.EnderecoIntegrator.config.trigger.onblur = !!('{{ page.endereco_config.enderecoTriggerOnBlur }}');
       window.EnderecoIntegrator.config.trigger.onsubmit = !!('{{ page.endereco_config.enderecoTriggerOnSubmit }}');
-      window.EnderecoIntegrator.config.ux.smartFill = !!('{{ page.endereco_config.enderecoSmartAutocomplete }}');
+      window.EnderecoIntegrator.config.ux.smartFill = false;
       window.EnderecoIntegrator.config.ux.checkExisting = false;
       window.EnderecoIntegrator.config.ux.resumeSubmit = !!('{{ page.endereco_config.enderecoContinueSubmit }}');
       window.EnderecoIntegrator.config.ux.useStandardCss = true;
@@ -207,6 +207,15 @@
         }
         window.EnderecoIntegrator.$formScanner.start();
       })();
+    }
+
+    function enderecoLoadAMSConfig() {
+      var $interval = setInterval( function() {
+        if (!!window.EnderecoIntegrator.config) {
+          enderecoSetConfigValues();
+          clearInterval($interval);
+        }
+      }, 1);
     }
   </script>
   {{ parent() }}
