@@ -76,7 +76,12 @@ class EnderecoService implements EventSubscriberInterface
          */
         $accountableSessionIds = array();
 
-        if ('POST' === $_SERVER['REQUEST_METHOD']) {
+        if (isset($_SERVER)
+
+            && is_array($_SERVER)
+            && array_key_exists('REQUEST_METHOD', $_SERVER)
+            && 'POST' === $_SERVER['REQUEST_METHOD']
+        ) {
             foreach ($_POST as $sVarName => $sVarValue) {
 
                 if ((strpos($sVarName, '_session_counter') !== false) && 0 < intval($sVarValue)) {
