@@ -17,6 +17,7 @@
         </service>
         <service id="Endereco\Shopware6Client\Service\AddDataToPage" >
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="sales_channel_domain.repository"/>
             <argument type="service" id="country.repository"/>
             <argument type="service" id="country_state.repository"/>
             <argument type="service" id="plugin.repository"/>
