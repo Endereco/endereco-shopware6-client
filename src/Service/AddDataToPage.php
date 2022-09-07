@@ -130,7 +130,13 @@ class AddDataToPage implements EventSubscriberInterface
             }
         }
 
-        $configContainer->pathToIoPhp = $firstDomain.'/bundles/enderecoshopware6client/io.php';
+        $pathToCopyIoPhp = dirname(__FILE__, 6) . '/public/io.php';
+
+        if (file_exists($pathToCopyIoPhp)) {
+            $configContainer->pathToIoPhp = $firstDomain.'/io.php';
+        } else {
+            $configContainer->pathToIoPhp = $firstDomain.'/bundles/enderecoshopware6client/io.php';
+        }
 
         $event->getPage()->assign(['endereco_config' => $configContainer]);
     }
