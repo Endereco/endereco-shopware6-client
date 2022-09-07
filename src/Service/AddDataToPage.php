@@ -19,6 +19,11 @@ class AddDataToPage implements EventSubscriberInterface
     /**
      * @var EntityRepository
      */
+    private $salesChannelDomainRepository;
+
+    /**
+     * @var EntityRepository
+     */
     private $countryRepository;
 
     /**
@@ -33,12 +38,14 @@ class AddDataToPage implements EventSubscriberInterface
 
     public function __construct(
         SystemConfigService $systemConfigService,
+        EntityRepository $salesChannelDomainRepository,
         EntityRepository $countryRepository,
         EntityRepository $stateRepository,
         EntityRepository $pluginRepository
     )
     {
         $this->systemConfigService = $systemConfigService;
+        $this->salesChannelDomainRepository = $salesChannelDomainRepository;
         $this->countryRepository = $countryRepository;
         $this->stateRepository = $stateRepository;
         $this->pluginRepository = $pluginRepository;
@@ -100,6 +107,30 @@ class AddDataToPage implements EventSubscriberInterface
         $configContainer->subdivisionCodeToNameMapping = str_replace("'", "\'", json_encode($statesCodeToNameMapping));
         $configContainer->subdivisionMapping = str_replace("'", "\'", json_encode($statesMapping));
         $configContainer->subdivisionMappingReverse = str_replace("'", "\'", json_encode($statesMappingReverse));
+
+        // Calculate path to file.
+        $salesChannelId = $context->getSource()->getSalesChannelId();
+
+        $salesChannelDomains = $this->salesChannelDomainRepository->search(
+            new Criteria(),
+            $context
+        );
+
+        $firstDomain = $salesChannelDomains->first()->getUrl();
+
+        if(!empty($_SERVER['HTTP_HOST'])) {
+            $scheme = ('http' === $_SERVER['REQUEST_SCHEME']) ? 'http://' : 'https://';
+            $currentHost = $_SERVER['HTTP_HOST'];
+            foreach ($salesChannelDomains as $domain) {
+                $salesChannelDomain = $domain->getUrl();
+                if ((strpos($salesChannelDomain, $currentHost) !== false)
+                    && (strpos($salesChannelDomain, $scheme) !== false)) {
+                    $firstDomain = $salesChannelDomain;
+                }
+            }
+        }
+
+        $configContainer->pathToIoPhp = $firstDomain.'/bundles/enderecoshopware6client/io.php';
 
         $event->getPage()->assign(['endereco_config' => $configContainer]);
     }
