@@ -1,7 +1,7 @@
 {
     "name": "endereco/endereco-shopware6-client",
     "description": "Checks customers' addresses in real time. In case of errors, the customer is prompted to correct his address before sending via warning windows and error messages.",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "type": "shopware-platform-plugin",
     "license": "AGPL-3.0-or-later",
     "authors": [
