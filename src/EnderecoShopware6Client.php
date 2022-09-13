@@ -5,6 +5,7 @@ namespace Endereco\Shopware6Client;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Shopware\Core\Framework\Plugin\Context\InstallContext;
+use Shopware\Core\Framework\Plugin\Context\UpdateContext;
 use Shopware\Core\Framework\Log\LoggerFactory;
 class EnderecoShopware6Client extends Plugin
 {
@@ -41,5 +42,21 @@ class EnderecoShopware6Client extends Plugin
 
         // Copy io.php to public directory
         copy($pathToOriginIoPhp, $pathToCopyIoPhp);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function update(UpdateContext $context): void
+    {
+        parent::update($context);
+
+        $pathToOriginIoPhp = dirname(__FILE__) . '/Resources/public/io.php';
+        $pathToCopyIoPhp = dirname(__FILE__, 5) . '/public/io.php';
+
+        if (!file_exists($pathToCopyIoPhp)) {
+            // Copy io.php to public directory
+            copy($pathToOriginIoPhp, $pathToCopyIoPhp);
+        }
     }
 }
