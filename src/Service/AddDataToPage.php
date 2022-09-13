@@ -120,6 +120,7 @@ class AddDataToPage implements EventSubscriberInterface
 
         if(!empty($_SERVER['HTTP_HOST'])) {
             $scheme = ('http' === $_SERVER['REQUEST_SCHEME']) ? 'http://' : 'https://';
+
             $currentHost = $_SERVER['HTTP_HOST'];
             foreach ($salesChannelDomains as $domain) {
                 $salesChannelDomain = $domain->getUrl();
@@ -128,6 +129,10 @@ class AddDataToPage implements EventSubscriberInterface
                     $firstDomain = $salesChannelDomain;
                 }
             }
+        }
+
+        if ($this->systemConfigService->get('EnderecoShopware6Client.config.enderecoForceSSLForIOPhp')) {
+            $firstDomain = str_replace('http://', 'https://', $firstDomain);
         }
 
         $pathToCopyIoPhp = dirname(__FILE__, 6) . '/public/io.php';

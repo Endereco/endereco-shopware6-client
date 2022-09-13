@@ -29,6 +29,15 @@
             <label>Check API connection</label>
             <label lang="de-DE">API Verbindung prüfen</label>
         </component>
+
+        <input-field type="bool">
+            <name>enderecoForceSSLForIOPhp</name>
+            <label>Enforce SSL for io.php Link</label>
+            <label lang="de-DE">HTTPS bei io.php Link erzwingen</label>
+            <defaultValue>false</defaultValue>
+            <helpText>If this setting is active, the path to io.php will always be through https.</helpText>
+            <helpText lang="de-DE">Wenn diese Einstellung aktiv ist, wird der Pfad zu io.php Datei immer mit https berechnet.</helpText>
+        </input-field>
     </card>
 
     <card>
