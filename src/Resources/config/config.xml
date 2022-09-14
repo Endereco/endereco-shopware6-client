@@ -30,14 +30,7 @@
             <label lang="de-DE">API Verbindung prüfen</label>
         </component>
 
-        <input-field type="bool">
-            <name>enderecoForceSSLForIOPhp</name>
-            <label>Enforce SSL for io.php Link</label>
-            <label lang="de-DE">HTTPS bei io.php Link erzwingen</label>
-            <defaultValue>false</defaultValue>
-            <helpText>If this setting is active, the path to io.php will always be through https.</helpText>
-            <helpText lang="de-DE">Wenn diese Einstellung aktiv ist, wird der Pfad zu io.php Datei immer mit https berechnet.</helpText>
-        </input-field>
+
     </card>
 
     <card>
@@ -365,6 +358,16 @@
             <defaultValue>true</defaultValue>
             <helpText>If this function is active, after selecting an address from the correction suggestions, the sending of the address form is automatically continued. If it is inactive, the user remains on the same page and has to submit the address form again.</helpText>
             <helpText lang="de-DE">Ist diese Funktion aktiv, wird nach der Auswahl einer Adresse aus den Korrekturvorschlägen das Absenden des Adressformulars automatisch fortgesetzt. Ist sie inaktiv, bleibt der Nutzer auf der gleichen Seite und muss das Adressformular nochmal absenden.</helpText>
+        </input-field>
+
+        <input-field type="text">
+            <name>enderecoPathToIOPhp</name>
+            <label>Input the path to proxy file "io.php" manually (optional)</label>
+            <label lang="de-DE">Den Pfad zu Proxy-Datei "io.php" manuell eingeben (optional)</label>
+            <defaultValue></defaultValue>
+            <placeholder>%SHOP_URL%/io.php</placeholder>
+            <helpText>If there are problems with the proxy file "io.php" (e.g. when using AMAZON AWS) or plugin bundles are stored in another folder, the path to the "io.php" file can be defined manually. A copy of the io.php should be in the "/public" folder. Thus, "%SHOP_URL%/io.php" can be entered as the path.</helpText>
+            <helpText lang="de-DE">Wenn Probleme mit der Proxy-Datei "io.php" bestehen (z.B. beim Einsatz von AMAZON  AWS) oder Plugin-Bundles in einem anderen Ordner gespeichert werden, kann der Pfad zur "io.php" Datei manuell hinterlegt werden. Eine Kopie der io.php sollte im "/public" Ordner liegen. Somit kann als Pfad "%SHOP_URL%/io.php" eingetragen werden.</helpText>
         </input-field>
     </card>
 </config>

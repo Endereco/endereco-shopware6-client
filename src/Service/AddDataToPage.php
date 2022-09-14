@@ -63,21 +63,22 @@ class AddDataToPage implements EventSubscriberInterface
     {
         $context = $event->getContext();
         $configContainer = new \stdClass();
+        $salesChannelId = $context->getSource()->getSalesChannelId();
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('name', 'EnderecoShopware6Client'));
         $version = $this->pluginRepository->search($criteria, $context)->first()->getVersion();
         $configContainer->enderecoAgentInfo = 'Endereco Shopware6 Client (Download) v' . $version;
         $configContainer->enderecoVersion = $version;
-        $configContainer->defaultCountrySelect = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoPreselectDefaultCountry');
-        $configContainer->defaultCountry = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoPreselectDefaultCountryCode');
-        $configContainer->enderecoApiKey = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoApiKey');
-        $configContainer->enderecoRemoteUrl = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoRemoteUrl');
-        $configContainer->enderecoTriggerOnBlur = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoTriggerOnBlur');
-        $configContainer->enderecoTriggerOnSubmit = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoTriggerOnSubmit');
-        $configContainer->enderecoSmartAutocomplete = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoSmartAutocomplete');
-        $configContainer->enderecoContinueSubmit = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoContinueSubmit');
-        $configContainer->enderecoAllowCloseIcon = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoAllowCloseIcon');
-        $configContainer->enderecoConfirmWithCheckbox = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoConfirmWithCheckbox');
+        $configContainer->defaultCountrySelect = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoPreselectDefaultCountry', $salesChannelId);
+        $configContainer->defaultCountry = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoPreselectDefaultCountryCode', $salesChannelId);
+        $configContainer->enderecoApiKey = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoApiKey', $salesChannelId);
+        $configContainer->enderecoRemoteUrl = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoRemoteUrl', $salesChannelId);
+        $configContainer->enderecoTriggerOnBlur = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoTriggerOnBlur', $salesChannelId);
+        $configContainer->enderecoTriggerOnSubmit = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoTriggerOnSubmit', $salesChannelId);
+        $configContainer->enderecoSmartAutocomplete = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoSmartAutocomplete', $salesChannelId);
+        $configContainer->enderecoContinueSubmit = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoContinueSubmit', $salesChannelId);
+        $configContainer->enderecoAllowCloseIcon = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoAllowCloseIcon', $salesChannelId);
+        $configContainer->enderecoConfirmWithCheckbox = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoConfirmWithCheckbox', $salesChannelId);
 
         $countries = $this->countryRepository->search(new Criteria(), $context);
 
@@ -109,38 +110,10 @@ class AddDataToPage implements EventSubscriberInterface
         $configContainer->subdivisionMappingReverse = str_replace("'", "\'", json_encode($statesMappingReverse));
 
         // Calculate path to file.
-        $salesChannelId = $context->getSource()->getSalesChannelId();
-
-        $salesChannelDomains = $this->salesChannelDomainRepository->search(
-            new Criteria(),
-            $context
-        );
-
-        $firstDomain = $salesChannelDomains->first()->getUrl();
-
-        if(!empty($_SERVER['HTTP_HOST'])) {
-            $scheme = ('http' === $_SERVER['REQUEST_SCHEME']) ? 'http://' : 'https://';
-
-            $currentHost = $_SERVER['HTTP_HOST'];
-            foreach ($salesChannelDomains as $domain) {
-                $salesChannelDomain = $domain->getUrl();
-                if ((strpos($salesChannelDomain, $currentHost) !== false)
-                    && (strpos($salesChannelDomain, $scheme) !== false)) {
-                    $firstDomain = $salesChannelDomain;
-                }
-            }
-        }
-
-        if ($this->systemConfigService->get('EnderecoShopware6Client.config.enderecoForceSSLForIOPhp')) {
-            $firstDomain = str_replace('http://', 'https://', $firstDomain);
-        }
-
-        $pathToCopyIoPhp = dirname(__FILE__, 6) . '/public/io.php';
-
-        if (file_exists($pathToCopyIoPhp)) {
-            $configContainer->pathToIoPhp = $firstDomain.'/io.php';
+        if (!empty($this->systemConfigService->get('EnderecoShopware6Client.config.enderecoPathToIOPhp', $salesChannelId))) {
+            $configContainer->pathToIoPhp = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoPathToIOPhp', $salesChannelId);
         } else {
-            $configContainer->pathToIoPhp = $firstDomain.'/bundles/enderecoshopware6client/io.php';
+            $configContainer->pathToIoPhp = '';
         }
 
         $event->getPage()->assign(['endereco_config' => $configContainer]);
