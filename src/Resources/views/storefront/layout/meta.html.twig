@@ -58,8 +58,14 @@
       window.EnderecoIntegrator.defaultCountrySelect = !!('{{ page.endereco_config.defaultCountrySelect }}');
       window.EnderecoIntegrator.defaultCountry = '{{ page.endereco_config.defaultCountry }}';
       window.EnderecoIntegrator.config.agentName = '{{ page.endereco_config.enderecoAgentInfo }}';
+
+      if ('{{ page.endereco_config.pathToIoPhp }}' !== '') {
+        window.EnderecoIntegrator.config.apiUrl = '{{ page.endereco_config.pathToIoPhp }}';
+      } else  {
+        window.EnderecoIntegrator.config.apiUrl = '{{ asset('bundles/enderecoshopware6client/io.php') }}';
+      }
+
       window.EnderecoIntegrator.config.apiKey = '{{ page.endereco_config.enderecoApiKey }}';
-      window.EnderecoIntegrator.config.apiUrl = '{{ page.endereco_config.pathToIoPhp }}';
       window.EnderecoIntegrator.config.showDebugInfo = false;
       window.EnderecoIntegrator.config.remoteApiUrl = '{{ page.endereco_config.enderecoRemoteUrl }}';
       window.EnderecoIntegrator.config.trigger.onblur = !!('{{ page.endereco_config.enderecoTriggerOnBlur }}');
