@@ -29,8 +29,20 @@
             <label>Check API connection</label>
             <label lang="de-DE">API Verbindung prüfen</label>
         </component>
+    </card>
 
+    <card>
+        <title>Sales-Channel Settings</title>
+        <title lang="de-DE">Verkaufskanaleinstellungen</title>
 
+        <input-field type="bool">
+            <name>enderecoActiveInThisChannel</name>
+            <label>Active</label>
+            <label lang="de-DE">Aktiv</label>
+            <defaultValue>true</defaultValue>
+            <helpText>If this toggle is set to active, then the plugin will be activated in this sales channel.</helpText>
+            <helpText lang="de-DE">Mit dieser Einstellung kann man das Plugin in bestimmten Verkaufkanälen deaktivieren.</helpText>
+        </input-field>
     </card>
 
     <card>
