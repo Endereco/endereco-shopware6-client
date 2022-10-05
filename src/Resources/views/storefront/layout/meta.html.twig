@@ -1,6 +1,7 @@
 {% sw_extends '@Storefront/storefront/layout/meta.html.twig' %}
 
 {% block layout_head_meta_tags %}
+  {% if page.endereco_config.pluginActive %}
   <script>
     if (undefined === window.EnderecoIntegrator) {
       window.EnderecoIntegrator = {};
@@ -224,5 +225,7 @@
       }, 1);
     }
   </script>
+  {% endif %}
+
   {{ parent() }}
 {% endblock %}
