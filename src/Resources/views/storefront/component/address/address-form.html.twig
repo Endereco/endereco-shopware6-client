@@ -2,19 +2,21 @@
 
 {% block component_address_form_address_fields %}
     {{ parent() }}
-    <input
-            type="hidden"
-            name="endereco_data_marker" value="ams"
-            data-container-selector = "form"
-            data-container-type = "form"
-            data-used-prefix = "{{ prefix }}"
-            data-has-object = "no"
-            data-name = ""
-            data-type = ""
-            data-country-code-selector = "{{ prefix }}[countryId]"
-            data-subdivision-code-selector = "{{ prefix }}[countryStateId]"
-            data-postal-code-selector = "{{ prefix }}[zipcode]"
-            data-locality-selector = "{{ prefix }}[city]"
-            data-street-full-selector = "{{ prefix }}[street]"
-    >
+    {% if page.endereco_config.pluginActive %}
+        <input
+                type="hidden"
+                name="endereco_data_marker" value="ams"
+                data-container-selector = "form"
+                data-container-type = "form"
+                data-used-prefix = "{{ prefix }}"
+                data-has-object = "no"
+                data-name = ""
+                data-type = ""
+                data-country-code-selector = "{{ prefix }}[countryId]"
+                data-subdivision-code-selector = "{{ prefix }}[countryStateId]"
+                data-postal-code-selector = "{{ prefix }}[zipcode]"
+                data-locality-selector = "{{ prefix }}[city]"
+                data-street-full-selector = "{{ prefix }}[street]"
+        >
+    {% endif %}
 {% endblock %}

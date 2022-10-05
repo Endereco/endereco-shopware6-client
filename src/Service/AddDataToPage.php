@@ -80,6 +80,8 @@ class AddDataToPage implements EventSubscriberInterface
         $configContainer->enderecoAllowCloseIcon = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoAllowCloseIcon', $salesChannelId);
         $configContainer->enderecoConfirmWithCheckbox = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoConfirmWithCheckbox', $salesChannelId);
 
+        $configContainer->pluginActive = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoActiveInThisChannel', $salesChannelId);
+
         $countries = $this->countryRepository->search(new Criteria(), $context);
 
         $mapping = [];
