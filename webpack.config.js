@@ -55,8 +55,7 @@ module.exports = {
           options: {
             presets: ['@babel/preset-env']
           }
-        },
-        exclude: /node_modules/
+        }
       },
       {
         test: /\.(png|jpg|gif)$/,
@@ -64,6 +63,10 @@ module.exports = {
         options: {
           name: '[name].[ext]?[hash]'
         }
+      },
+      {
+        test: /\.svg$/,
+        use: {loader: 'html-loader'}
       }
     ]
   },
@@ -75,7 +78,7 @@ module.exports = {
   performance: {
     hints: false
   },
-  devtool: '(none)',
+  devtool: false,
   plugins: [
   ]
 };
