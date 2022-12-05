@@ -182,3 +182,9 @@ window.EnderecoIntegrator.waitUntilReady().then(function () {
     //
 });
 
+var $waitForConfig = setInterval( function() {
+    if(typeof enderecoLoadAMSConfig === 'function'){
+        enderecoLoadAMSConfig();
+        clearInterval($waitForConfig);
+    }
+}, 1);
