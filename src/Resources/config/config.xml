@@ -375,17 +375,22 @@
         <input-field type="text">
             <name>enderecoPathToIOPhp</name>
             <label>Input the path to proxy file "io.php" manually (optional)</label>
-            <label lang="de-DE">Den Pfad zu Proxy-Datei "io.php" manuell eingeben (optional)</label>
+            <label lang="de-DE">Standard-Pfad zur Proxydatei "io.php" anpassen (optional)</label>
             <defaultValue></defaultValue>
             <placeholder>%SHOP_URL%/io.php</placeholder>
             <helpText>If there are problems with the proxy file "io.php" (e.g. when using AMAZON AWS) or plugin bundles are stored in another folder, the path to the "io.php" file can be defined manually. A copy of the io.php should be in the "/public" folder. Thus, "%SHOP_URL%/io.php" can be entered as the path.</helpText>
-            <helpText lang="de-DE">Wenn Probleme mit der Proxy-Datei "io.php" bestehen (z.B. beim Einsatz von AMAZON  AWS) oder Plugin-Bundles in einem anderen Ordner gespeichert werden, kann der Pfad zur "io.php" Datei manuell hinterlegt werden. Eine Kopie der io.php sollte im "/public" Ordner liegen. Somit kann als Pfad "%SHOP_URL%/io.php" eingetragen werden.</helpText>
+            <helpText lang="de-DE">
+                Wenn Probleme bei der Ausführung der Proxy-Datei "io.php" bestehen (z.B. beim Einsatz von AMAZON AWS,
+                oder wenn Plugin-Bundles in einem anderen Ordner gespeichert werden), kann der Pfad zur "io.php" Datei
+                manuell hinterlegt werden. Eine Kopie der io.php Datei kann im "/public" Ordner erstellt werden. Dann
+                kann z.B.  der Pfad "%SHOP_URL%/io.php" eingetragen werden.
+            </helpText>
         </input-field>
 
         <input-field type="bool">
             <name>enderecoWhitelistController</name>
-            <label>Load endereco.min.js only on whitelisted pages</label>
-            <label lang="de-DE">Endereco JavaScript Datei nur auf bestimmten Seiten laden.</label>
+            <label>Load endereco.min.js only on whitelisted pages (standard pages containing address forms).</label>
+            <label lang="de-DE">Endereco JavaScript Datei nur auf bestimmten Seiten laden (Standardseiten mit Adressformularen).</label>
             <defaultValue>true</defaultValue>
             <helpText>If this function is active, the endereco.min.js file will be loaded only on defined pages which increases the performance of the site. Standard controller namens are already whitelisted.</helpText>
             <helpText lang="de-DE">Ist diese Funktion aktiv, wird die endereco.min.js Datei nur auf bestimmten Seiten geladen. Dadurch verbessert sich die Ladezeit des Shops. Standard Controller Namen sind bereits in der Whitelist.</helpText>
@@ -393,10 +398,12 @@
 
         <input-field type="text">
             <name>enderecoWhitelistControllerList</name>
-            <label>Controller whitelist (comma-separated)</label>
-            <label lang="de-DE">Whitelist der Controller Namen (kommagetrennt)</label>
+            <label>Activate plugin also for the following controllers (optional, comma-separated)</label>
+            <label lang="de-DE">Plugin auch für folgende Controllern aktivieren (optional, kommagetrennt)</label>
             <defaultValue></defaultValue>
             <placeholder>ControllerName1,ControllerName2</placeholder>
+            <helpText>The Javascript from Endereco is loaded for the controllers specified here. The controller names must be entered separated by ",".</helpText>
+            <helpText lang="de-DE">Das Javascript von Endereco wird bei den hier hinterlegten Controllern ausgegeben. Die Controller Namen müssen mit "," getrennt eingeben werden.</helpText>
         </input-field>
     </card>
 </config>
