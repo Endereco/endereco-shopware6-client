@@ -1,7 +1,7 @@
 {% sw_extends '@Storefront/storefront/layout/meta.html.twig' %}
 
 {% block layout_head_meta_tags %}
-  {% if page.endereco_config.pluginActive %}
+  {% if page.endereco_config.pluginActive and ( not page.endereco_config.controllerOnlyWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
   <script>
     if (undefined === window.EnderecoIntegrator) {
       window.EnderecoIntegrator = {};

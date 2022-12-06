@@ -2,7 +2,7 @@
 
 {% block component_address_form_address_fields %}
     {{ parent() }}
-    {% if page.endereco_config.pluginActive %}
+    {% if page.endereco_config.pluginActive and ( not page.endereco_config.controllerOnlyWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
         <input
                 type="hidden"
                 name="endereco_data_marker" value="ams"
