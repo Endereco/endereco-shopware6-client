@@ -2,7 +2,8 @@
 
 {% block base_body_script %}
     {{ parent() }}
-    {% if page.endereco_config.pluginActive and ( not page.endereco_config.controllerWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
+
+    {% if page.endereco_config.pluginActive and (not page.endereco_config.controllerOnlyWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
         <script
                 defer
                 async
