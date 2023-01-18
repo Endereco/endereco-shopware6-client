@@ -342,6 +342,76 @@
     </card>
 
     <card>
+        <title>Phone-Management Service</title>
+
+        <input-field type="bool">
+            <name>enderecoPhsActive</name>
+            <label>Activate phone number check</label>
+            <label lang="de-DE">Rufnummernprüfung aktivieren</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="single-select">
+            <name>enderecoPhsUseFormat</name>
+            <options>
+                <option>
+                    <id>E164</id>
+                    <name>E.164 (+4912345678901)</name>
+                    <name lang="de-DE">E.164 (+4912345678901)</name>
+                </option>
+                <option>
+                    <id>INTERNATIONAL</id>
+                    <name>International (+49 1234 5678901)</name>
+                    <name lang="de-DE">International (+49 1234 5678901)</name>
+                </option>
+                <option>
+                    <id>NATIONAL</id>
+                    <name>National (01234 5678901)</name>
+                    <name lang="de-DE">National (01234 5678901)</name>
+                </option>
+                <option>
+                    <id>all</id>
+                    <name>Alles zulassen</name>
+                    <name lang="de-DE">Germany</name>
+                </option>
+            </options>
+            <defaultValue>E164</defaultValue>
+            <label>Following format is expected</label>
+            <label lang="de-DE">Folgendes Format wird erwartet</label>
+        </input-field>
+
+        <input-field type="single-select">
+            <name>enderecoPhsDefaultFieldType</name>
+            <options>
+                <option>
+                    <id>general</id>
+                    <name>Mobile or fixed line number</name>
+                    <name lang="de-DE">Mobil- oder Festnetznummer</name>
+                </option>
+                <option>
+                    <id>mobile</id>
+                    <name>Only mobile number</name>
+                    <name lang="de-DE">Nur Mobilfunknummer</name>
+                </option>
+                <option>
+                    <id>fixedLine</id>
+                    <name>Only fixed line number</name>
+                    <name lang="de-DE">Nur Festnetznummer</name>
+                </option>
+            </options>
+            <label>Allowed phone number</label>
+            <label lang="de-DE">Erlaubte Telefonnummer</label>
+        </input-field>
+
+        <input-field type="bool">
+            <name>enderecoShowPhoneErrors</name>
+            <label>Display phone status messages</label>
+            <label lang="de-DE">Rufnummer Statusmeldungen anzeigen</label>
+            <defaultValue>true</defaultValue>
+        </input-field>
+    </card>
+
+    <card>
         <title>Advanced Configuration</title>
         <title lang="de-DE">Erweiterte Einstellungen</title>
 
