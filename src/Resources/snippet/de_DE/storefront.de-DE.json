@@ -27,7 +27,16 @@
       "street_name_needs_correction": "Die Schreibweise der Straße ist fehlerhaft.",
       "locality_needs_correction": "Die Schreibweise des Ortes ist fehlerhaft.",
       "postal_code_needs_correction": "Die PLZ ist ungültig.",
-      "country_code_needs_correction": "Die eingegebene Adresse wurde in einem anderen Land gefunden."
+      "country_code_needs_correction": "Die eingegebene Adresse wurde in einem anderen Land gefunden.",
+      "phone_invalid": "Die Rufnummer ist ungültig.",
+      "phone_format_needs_correction": "Die Rufnummer ist falsch formatiert.",
+      "phone_should_be_fixed": "Bitte eine Festnetznummer eingeben.",
+      "phone_should_be_mobile": "Bitte eine Mobilfunknummer eingeben."
+    },
+    "requiredFormat": {
+      "hintFormatE164": "Bitte schreiben Sie die Nummer im E.164 Format, z.B. +4917678134170",
+      "hintFormatInternational": "Bitte schreiben Sie die Nummer im internationalen Format, z.B. +49 176 78134170",
+      "hintFormatNational": "Bitte schreiben Sie die Nummer im nationalen Format, z.B. 0176 78134170"
     }
   }
 }
