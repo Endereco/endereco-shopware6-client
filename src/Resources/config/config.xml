@@ -399,6 +399,7 @@
                     <name lang="de-DE">Nur Festnetznummer</name>
                 </option>
             </options>
+            <defaultValue>general</defaultValue>
             <label>Allowed phone number</label>
             <label lang="de-DE">Erlaubte Telefonnummer</label>
         </input-field>
