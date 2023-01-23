@@ -1,33 +1,48 @@
 {
-  "enderecoshopware6client": {
-    "texts" : {
-      "popUpHeadline": "Adresse prüfen",
-      "popUpSubline": "Die von Ihnen eingegebene Adresse scheint nicht korrekt oder unvollst&auml;ndig zu sein. Bitte w&auml;hlen Sie die korrekte Adresse aus.",
-      "yourInput": "Ihre Eingabe:",
-      "editYourInput": "(bearbeiten)",
-      "ourSuggestions": "Unsere Vorschläge:",
-      "useSelected": "Auswahl übernehmen",
-      "general_address": "Adresse prüfen",
-      "billing_address": "Rechnungsadresse prüfen",
-      "shipping_address": "Lieferadresse prüfen",
-      "mistakeNoPredictionSubline": "Ihre Adresse konnte nicht verifiziert werden. Bitte prüfen Sie Ihre Eingabe und ändern oder bestätigen sie.",
-      "notFoundSubline": "Ihre Adresse konnte nicht verifiziert werden. Bitte prüfen Sie Ihre Eingabe und ändern oder bestätigen sie.",
-      "confirmAddress": "Adresse bestätigen",
-      "editAddress": "Adresse bearbeiten",
-      "warningText": "Falsche Adressen können zu Problemen in der Zustellung führen und weitere Kosten verursachen.",
-      "confirmMyAddressCheckbox": "Ich bestätige, dass meine Adresse korrekt und zustellbar ist."
-    },
-    "statuses": {
-      "email_not_correct": "Die E-Mail Adresse scheint nicht korrekt zu sein",
-      "email_cant_receive": "Das E-Mail Postfach ist nicht erreichbar",
-      "email_syntax_error": "Prüfen Sie die Schreibweise",
-      "email_no_mx": "Die E-Mail Adresse existiert nicht. Prüfen Sie die Schreibweise.",
-      "building_number_is_missing": "Keine Hausnummer enthalten.",
-      "building_number_not_found": "Diese Hausnummer wurde nicht gefunden.",
-      "street_name_needs_correction": "Die Schreibweise der Straße ist fehlerhaft.",
-      "locality_needs_correction": "Die Schreibweise des Ortes ist fehlerhaft.",
-      "postal_code_needs_correction": "Die PLZ ist ungültig.",
-      "country_code_needs_correction": "Die eingegebene Adresse wurde in einem anderen Land gefunden."
+    "enderecoshopware6client": {
+        "texts": {
+            "popUpHeadline": "Adresse prüfen",
+            "popUpSubline": "Die von Ihnen eingegebene Adresse scheint nicht korrekt oder unvollst&auml;ndig zu sein. Bitte w&auml;hlen Sie die korrekte Adresse aus.",
+            "yourInput": "Ihre Eingabe:",
+            "editYourInput": "(bearbeiten)",
+            "ourSuggestions": "Unsere Vorschläge:",
+            "useSelected": "Auswahl übernehmen",
+            "general_address": "Adresse prüfen",
+            "billing_address": "Rechnungsadresse prüfen",
+            "shipping_address": "Lieferadresse prüfen",
+            "mistakeNoPredictionSubline": "Ihre Adresse konnte nicht verifiziert werden. Bitte prüfen Sie Ihre Eingabe und ändern oder bestätigen sie.",
+            "notFoundSubline": "Ihre Adresse konnte nicht verifiziert werden. Bitte prüfen Sie Ihre Eingabe und ändern oder bestätigen sie.",
+            "confirmAddress": "Adresse bestätigen",
+            "editAddress": "Adresse bearbeiten",
+            "warningText": "Falsche Adressen können zu Problemen in der Zustellung führen und weitere Kosten verursachen.",
+            "confirmMyAddressCheckbox": "Ich bestätige, dass meine Adresse korrekt und zustellbar ist."
+        },
+        "statuses": {
+            "email_not_correct": "Die E-Mail Adresse scheint nicht korrekt zu sein",
+            "email_cant_receive": "Das E-Mail Postfach ist nicht erreichbar",
+            "email_syntax_error": "Prüfen Sie die Schreibweise",
+            "email_no_mx": "Die E-Mail Adresse existiert nicht. Prüfen Sie die Schreibweise.",
+            "building_number_is_missing": "Keine Hausnummer enthalten.",
+            "building_number_not_found": "Diese Hausnummer wurde nicht gefunden.",
+            "street_name_needs_correction": "Die Schreibweise der Straße ist fehlerhaft.",
+            "locality_needs_correction": "Die Schreibweise des Ortes ist fehlerhaft.",
+            "postal_code_needs_correction": "Die PLZ ist ungültig.",
+            "country_code_needs_correction": "Die eingegebene Adresse wurde in einem anderen Land gefunden.",
+            "phone_invalid": "Die Rufnummer ist ungültig.",
+            "phone_format_needs_correction": "Die Rufnummer ist falsch formatiert.",
+            "phone_should_be_fixed": "Bitte eine Festnetznummer eingeben.",
+            "phone_should_be_mobile": "Bitte eine Mobilfunknummer eingeben."
+        },
+        "requiredFormat": {
+            "hintFormatE164": "Bitte schreiben Sie die Nummer im E.164 Format, z.B. +4917678134170",
+            "hintFormatInternational": "Bitte schreiben Sie die Nummer im internationalen Format, z.B. +49 176 78134170",
+            "hintFormatNational": "Bitte schreiben Sie die Nummer im nationalen Format, z.B. 0176 78134170"
+        },
+        "inputFields": {
+            "enderedoStreetLabel": "Straße",
+            "enderedoStreetPlaceholder": "Straße eingeben ...",
+            "enderedoHousenumberLabel": "Hausnummer",
+            "enderedoHousenumberPlaceholder": "Hausnummer eingeben ..."
+        }
     }
-  }
 }

@@ -339,6 +339,13 @@
             <helpText>If this function is active, the user must confirm his entered address if he does not want to accept an address suggestion from Endereco.</helpText>
             <helpText lang="de-DE">Ist diese Funktion aktiv, muss der Nutzer seine eingegebene Adresse bestätigen, wenn er kein Adressvorschlag von Endereco übernehmen möchte.</helpText>
         </input-field>
+
+        <input-field type="bool">
+            <name>enderecoSplitStreetAndHouseNumber</name>
+            <label>Divide street into street name and house number</label>
+            <label lang="de-DE">Straße in Straßenname und Hausnummer unterteilen</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
     </card>
 
     <card>

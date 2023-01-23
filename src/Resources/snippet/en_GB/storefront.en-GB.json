@@ -1,33 +1,48 @@
 {
-  "enderecoshopware6client": {
-    "texts" : {
-      "popUpHeadline": "Check your address",
-      "popUpSubline": "The address you entered seems to have a problem. Please select an address from options under.",
-      "yourInput": "Your entry:",
-      "editYourInput": "(edit)",
-      "ourSuggestions": "Our suggestions:",
-      "useSelected": "Use selected address",
-      "general_address": "Check your address",
-      "billing_address": "Check your billing address",
-      "shipping_address": "Check your shipping address",
-      "mistakeNoPredictionSubline": "Your address could not be verified. Please check and edit or confirm it.",
-      "notFoundSubline": "Your address could not be verified. Please check and edit or confirm it.",
-      "confirmAddress": "Confirm address",
-      "editAddress": "Edit address",
-      "warningText": "Incorrect addresses can lead to problems in delivery and cause further costs.",
-      "confirmMyAddressCheckbox": "I confirm, that my address is correct and deliverable."
-    },
-    "statuses": {
-      "email_not_correct": "E-Mail is not correct",
-      "email_cant_receive": "E-Mail address can\\'t receive",
-      "email_syntax_error": "Check the syntax",
-      "email_no_mx": "E-Mail Address is invalid",
-      "building_number_is_missing": "No house number included.",
-      "building_number_not_found": "This house number could not be found.",
-      "street_name_needs_correction": "The spelling of the street is incorrect.",
-      "locality_needs_correction": "The spelling of the locality is incorrect.",
-      "postal_code_needs_correction": "The postal code is invalid.",
-      "country_code_needs_correction": "The entered address was found in another country."
+    "enderecoshopware6client": {
+        "texts": {
+            "popUpHeadline": "Check your address",
+            "popUpSubline": "The address you entered seems to have a problem. Please select an address from options under.",
+            "yourInput": "Your entry:",
+            "editYourInput": "(edit)",
+            "ourSuggestions": "Our suggestions:",
+            "useSelected": "Use selected address",
+            "general_address": "Check your address",
+            "billing_address": "Check your billing address",
+            "shipping_address": "Check your shipping address",
+            "mistakeNoPredictionSubline": "Your address could not be verified. Please check and edit or confirm it.",
+            "notFoundSubline": "Your address could not be verified. Please check and edit or confirm it.",
+            "confirmAddress": "Confirm address",
+            "editAddress": "Edit address",
+            "warningText": "Incorrect addresses can lead to problems in delivery and cause further costs.",
+            "confirmMyAddressCheckbox": "I confirm, that my address is correct and deliverable."
+        },
+        "statuses": {
+            "email_not_correct": "E-Mail is not correct",
+            "email_cant_receive": "E-Mail address can\\'t receive",
+            "email_syntax_error": "Check the syntax",
+            "email_no_mx": "E-Mail Address is invalid",
+            "building_number_is_missing": "No house number included.",
+            "building_number_not_found": "This house number could not be found.",
+            "street_name_needs_correction": "The spelling of the street is incorrect.",
+            "locality_needs_correction": "The spelling of the locality is incorrect.",
+            "postal_code_needs_correction": "The postal code is invalid.",
+            "country_code_needs_correction": "The entered address was found in another country.",
+            "phone_invalid": "The phone is invalid.",
+            "phone_format_needs_correction": "The phone formatted is incorrect.",
+            "phone_should_be_fixed": "A fixed line number is expected here.",
+            "phone_should_be_mobile": "A mobile phone number is expected here."
+        },
+        "requiredFormat": {
+            "hintFormatE164": "Please write your number in E.164 format, e.g. +4917678134170",
+            "hintFormatInternational": "Please write your number in international format, e.g. +49 176 78134170",
+            "hintFormatNational": "Please write your number in national format, z.B. 0176 78134170"
+        },
+        "inputFields": {
+            "enderedoStreetLabel": "Street",
+            "enderedoStreetPlaceholder": "Enter street",
+            "enderedoHousenumberLabel": "House number",
+            "enderedoHousenumberPlaceholder": "Enter house number"
+        }
     }
-  }
 }
