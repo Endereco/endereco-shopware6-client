@@ -33,5 +33,10 @@
 
             <argument type="string">endereco_shopware6_client</argument>
         </service>
+
+        <service id="Endereco\Shopware6Client\Subscriber\DataValidationSubscriber">
+            <tag name="kernel.event_subscriber"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+        </service>
     </services>
 </container>
