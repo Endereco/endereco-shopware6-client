@@ -9,7 +9,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\FkField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\PrimaryKey;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\IdField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToOneAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\StringField;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
@@ -31,11 +30,10 @@ class EnderecoAddressExtensionDefinition extends EntityDefinition
     protected function defineFields(): FieldCollection
     {
         return new FieldCollection([
-            (new IdField('id', 'id'))->addFlags(new Required(), new PrimaryKey()),
-            new FkField('address_id', 'addressId', CustomerAddressDefinition::class),
+            (new FkField('address_id', 'addressId', CustomerAddressDefinition::class))->addFlags(new Required(), new PrimaryKey()),
             (new StringField('street', 'street')),
             (new StringField('house_number', 'houseNumber')),
-            new OneToOneAssociationField('address', 'address_id', 'id', CustomerAddressDefinition::class, true)
+            new OneToOneAssociationField('address', 'address_id', 'id', CustomerAddressDefinition::class, false)
         ]);
     }
 }

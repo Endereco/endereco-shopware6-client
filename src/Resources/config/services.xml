@@ -8,6 +8,10 @@
             <tag name="shopware.entity.definition"/>
         </service>
 
+        <service id="Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension">
+            <tag name="shopware.entity.extension"/>
+        </service>
+
         <service id="Endereco\Shopware6Client\Controller\Api\ApiTestController" public="true">
             <argument type="service" id="Endereco\Shopware6Client\Logger" />
             <call method="setContainer">
@@ -34,7 +38,7 @@
             <argument type="string">endereco_shopware6_client</argument>
         </service>
 
-        <service id="Endereco\Shopware6Client\Subscriber\DataValidationSubscriber">
+        <service id="Endereco\Shopware6Client\Subscriber\AddressSubscriber">
             <tag name="kernel.event_subscriber"/>
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
         </service>

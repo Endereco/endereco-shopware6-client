@@ -47,7 +47,7 @@
                         id="{{ prefix }}AddressStreet"
                         placeholder="{{ "enderecoshopware6client.inputFields.enderedoStreetPlaceholder"|trans|striptags }}"
                         name="{{ prefix }}[enderecoStreet]"
-                        value="{{ data.get('enderecoStreet') }}"
+                        value="{{ data.get('extensions')['enderecoAddress'].street }}"
                         required="required">
              {% endblock %}
 
@@ -74,10 +74,10 @@
              {% block component_address_form_endereco_housenumber_input %}
                  <input type="text"
                         class="form-control{% if violationPath %} is-invalid{% endif %}"
-                        id="{{ prefix }}AddressStreet"
+                        id="{{ prefix }}AddressHouseNumber"
                         placeholder="{{ "enderecoshopware6client.inputFields.enderedoHousenumberPlaceholder"|trans|striptags }}"
                         name="{{ prefix }}[enderecoHousenumber]"
-                        value="{{ data.get('enderecoHousenumber') }}"
+                        value="{{ data.get('extensions')['enderecoAddress'].houseNumber }}"
                         required="required">
              {% endblock %}
 
