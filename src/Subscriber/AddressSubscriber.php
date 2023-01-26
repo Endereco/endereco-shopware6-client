@@ -5,27 +5,14 @@ declare(strict_types=1);
 namespace Endereco\Shopware6Client\Subscriber;
 
 use Shopware\Core\Checkout\Customer\CustomerEvents;
-use Shopware\Core\Framework\Api\Context\SalesChannelApiSource;
-use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Event\DataMappingEvent;
 use Shopware\Core\Framework\Validation\BuildValidationEvent;
 use Shopware\Core\Framework\Validation\DataBag\DataBag;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-class AddressSubscriber implements EventSubscriberInterface
+class AddressSubscriber extends AbstractEnderecoSubscriber
 {
-    private SystemConfigService $systemConfigService;
-
-    public function __construct(
-        SystemConfigService $systemConfigService
-    )
-    {
-        $this->systemConfigService = $systemConfigService;
-    }
-
     public static function getSubscribedEvents(): array
     {
         return [
@@ -92,21 +79,5 @@ class AddressSubscriber implements EventSubscriberInterface
         if (!empty($enderecoStreet) && !empty($enderecoHousenumber)) {
             $address->set('street', sprintf('%s %s', $enderecoStreet, $enderecoHousenumber));
         }
-    }
-
-    private function isStreetSplittingEnabled(?string $salesChannelId): bool
-    {
-        return
-            $this->systemConfigService->getBool('EnderecoShopware6Client.config.enderecoActiveInThisChannel', $salesChannelId) &&
-            $this->systemConfigService->getBool('EnderecoShopware6Client.config.enderecoSplitStreetAndHouseNumber', $salesChannelId);
-    }
-
-    private function fetchSalesChannelId(Context $context): ?string
-    {
-        $source = $context->getSource();
-        if ($source instanceof SalesChannelApiSource) {
-            return $source->getSalesChannelId();
-        }
-        return null;
     }
 }

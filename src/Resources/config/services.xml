@@ -42,5 +42,12 @@
             <tag name="kernel.event_subscriber"/>
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
         </service>
+
+        <service id="Endereco\Shopware6Client\Subscriber\CheckoutSubscriber">
+            <tag name="kernel.event_subscriber"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="Endereco\Shopware6Client\Service\EnderecoService" />
+            <argument type="service" id="customer_address.repository"/>
+        </service>
     </services>
 </container>
