@@ -1,102 +1,48 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Endereco\Shopware6Client\Service;
 
+use Exception;
 use GuzzleHttp\Client;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
-use Shopware\Core\Checkout\Customer\CustomerEvents;
-use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityWrittenEvent;
 use GuzzleHttp\Exception\RequestException;
-
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
-class EnderecoService implements EventSubscriberInterface
+class EnderecoService
 {
-    /**
-     * @var SystemConfigService
-     */
-    private $systemConfigService;
+    private string $apiKey;
 
-    /**
-     * @var Client
-     */
-    private $httpClient;
+    private string $serviceUrl;
 
-    /**
-     * @var string
-     */
-    private $apiKey;
+    private Client $httpClient;
 
-    /**
-     * @var string
-     */
-    private $serviceUrl;
+    private EntityRepository $pluginRepository;
 
-    /**
-     * @var EntityRepository
-     */
-    private $pluginRepository;
-
-    /** @var LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
 
     public function __construct(
         SystemConfigService $systemConfigService,
         EntityRepository    $pluginRepository,
         LoggerInterface     $logger)
     {
-        $this->systemConfigService = $systemConfigService;
         $this->httpClient = new Client(['timeout' => 3.0, 'connection_timeout' => 2.0]);
-
         $this->apiKey = $systemConfigService->getString('EnderecoShopware6Client.config.enderecoApiKey') ?? '';
         $this->serviceUrl = $systemConfigService->getString('EnderecoShopware6Client.config.enderecoRemoteUrl') ?? '';
-
         $this->pluginRepository = $pluginRepository;
-
         $this->logger = $logger;
 
     }
 
-    /** @return array<string, string> */
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            CustomerEvents::CUSTOMER_ADDRESS_WRITTEN_EVENT => 'extractAndAccountSessions',
-        ];
-    }
-
-    public function extractAndAccountSessions(EntityWrittenEvent $event): void
-    {
-        $accountableSessionIds = [];
-
-        if (isset($_SERVER)
-            && is_array($_SERVER)
-            && array_key_exists('REQUEST_METHOD', $_SERVER)
-            && 'POST' === $_SERVER['REQUEST_METHOD']
-        ) {
-            foreach ($_POST as $sVarName => $sVarValue) {
-
-                if ((strpos($sVarName, '_session_counter') !== false) && 0 < intval($sVarValue)) {
-                    $sSessionIdName = str_replace('_session_counter', '', $sVarName) . '_session_id';
-                    $accountableSessionIds[$_POST[$sSessionIdName]] = true;
-                }
-            }
-
-            $accountableSessionIds = array_map('strval', array_keys($accountableSessionIds));
-
-            if (!empty($accountableSessionIds)) {
-                $this->closeSessions($accountableSessionIds, $event);
-            }
-        }
-    }
-
-    /** @return string */
+    /**
+     * @throws Exception
+     */
     public function generateTid(): string
     {
         $data = random_bytes(16);
@@ -107,13 +53,10 @@ class EnderecoService implements EventSubscriberInterface
 
     /**
      * @param array<int, string> $sessionIds
-     * @param EntityWrittenEvent $event
      */
-    public function closeSessions(array $sessionIds, EntityWrittenEvent $event): void
+    public function closeSessions(array $sessionIds, Context $context): void
     {
         $anyDoAccounting = false;
-
-        $context = $event->getContext();
 
         $enderecoAgentInfo = $this->getEnderecoAgentInfo($context);
 

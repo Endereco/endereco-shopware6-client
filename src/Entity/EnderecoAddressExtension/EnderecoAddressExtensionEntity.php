@@ -6,7 +6,6 @@ namespace Endereco\Shopware6Client\Entity\EnderecoAddressExtension;
 
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityIdTrait;
 
 class EnderecoAddressExtensionEntity extends Entity
 {

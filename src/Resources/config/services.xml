@@ -22,7 +22,6 @@
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="plugin.repository"/>
             <argument type="service" id="Endereco\Shopware6Client\Logger" />
-            <tag name="kernel.event_subscriber" />
         </service>
         <service id="Endereco\Shopware6Client\Service\AddDataToPage" >
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
@@ -41,6 +40,15 @@
         <service id="Endereco\Shopware6Client\Subscriber\AddressSubscriber">
             <tag name="kernel.event_subscriber"/>
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="Endereco\Shopware6Client\Service\EnderecoService" />
+            <argument type="service" id="customer_address.repository"/>
+        </service>
+
+        <service id="Endereco\Shopware6Client\Subscriber\CheckoutSubscriber">
+            <tag name="kernel.event_subscriber"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="Endereco\Shopware6Client\Service\EnderecoService" />
+            <argument type="service" id="customer_address.repository"/>
         </service>
 
         <service id="Endereco\Shopware6Client\Subscriber\CheckoutSubscriber">
