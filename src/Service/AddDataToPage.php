@@ -1,51 +1,33 @@
 <?php
+
 namespace Endereco\Shopware6Client\Service;
 
+use Shopware\Core\Framework\Api\Context\SalesChannelApiSource;
 use Shopware\Storefront\Page\GenericPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
-use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 
 class AddDataToPage implements EventSubscriberInterface
 {
-    /**
-     * @var SystemConfigService
-     */
-    private $systemConfigService;
+    private SystemConfigService $systemConfigService;
 
-    /**
-     * @var EntityRepository
-     */
-    private $salesChannelDomainRepository;
+    private EntityRepository $countryRepository;
 
-    /**
-     * @var EntityRepository
-     */
-    private $countryRepository;
+    private EntityRepository $stateRepository;
 
-    /**
-     * @var EntityRepository
-     */
-    private $stateRepository;
-
-    /**
-     * @var EntityRepository
-     */
-    private $pluginRepository;
+    private EntityRepository $pluginRepository;
 
     public function __construct(
         SystemConfigService $systemConfigService,
-        EntityRepository $salesChannelDomainRepository,
-        EntityRepository $countryRepository,
-        EntityRepository $stateRepository,
-        EntityRepository $pluginRepository
+        EntityRepository    $countryRepository,
+        EntityRepository    $stateRepository,
+        EntityRepository    $pluginRepository
     )
     {
         $this->systemConfigService = $systemConfigService;
-        $this->salesChannelDomainRepository = $salesChannelDomainRepository;
         $this->countryRepository = $countryRepository;
         $this->stateRepository = $stateRepository;
         $this->pluginRepository = $pluginRepository;
@@ -63,7 +45,11 @@ class AddDataToPage implements EventSubscriberInterface
     {
         $context = $event->getContext();
         $configContainer = new \stdClass();
-        $salesChannelId = $context->getSource()->getSalesChannelId();
+        $salesChannelId = null;
+        $source = $context->getSource();
+        if ($source instanceof SalesChannelApiSource) {
+            $salesChannelId = $source->getSalesChannelId();
+        }
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('name', 'EnderecoShopware6Client'));
         $version = $this->pluginRepository->search($criteria, $context)->first()->getVersion();
@@ -82,7 +68,10 @@ class AddDataToPage implements EventSubscriberInterface
         $configContainer->enderecoSplitStreet = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoSplitStreetAndHouseNumber', $salesChannelId);
 
         $configContainer->pluginActive = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoActiveInThisChannel', $salesChannelId);
-
+        $configContainer->enderecoPhsActive = $this->systemConfigService->getBool('EnderecoShopware6Client.config.enderecoPhsActive', $salesChannelId);
+        $configContainer->enderecoPhsUseFormat = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoPhsUseFormat', $salesChannelId);
+        $configContainer->enderecoPhsDefaultFieldType = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoPhsDefaultFieldType', $salesChannelId);
+        $configContainer->enderecoShowPhoneErrors = $this->systemConfigService->getBool('EnderecoShopware6Client.config.enderecoShowPhoneErrors', $salesChannelId);
         // Make controllerwhitelist
         $controllerWhitelist = ['Auth', 'AccountProfile', 'Address', 'Checkout', 'Register'];
         $controllerWhitelistAddition = explode(
@@ -92,7 +81,7 @@ class AddDataToPage implements EventSubscriberInterface
             $controllerWhitelist = array_merge($controllerWhitelist, $controllerWhitelistAddition);
         }
         $configContainer->controllerWhitelist = $controllerWhitelist;
-        $configContainer->controllerOnlyWhitelist = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoWhitelistController', $salesChannelId);;
+        $configContainer->controllerOnlyWhitelist = $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoWhitelistController', $salesChannelId);
 
         $countries = $this->countryRepository->search(new Criteria(), $context);
 

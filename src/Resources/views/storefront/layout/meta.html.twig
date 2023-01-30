@@ -79,6 +79,10 @@
       window.EnderecoIntegrator.config.ux.allowCloseModal = !!('{{ page.endereco_config.enderecoAllowCloseIcon }}');
       window.EnderecoIntegrator.config.ux.confirmWithCheckbox = !!('{{ page.endereco_config.enderecoConfirmWithCheckbox }}');
       window.EnderecoIntegrator.config.ux.changeFieldsOrder = true;
+      window.EnderecoIntegrator.config.ux.showPhoneErrors = {{ page.endereco_config.enderecoShowPhoneErrors ? 'true':'false' }};
+      window.EnderecoIntegrator.config.ux.showPhoneFlag = true;
+      window.EnderecoIntegrator.config.phoneFormat = '{{ page.endereco_config.enderecoPhsUseFormat }}';
+      window.EnderecoIntegrator.config.defaultPhoneType = '{{ page.endereco_config.enderecoPhsDefaultFieldType }}';
       window.EnderecoIntegrator.config.splitStreet = {{ page.endereco_config.enderecoSplitStreet ? 'true':'false' }};
       window.EnderecoIntegrator.countryMappingUrl = '';
       window.EnderecoIntegrator.config.templates.primaryButtonClasses = 'btn btn-primary btn-lg';
@@ -112,12 +116,22 @@
           locality_needs_correction: '{{ "enderecoshopware6client.statuses.locality_needs_correction"|trans|sw_sanitize|escape }}',
           postal_code_needs_correction: '{{ "enderecoshopware6client.statuses.postal_code_needs_correction"|trans|sw_sanitize|escape }}',
           country_code_needs_correction: '{{ "enderecoshopware6client.statuses.country_code_needs_correction"|trans|sw_sanitize|escape }}',
-        }
+            phone_invalid: '{{ "enderecoshopware6client.statuses.phone_invalid"|trans|sw_sanitize|escape }}',
+            phone_format_needs_correction: '{{ "enderecoshopware6client.statuses.phone_format_needs_correction"|trans|sw_sanitize|escape }}',
+            phone_should_be_fixed: '{{ "enderecoshopware6client.statuses.phone_should_be_fixed"|trans|sw_sanitize|escape }}',
+            phone_should_be_mobile: '{{ "enderecoshopware6client.statuses.phone_should_be_mobile"|trans|sw_sanitize|escape }}',
+        },
+          requiredFormat: {
+              E164: '{{ "enderecoshopware6client.requiredFormat.hintFormatE164"|trans|sw_sanitize|escape }}',
+              INTERNATIONAL: '{{ "enderecoshopware6client.requiredFormat.hintFormatInternational"|trans|sw_sanitize|escape }}',
+              NATIONAL: '{{ "enderecoshopware6client.requiredFormat.hintFormatNational"|trans|sw_sanitize|escape }}',
+          }
       };
       window.EnderecoIntegrator.activeServices = {
         ams: true,
         emailService: false,
-        personService: false
+        personService: false,
+        phs: {{ page.endereco_config.enderecoPhsActive ? 'true':'false' }}
       }
 
       // Execute all function that have been called throughout the page.
@@ -150,6 +164,7 @@
                   var streetSelector = MarkerElement.getAttribute('data-street-selector');
                   var houseNumberSelector = MarkerElement.getAttribute('data-house-number-selector');
                   var subdivisionCodeSelector = MarkerElement.getAttribute('data-subdivision-code-selector');
+                  var phoneSelector = MarkerElement.getAttribute('data-phone-selector');
                   var isAjax = false;
                   var EAO = window.EnderecoIntegrator.initAMS(
                           {
@@ -164,6 +179,16 @@
                             name: `ams_${prefix}_${formId}`,
                             addressType: 'general_address'
                           }
+                  );
+
+                  window.EnderecoIntegrator.initPhoneServices(
+                      {
+                          phone: `[data-endereco-ams-form-id="${formId}"] [name="${phoneSelector}"]`,
+                          countryCode: `[data-endereco-ams-form-id="${formId}"] [name="${countryCodeSelector}"]`
+                      }, {
+                          name: `phs_${prefix}_${formId}`,
+                          addressType: 'general_address_phs'
+                      }
                   );
 
                   // If ajax, add click listener.
