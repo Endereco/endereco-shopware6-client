@@ -138,7 +138,15 @@ class EnderecoService
         } catch (Throwable $e) {
             $this->logger->error('Serverside splitStreet failed', ['error' => $e->getMessage()]);
         }
-        return ['', ''];
+        return [$fullStreet, ''];
+    }
+
+    public function buildFullStreet(string $street, string $housenumber, string $countryIso): string
+    {
+        switch ($countryIso) {
+            default:
+                return sprintf('%s %s', $street, $housenumber);
+        }
     }
 
     private function preparePayload(string $method, array $params = []): array

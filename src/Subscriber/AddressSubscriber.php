@@ -6,6 +6,7 @@ namespace Endereco\Shopware6Client\Subscriber;
 
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Checkout\Customer\CustomerEvents;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityLoadedEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityWrittenEvent;
 use Shopware\Core\Framework\Event\DataMappingEvent;
@@ -47,7 +48,8 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
 
     public function onFormValidation(BuildValidationEvent $event): void
     {
-        $salesChannelId = $this->fetchSalesChannelId($event->getContext());
+        $context = $event->getContext();
+        $salesChannelId = $this->fetchSalesChannelId($context);
         if (!$this->isStreetSplittingEnabled($salesChannelId)) {
             return;
         }
@@ -56,10 +58,10 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
         $billingAddress = $data->get('billingAddress');
         $shippingAddress = $data->get('shippingAddress');
 
-        $this->overrideStreetWithSplittedData($data);
-        $this->overrideStreetWithSplittedData($address);
-        $this->overrideStreetWithSplittedData($billingAddress);
-        $this->overrideStreetWithSplittedData($shippingAddress);
+        $this->overrideStreetWithSplittedData($data, $context);
+        $this->overrideStreetWithSplittedData($address, $context);
+        $this->overrideStreetWithSplittedData($billingAddress, $context);
+        $this->overrideStreetWithSplittedData($shippingAddress, $context);
 
         $definition = $event->getDefinition();
         $definition->add('enderecoStreet', new NotBlank());
@@ -68,8 +70,8 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
 
     public function onMappingCreate(DataMappingEvent $event): void
     {
-
-        $salesChannelId = $this->fetchSalesChannelId($event->getContext());
+        $context = $event->getContext();
+        $salesChannelId = $this->fetchSalesChannelId($context);
         if (!$this->isStreetSplittingEnabled($salesChannelId)) {
             return;
         }
@@ -82,7 +84,12 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
         if (!$enderecoStreet || !$enderecoHousenumber) {
             return;
         }
-        $output['street'] = sprintf('%s %s', $enderecoStreet, $enderecoHousenumber);
+        $country = $this->fetchCountry($data->get('countryId', ''), $context);
+        $output['street'] = $this->enderecoService->buildFullStreet(
+            $enderecoStreet,
+            $enderecoHousenumber,
+            $country ? $country->getIso() : ''
+        );
         $output['extensions']['enderecoAddress'] = [
             'street' => $enderecoStreet,
             'houseNumber' => $enderecoHousenumber
@@ -114,15 +121,27 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
         }
     }
 
-    private function overrideStreetWithSplittedData(?DataBag $address): void
+    private function overrideStreetWithSplittedData(?DataBag $address, Context $context): void
     {
         if (!$address instanceof RequestDataBag) {
             return;
         }
         $enderecoStreet = $address->get('enderecoStreet');
         $enderecoHousenumber = $address->get('enderecoHousenumber');
-        if (!empty($enderecoStreet) && !empty($enderecoHousenumber)) {
-            $address->set('street', sprintf('%s %s', $enderecoStreet, $enderecoHousenumber));
+        $countryId = $address->get('countryId');
+        if (
+            !empty($enderecoStreet) &&
+            !empty($enderecoHousenumber) &&
+            !empty($countryId)
+        ) {
+            $country = $this->fetchCountry($countryId, $context);
+            $address->set(
+                'street',
+                $this->enderecoService->buildFullStreet(
+                    $enderecoStreet,
+                    $enderecoHousenumber,
+                    $country ? $country->getIso() : ''
+                ));
         }
     }
 }

@@ -27,6 +27,7 @@ class CheckoutSubscriberTest extends TestCase
         $checkoutSubscriber = new CheckoutSubscriber(
             $this->getSystemConfigService(),
             $enderecoServiceMock,
+            $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class)
         );
 
@@ -63,6 +64,7 @@ class CheckoutSubscriberTest extends TestCase
         $checkoutSubscriber = new CheckoutSubscriber(
             $this->getSystemConfigService(),
             $enderecoServiceMock,
+            $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class)
         );
 
@@ -74,9 +76,9 @@ class CheckoutSubscriberTest extends TestCase
                             'getCountry' => $this->createConfiguredMock(CountryEntity::class, [
                                 'getIso' => 'DE'
                             ]),
-                            'getStreet' => 'Testowa 55',
+                            'getStreet' => 'Testing 55',
                             'getExtension' => $this->createConfiguredMock(EnderecoAddressExtensionEntity::class, [
-                                'getStreet' => 'Testowa',
+                                'getStreet' => 'Testing',
                                 'getHouseNumber' => '33'
                             ])
                         ]),
@@ -96,10 +98,13 @@ class CheckoutSubscriberTest extends TestCase
 
     public function test_if_checkout_subscriber_will_not_split_addresses_when_endereco_address_is_same()
     {
-        $enderecoServiceMock = $this->createMock(EnderecoService::class);
+        $enderecoServiceMock = $this->createConfiguredMock(EnderecoService::class, [
+            'buildFullStreet' => 'Testing 55'
+        ]);
         $checkoutSubscriber = new CheckoutSubscriber(
             $this->getSystemConfigService(),
             $enderecoServiceMock,
+            $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class)
         );
 
@@ -111,9 +116,9 @@ class CheckoutSubscriberTest extends TestCase
                             'getCountry' => $this->createConfiguredMock(CountryEntity::class, [
                                 'getIso' => 'DE'
                             ]),
-                            'getStreet' => 'Testowa 55',
+                            'getStreet' => 'Testing 55',
                             'getExtension' => $this->createConfiguredMock(EnderecoAddressExtensionEntity::class, [
-                                'getStreet' => 'Testowa',
+                                'getStreet' => 'Testing',
                                 'getHouseNumber' => '55'
                             ])
                         ]),

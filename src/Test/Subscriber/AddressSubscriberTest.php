@@ -29,7 +29,8 @@ class AddressSubscriberTest extends TestCase
         $addressSubscriber = new AddressSubscriber(
             $this->getSystemConfigService(false),
             $this->createMock(EnderecoService::class),
-            $this->createMock(EntityRepository::class)
+            $this->createMock(EntityRepository::class),
+            $this->createMock(EntityRepository::class),
         );
 
         $definitionMock = $this->createMock(DataValidationDefinition::class);
@@ -48,7 +49,8 @@ class AddressSubscriberTest extends TestCase
         $addressSubscriber = new AddressSubscriber(
             $this->getSystemConfigService(),
             $this->createMock(EnderecoService::class),
-            $this->createMock(EntityRepository::class)
+            $this->createMock(EntityRepository::class),
+            $this->createMock(EntityRepository::class),
         );
 
         $definitionMock = $this->createMock(DataValidationDefinition::class);
@@ -64,16 +66,21 @@ class AddressSubscriberTest extends TestCase
 
     public function test_check_if_given_request_endereco_data_will_be_joined_into_street()
     {
+        $enderecoServiceMock = $this->createConfiguredMock(EnderecoService::class, [
+            'buildFullStreet' => 'Testing 44'
+        ]);
+
         $addressSubscriber = new AddressSubscriber(
             $this->getSystemConfigService(),
-            $this->createMock(EnderecoService::class),
-            $this->createMock(EntityRepository::class)
+            $enderecoServiceMock,
+            $this->createMock(EntityRepository::class),
+            $this->createMock(EntityRepository::class),
         );
 
 
         $dataMock = $this->createMock(RequestDataBag::class);
         $dataMock->method('get')->will(
-            $this->onConsecutiveCalls(null, null, null, 'Testing', '44')
+            $this->onConsecutiveCalls(null, null, null, 'Testing', '44', 'some-country-uuid')
         );
 
         $dataMock->expects($this->once())->method('set')->with('street', 'Testing 44');
@@ -92,7 +99,8 @@ class AddressSubscriberTest extends TestCase
         $addressSubscriber = new AddressSubscriber(
             $this->getSystemConfigService(),
             $enderecoServiceMock,
-            $this->createMock(EntityRepository::class)
+            $this->createMock(EntityRepository::class),
+            $this->createMock(EntityRepository::class),
         );
 
         $event = $this->createConfiguredMock(EntityLoadedEvent::class, [
@@ -102,9 +110,9 @@ class AddressSubscriberTest extends TestCase
                     'getCountry' => $this->createConfiguredMock(CountryEntity::class, [
                         'getIso' => 'DE'
                     ]),
-                    'getStreet' => 'Testowa 44',
+                    'getStreet' => 'Testing 44',
                     'getExtension' => $this->createConfiguredMock(EnderecoAddressExtensionEntity::class, [
-                        'getStreet' => 'Testowa',
+                        'getStreet' => 'Testing',
                         'getHouseNumber' => '55'
                     ])
                 ])
@@ -113,18 +121,21 @@ class AddressSubscriberTest extends TestCase
 
         $enderecoServiceMock
             ->expects($this->atLeast(1))
-            ->method('splitStreet')->willReturn(['Testowa', '44']);
+            ->method('splitStreet')->willReturn(['Testing', '44']);
 
         $addressSubscriber->onAddressLoaded($event);
     }
 
     public function test_if_address_subscriber_will_not_split_address_on_loaded_event_when_they_are_same()
     {
-        $enderecoServiceMock = $this->createMock(EnderecoService::class);
+        $enderecoServiceMock = $this->createConfiguredMock(EnderecoService::class, [
+            'buildFullStreet' => 'Testing 66'
+        ]);
         $addressSubscriber = new AddressSubscriber(
             $this->getSystemConfigService(),
             $enderecoServiceMock,
-            $this->createMock(EntityRepository::class)
+            $this->createMock(EntityRepository::class),
+            $this->createMock(EntityRepository::class),
         );
 
         $event = $this->createConfiguredMock(EntityLoadedEvent::class, [
@@ -134,9 +145,9 @@ class AddressSubscriberTest extends TestCase
                     'getCountry' => $this->createConfiguredMock(CountryEntity::class, [
                         'getIso' => 'DE'
                     ]),
-                    'getStreet' => 'Testowa 66',
+                    'getStreet' => 'Testing 66',
                     'getExtension' => $this->createConfiguredMock(EnderecoAddressExtensionEntity::class, [
-                        'getStreet' => 'Testowa',
+                        'getStreet' => 'Testing',
                         'getHouseNumber' => '66'
                     ])
                 ])
