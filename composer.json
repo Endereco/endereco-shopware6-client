@@ -26,7 +26,11 @@
         "psr-4": {
             "Endereco\\Shopware6Client\\": "src/"
         }
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.7"
+    },
+    "scripts": {
+        "cs-check": "php vendor/bin/phpcs --standard=PSR1,PSR2 ./src/**/*.php"
     }
 }
-
-
