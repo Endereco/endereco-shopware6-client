@@ -83,8 +83,7 @@
       window.EnderecoIntegrator.config.ux.showPhoneFlag = true;
       window.EnderecoIntegrator.config.phoneFormat = '{{ page.endereco_config.enderecoPhsUseFormat }}';
       window.EnderecoIntegrator.config.defaultPhoneType = '{{ page.endereco_config.enderecoPhsDefaultFieldType }}';
-
-      window.EnderecoIntegrator.config.splitStreet = false;
+      window.EnderecoIntegrator.config.splitStreet = {{ page.endereco_config.enderecoSplitStreet ? 'true':'false' }};
       window.EnderecoIntegrator.countryMappingUrl = '';
       window.EnderecoIntegrator.config.templates.primaryButtonClasses = 'btn btn-primary btn-lg';
       window.EnderecoIntegrator.config.templates.secondaryButtonClasses = 'btn btn-secondary btn-lg';
@@ -162,6 +161,8 @@
                   var postalCodeSelector = MarkerElement.getAttribute('data-postal-code-selector');
                   var localitySelector = MarkerElement.getAttribute('data-locality-selector');
                   var streetFullSelector = MarkerElement.getAttribute('data-street-full-selector');
+                  var streetSelector = MarkerElement.getAttribute('data-street-selector');
+                  var houseNumberSelector = MarkerElement.getAttribute('data-house-number-selector');
                   var subdivisionCodeSelector = MarkerElement.getAttribute('data-subdivision-code-selector');
                   var phoneSelector = MarkerElement.getAttribute('data-phone-selector');
                   var isAjax = false;
@@ -172,6 +173,8 @@
                             postalCode: `[data-endereco-ams-form-id="${formId}"] [name="${postalCodeSelector}"]`,
                             locality: `[data-endereco-ams-form-id="${formId}"] [name="${localitySelector}"]`,
                             streetFull: `[data-endereco-ams-form-id="${formId}"] [name="${streetFullSelector}"]`,
+                            streetName: `[data-endereco-ams-form-id="${formId}"] [name="${streetSelector}"]`,
+                            buildingNumber: `[data-endereco-ams-form-id="${formId}"] [name="${houseNumberSelector}"]`,
                           }, {
                             name: `ams_${prefix}_${formId}`,
                             addressType: 'general_address'
