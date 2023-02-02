@@ -30,14 +30,13 @@ class EnderecoService
     public function __construct(
         SystemConfigService $systemConfigService,
         EntityRepository    $pluginRepository,
-        LoggerInterface     $logger)
-    {
+        LoggerInterface     $logger
+    ) {
         $this->httpClient = new Client(['timeout' => 3.0, 'connection_timeout' => 2.0]);
         $this->apiKey = $systemConfigService->getString('EnderecoShopware6Client.config.enderecoApiKey') ?? '';
         $this->serviceUrl = $systemConfigService->getString('EnderecoShopware6Client.config.enderecoRemoteUrl') ?? '';
         $this->pluginRepository = $pluginRepository;
         $this->logger = $logger;
-
     }
 
     /**
@@ -70,7 +69,6 @@ class EnderecoService
                     ]
                 );
                 $anyDoAccounting = true;
-
             } catch (RequestException $e) {
                 if ($e->hasResponse()) {
                     $response = $e->getResponse();
