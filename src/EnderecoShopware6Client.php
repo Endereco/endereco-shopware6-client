@@ -6,10 +6,10 @@ use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UpdateContext;
+use Endereco\Shopware6Client\Installer\PluginLifecycle;
 
 class EnderecoShopware6Client extends Plugin
 {
-
 
     /**
      * @inheritDoc
@@ -18,16 +18,7 @@ class EnderecoShopware6Client extends Plugin
     {
         parent::uninstall($context);
 
-        if ($context->keepUserData()) {
-            return;
-        }
-
-        $pathToCopyIoPhp = dirname(__FILE__, 5) . '/public/io.php';
-
-        // Delete copied io.php file.
-        if (file_exists($pathToCopyIoPhp)) {
-            unlink($pathToCopyIoPhp);
-        }
+        (new PluginLifecycle($this->container))->uninstall($context);
     }
 
     /**
@@ -37,11 +28,7 @@ class EnderecoShopware6Client extends Plugin
     {
         parent::install($context);
 
-        $pathToOriginIoPhp = dirname(__FILE__) . '/Resources/public/io.php';
-        $pathToCopyIoPhp = dirname(__FILE__, 5) . '/public/io.php';
-
-        // Copy io.php to public directory
-        copy($pathToOriginIoPhp, $pathToCopyIoPhp);
+        (new PluginLifecycle($this->container))->install($context);
     }
 
     /**
@@ -51,12 +38,6 @@ class EnderecoShopware6Client extends Plugin
     {
         parent::update($context);
 
-        $pathToOriginIoPhp = dirname(__FILE__) . '/Resources/public/io.php';
-        $pathToCopyIoPhp = dirname(__FILE__, 5) . '/public/io.php';
-
-        if (!file_exists($pathToCopyIoPhp)) {
-            // Copy io.php to public directory
-            copy($pathToOriginIoPhp, $pathToCopyIoPhp);
-        }
+        (new PluginLifecycle($this->container))->update($context);
     }
 }
