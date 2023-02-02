@@ -129,8 +129,7 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
         $enderecoStreet = $address->get('enderecoStreet');
         $enderecoHousenumber = $address->get('enderecoHousenumber');
         $countryId = $address->get('countryId');
-        if (
-            !empty($enderecoStreet) &&
+        if (!empty($enderecoStreet) &&
             !empty($enderecoHousenumber) &&
             !empty($countryId)
         ) {
@@ -141,7 +140,8 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
                     $enderecoStreet,
                     $enderecoHousenumber,
                     $country ? $country->getIso() : ''
-                ));
+                )
+            );
         }
     }
 }

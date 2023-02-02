@@ -29,8 +29,7 @@ abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
         EnderecoService     $enderecoService,
         EntityRepository    $customerAddressRepository,
         EntityRepository    $countryRepository
-    )
-    {
+    ) {
         $this->enderecoService = $enderecoService;
         $this->systemConfigService = $systemConfigService;
         $this->customerAddressRepository = $customerAddressRepository;
@@ -63,8 +62,7 @@ abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
     private function isEnderecoAddressValid(
         EnderecoAddressExtensionEntity $enderecoAddress,
         CustomerAddressEntity          $address
-    ): bool
-    {
+    ): bool {
         $enderecoFullStreet = $this->enderecoService->buildFullStreet(
             $enderecoAddress->getStreet(),
             $enderecoAddress->getHouseNumber(),
@@ -89,7 +87,8 @@ abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
                         ]
                     ]
                 ]],
-                $context);
+                $context
+            );
         }
     }
 
@@ -106,14 +105,17 @@ abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
         if (isset($this->countryMemCache[$countryId])) {
             return $this->countryMemCache[$countryId];
         }
-        return $this->countryMemCache[$countryId] = $this->countryRepository->search(new Criteria([$countryId]), $context)->first();
+        return $this->countryMemCache[$countryId] =
+            $this->countryRepository->search(new Criteria([$countryId]), $context)->first();
     }
 
     protected function isStreetSplittingEnabled(?string $salesChannelId): bool
     {
         return
-            $this->systemConfigService->getBool('EnderecoShopware6Client.config.enderecoActiveInThisChannel', $salesChannelId) &&
-            $this->systemConfigService->getBool('EnderecoShopware6Client.config.enderecoSplitStreetAndHouseNumber', $salesChannelId);
+            $this->systemConfigService
+                ->getBool('EnderecoShopware6Client.config.enderecoActiveInThisChannel', $salesChannelId) &&
+            $this->systemConfigService
+                ->getBool('EnderecoShopware6Client.config.enderecoSplitStreetAndHouseNumber', $salesChannelId);
     }
 
     protected function fetchSalesChannelId(Context $context): ?string
