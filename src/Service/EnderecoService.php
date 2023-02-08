@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Endereco\Shopware6Client\Service;
 
+use Endereco\Shopware6Client\Misc\EnderecoConstants;
 use Exception;
 use GuzzleHttp\Client;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -141,10 +142,12 @@ class EnderecoService
 
     public function buildFullStreet(string $street, string $housenumber, string $countryIso): string
     {
-        switch ($countryIso) {
-            default:
-                return sprintf('%s %s', $street, $housenumber);
-        }
+        $order =
+            EnderecoConstants::STREET_ORDER_MAP[strtolower($countryIso)] ??
+            EnderecoConstants::STREET_ORDER_HOUSE_SECOND;
+        return $order === EnderecoConstants::STREET_ORDER_HOUSE_FIRST ?
+            sprintf('%s %s', $housenumber, $street) :
+            sprintf('%s %s', $street, $housenumber);
     }
 
     private function preparePayload(string $method, array $params = []): array
