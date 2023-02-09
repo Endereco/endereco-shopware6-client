@@ -9,7 +9,16 @@ use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 
 class EnderecoAddressExtensionEntity extends Entity
 {
+    public const AMS_STATUS_CHECKED = 'checked';
+    public const AMS_STATUS_NOT_CHECKED = 'not-checked';
+
+    public const AMS_STATUSES_MAP = [
+        self::AMS_STATUS_CHECKED,
+        self::AMS_STATUS_NOT_CHECKED
+    ];
+
     protected string $addressId;
+    protected string $amsStatus;
     protected string $street;
     protected string $houseNumber;
 
@@ -23,6 +32,16 @@ class EnderecoAddressExtensionEntity extends Entity
     public function setAddressId(string $addressId): void
     {
         $this->addressId = $addressId;
+    }
+
+    public function getAmsStatus(): string
+    {
+        return $this->amsStatus;
+    }
+
+    public function setAmsStatus(string $amsStatus): void
+    {
+        $this->amsStatus = $amsStatus;
     }
 
     public function getStreet(): string
@@ -55,4 +74,8 @@ class EnderecoAddressExtensionEntity extends Entity
         $this->address = $address;
     }
 
+    public function isAddressChecked(): bool
+    {
+        return $this->amsStatus === self::AMS_STATUS_CHECKED;
+    }
 }

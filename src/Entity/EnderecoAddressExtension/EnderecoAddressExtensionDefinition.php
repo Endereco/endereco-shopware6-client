@@ -31,6 +31,7 @@ class EnderecoAddressExtensionDefinition extends EntityDefinition
     {
         return new FieldCollection([
             (new FkField('address_id', 'addressId', CustomerAddressDefinition::class))->addFlags(new Required(), new PrimaryKey()),
+            (new StringField('ams_status', 'amsStatus')),
             (new StringField('street', 'street')),
             (new StringField('house_number', 'houseNumber')),
             new OneToOneAssociationField('address', 'address_id', 'id', CustomerAddressDefinition::class, false)

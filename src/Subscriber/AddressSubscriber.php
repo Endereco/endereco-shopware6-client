@@ -4,19 +4,31 @@ declare(strict_types=1);
 
 namespace Endereco\Shopware6Client\Subscriber;
 
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoAddressExtensionEntity;
+use Endereco\Shopware6Client\Service\EnderecoService;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Checkout\Customer\CustomerEvents;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityLoadedEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityWrittenEvent;
 use Shopware\Core\Framework\Event\DataMappingEvent;
 use Shopware\Core\Framework\Validation\BuildValidationEvent;
 use Shopware\Core\Framework\Validation\DataBag\DataBag;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 class AddressSubscriber extends AbstractEnderecoSubscriber
 {
+    private $requestStack;
+
+    public function __construct(SystemConfigService $systemConfigService, EnderecoService $enderecoService, EntityRepository $customerAddressRepository, EntityRepository $countryRepository, $requestStack)
+    {
+        $this->requestStack = $requestStack;
+        parent::__construct($systemConfigService, $enderecoService, $customerAddressRepository, $countryRepository);
+    }
+
     public static function getSubscribedEvents(): array
     {
         return [
@@ -81,6 +93,7 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
 
         $enderecoStreet = $data->get('enderecoStreet');
         $enderecoHousenumber = $data->get('enderecoHousenumber');
+        $amsChecked = $data->get('amsChecked');
         if (!$enderecoStreet || !$enderecoHousenumber) {
             return;
         }
@@ -90,10 +103,15 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
             $enderecoHousenumber,
             $country ? $country->getIso() : ''
         );
-        $output['extensions']['enderecoAddress'] = [
+        $enderecoExtension = [
             'street' => $enderecoStreet,
             'houseNumber' => $enderecoHousenumber
         ];
+
+        if ($amsChecked && in_array($amsChecked, EnderecoAddressExtensionEntity::AMS_STATUSES_MAP)) {
+            $enderecoExtension['amsStatus'] = $amsChecked;
+        }
+        $output['extensions']['enderecoAddress'] = $enderecoExtension;
         $event->setOutput($output);
     }
 
@@ -128,20 +146,41 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
         }
         $enderecoStreet = $address->get('enderecoStreet');
         $enderecoHousenumber = $address->get('enderecoHousenumber');
+        $street = $address->get('street');
         $countryId = $address->get('countryId');
+        if (!empty($countryId)) {
+            $country = $this->fetchCountry($countryId, $context);
+        }
         if (!empty($enderecoStreet) &&
             !empty($enderecoHousenumber) &&
-            !empty($countryId)
+            !empty($country)
         ) {
-            $country = $this->fetchCountry($countryId, $context);
             $address->set(
                 'street',
                 $this->enderecoService->buildFullStreet(
                     $enderecoStreet,
                     $enderecoHousenumber,
-                    $country ? $country->getIso() : ''
+                    $country->getIso()
                 )
             );
+            return;
+        }
+        if (!empty($street) && !empty($country)) {
+            list($street, $houseNumber) =
+                $this->enderecoService->splitStreet($street, $country->getIso(), $context);
+
+            if ($street) {
+                $address->set('enderecoStreet', $street);
+                $address->set('enderecoHousenumber', $houseNumber);
+                $address->set(
+                    'street',
+                    $this->enderecoService->buildFullStreet(
+                        $street,
+                        $houseNumber,
+                        $country->getIso()
+                    )
+                );
+            }
         }
     }
 }

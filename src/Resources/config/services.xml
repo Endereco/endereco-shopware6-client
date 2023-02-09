@@ -42,6 +42,7 @@
             <argument type="service" id="Endereco\Shopware6Client\Service\EnderecoService" />
             <argument type="service" id="customer_address.repository"/>
             <argument type="service" id="country.repository"/>
+            <argument type="service" id="request_stack"/>
         </service>
 
         <service id="Endereco\Shopware6Client\Subscriber\CheckoutSubscriber">

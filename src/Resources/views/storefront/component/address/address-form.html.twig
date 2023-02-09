@@ -4,23 +4,27 @@
     {{ parent() }}
     {% if page.endereco_config.pluginActive and ( not page.endereco_config.controllerOnlyWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
         <input
-                type="hidden"
-                name="endereco_data_marker" value="ams"
-                data-container-selector = "form"
-                data-container-type = "form"
-                data-used-prefix = "{{ prefix }}"
-                data-has-object = "no"
-                data-name = ""
-                data-type = ""
-                data-country-code-selector = "{{ prefix }}[countryId]"
-                data-subdivision-code-selector = "{{ prefix }}[countryStateId]"
-                data-postal-code-selector = "{{ prefix }}[zipcode]"
-                data-locality-selector = "{{ prefix }}[city]"
-                data-street-full-selector = "{{ prefix }}[street]"
-                data-phone-selector = "{{ prefix }}[phoneNumber]"
-                data-street-selector = "{{ prefix }}[enderecoStreet]"
-                data-house-number-selector = "{{ prefix }}[enderecoHousenumber]"
+            type="hidden"
+            name="endereco_data_marker" value="ams"
+            data-container-selector="form"
+            data-container-type="form"
+            data-used-prefix="{{ prefix }}"
+            data-has-object="no"
+            data-name=""
+            data-type=""
+            data-country-code-selector="{{ prefix }}[countryId]"
+            data-subdivision-code-selector="{{ prefix }}[countryStateId]"
+            data-postal-code-selector="{{ prefix }}[zipcode]"
+            data-locality-selector="{{ prefix }}[city]"
+            data-street-full-selector="{{ prefix }}[street]"
+            data-phone-selector="{{ prefix }}[phoneNumber]"
+            data-street-selector="{{ prefix }}[enderecoStreet]"
+            data-house-number-selector="{{ prefix }}[enderecoHousenumber]"
         >
+
+        {% if not data or data.get('extensions').enderecoAddress.isAddressChecked %}
+                <input type="hidden" name="{{ prefix }}[amsChecked]" value="{{ constant('Endereco\\Shopware6Client\\Entity\\EnderecoAddressExtension\\EnderecoAddressExtensionEntity::AMS_STATUS_CHECKED') }}">
+        {% endif %}
     {% endif %}
 {% endblock %}
 
