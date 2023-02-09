@@ -24,7 +24,7 @@ class AddressSubscriberTest extends TestCase
 {
     use ConfigTrait;
 
-    public function test_if_disabled_configuration_will_not_extend_validation()
+    public function testIfDisabledConfigurationWillNotExtendValidation()
     {
         $addressSubscriber = new AddressSubscriber(
             $this->getSystemConfigService(false),
@@ -44,7 +44,7 @@ class AddressSubscriberTest extends TestCase
         $addressSubscriber->onFormValidation($event);
     }
 
-    public function test_if_address_subscriber_will_extend_validation()
+    public function testIfAddressSubscriberWillExtendValidation()
     {
         $addressSubscriber = new AddressSubscriber(
             $this->getSystemConfigService(),
@@ -64,7 +64,7 @@ class AddressSubscriberTest extends TestCase
         $addressSubscriber->onFormValidation($event);
     }
 
-    public function test_check_if_given_request_endereco_data_will_be_joined_into_street()
+    public function testCheckIfGivenRequestEnderecoDataWillBeJoinedIntoStreet()
     {
         $enderecoServiceMock = $this->createConfiguredMock(EnderecoService::class, [
             'buildFullStreet' => 'Testing 44'
@@ -93,7 +93,7 @@ class AddressSubscriberTest extends TestCase
         $addressSubscriber->onFormValidation($event);
     }
 
-    public function test_if_address_subscriber_will_split_address_on_loaded_event()
+    public function testIfAddressSubscriberWillSplitAddressOnLoadedEvent()
     {
         $enderecoServiceMock = $this->createMock(EnderecoService::class);
         $addressSubscriber = new AddressSubscriber(
@@ -126,7 +126,7 @@ class AddressSubscriberTest extends TestCase
         $addressSubscriber->onAddressLoaded($event);
     }
 
-    public function test_if_address_subscriber_will_not_split_address_on_loaded_event_when_they_are_same()
+    public function testIfAddressSubscriberWillNotSplitAddressOnLoadedEventWhenTheyAreSame()
     {
         $enderecoServiceMock = $this->createConfiguredMock(EnderecoService::class, [
             'buildFullStreet' => 'Testing 66'

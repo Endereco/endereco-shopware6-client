@@ -4,7 +4,7 @@ branch=$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,')
 
 # Make store version
 rm -rf EnderecoShopware6ClientStore
-rsync -ar ./* ./EnderecoShopware6ClientStore
+rsync -ar --exclude 'vendor' --exclude 'node_modules' ./* ./EnderecoShopware6ClientStore
 
 # Clean up
 rm -rf EnderecoShopware6ClientStore/node_modules
@@ -32,7 +32,7 @@ rm -rf EnderecoShopware6ClientStore
 
 # Make github version
 rm -rf EnderecoShopware6Client
-rsync -ar ./* ./EnderecoShopware6Client
+rsync -ar --exclude 'vendor' --exclude 'node_modules' --exclude "EnderecoShopware6ClientStore-$branch.zip" ./* ./EnderecoShopware6Client
 
 # Clean up
 rm -rf EnderecoShopware6Client/node_modules

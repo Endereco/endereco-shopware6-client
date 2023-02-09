@@ -31,7 +31,7 @@
 
  {% block component_address_form_street %}
      {% if page.endereco_config.pluginActive and page.endereco_config.enderecoSplitStreet %}
-         <div class="form-group col-md-6">
+         <div class="form-group col-8 col-md-4">
              {% if formViolations.getViolations("/enderecoStreet") is not empty %}
                  {% set violationPath = "/enderecoStreet" %}
              {% elseif formViolations.getViolations("/#{prefix}/enderecoStreet") is not empty %}
@@ -61,7 +61,7 @@
                  {% endif %}
              {% endblock %}
          </div>
-         <div class="form-group col-md-6">
+         <div class="form-group col-4 col-md-2">
              {% if formViolations.getViolations("/enderecoHousenumber") is not empty %}
                  {% set violationPath = "/enderecoHousenumber" %}
              {% elseif formViolations.getViolations("/#{prefix}/enderecoHousenumber") is not empty %}

@@ -28,9 +28,11 @@
         }
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "^3.7"
+        "squizlabs/php_codesniffer": "^3.7",
+        "phpunit/phpunit": "9.5.*"
     },
     "scripts": {
-        "cs-check": "php vendor/bin/phpcs --standard=PSR1,PSR2 ./src/**/*.php"
+        "cs-check": "php vendor/bin/phpcs --standard=PSR1,PSR2 ./src/**/*.php",
+        "unit-test": "php vendor/phpunit/phpunit/phpunit --bootstrap src/Test/bootstrap.php src/Test"
     }
 }

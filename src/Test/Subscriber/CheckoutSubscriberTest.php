@@ -21,7 +21,7 @@ class CheckoutSubscriberTest extends TestCase
 {
     use ConfigTrait;
 
-    public function test_if_checkout_subscriber_will_split_addresses_on_empty_endereco_address()
+    public function testIfCheckoutSubscriberWillSplitAddressesOnEmptyEnderecoAddress()
     {
         $enderecoServiceMock = $this->createMock(EnderecoService::class);
         $checkoutSubscriber = new CheckoutSubscriber(
@@ -45,8 +45,7 @@ class CheckoutSubscriberTest extends TestCase
                                 'getIso' => 'DE'
                             ])
                         ]),
-                    ]
-                )
+                    ])
             ])
         ]);
 
@@ -58,7 +57,7 @@ class CheckoutSubscriberTest extends TestCase
         $checkoutSubscriber->ensureAddressesAreSplit($event);
     }
 
-    public function test_if_checkout_subscriber_will_split_addresses_when_endereco_address_has_different_saved_data()
+    public function testIfCheckoutSubscriberWillSplitAddressesWhenEnderecoAddressHasDifferentSavedData()
     {
         $enderecoServiceMock = $this->createMock(EnderecoService::class);
         $checkoutSubscriber = new CheckoutSubscriber(
@@ -83,8 +82,7 @@ class CheckoutSubscriberTest extends TestCase
                             ])
                         ]),
                         'getActiveBillingAddress' => null
-                    ]
-                )
+                    ])
             ])
         ]);
 
@@ -96,7 +94,7 @@ class CheckoutSubscriberTest extends TestCase
         $checkoutSubscriber->ensureAddressesAreSplit($event);
     }
 
-    public function test_if_checkout_subscriber_will_not_split_addresses_when_endereco_address_is_same()
+    public function testIfCheckoutSubscriberWillNotSplitAddressesWhenEnderecoAddressIsSame()
     {
         $enderecoServiceMock = $this->createConfiguredMock(EnderecoService::class, [
             'buildFullStreet' => 'Testing 55'
@@ -123,8 +121,7 @@ class CheckoutSubscriberTest extends TestCase
                             ])
                         ]),
                         'getActiveBillingAddress' => null
-                    ]
-                )
+                    ])
             ])
         ]);
 
@@ -134,5 +131,4 @@ class CheckoutSubscriberTest extends TestCase
 
         $checkoutSubscriber->ensureAddressesAreSplit($event);
     }
-
 }
