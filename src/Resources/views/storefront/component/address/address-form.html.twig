@@ -22,9 +22,10 @@
             data-house-number-selector="{{ prefix }}[enderecoHousenumber]"
         >
 
-        {% if not data or data.get('extensions').enderecoAddress.isAddressChecked %}
-                <input type="hidden" name="{{ prefix }}[amsChecked]" value="{{ constant('Endereco\\Shopware6Client\\Entity\\EnderecoAddressExtension\\EnderecoAddressExtensionEntity::AMS_STATUS_CHECKED') }}">
-        {% endif %}
+
+        <input type="hidden" name="{{ prefix }}[amsChecked]"
+               value="{{ constant('Endereco\\Shopware6Client\\Entity\\EnderecoAddressExtension\\EnderecoAddressExtensionEntity::AMS_STATUS_CHECKED') }}">
+
     {% endif %}
 {% endblock %}
 

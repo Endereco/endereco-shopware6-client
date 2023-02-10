@@ -42,19 +42,15 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
         ];
     }
 
-    public function onAddressLoaded(EntityLoadedEvent $event)
+    public function onAddressLoaded(EntityLoadedEvent $event): void
     {
         $salesChannelId = $this->fetchSalesChannelId($event->getContext());
-        if (!$this->isStreetSplittingEnabled($salesChannelId)) {
-            return;
+
+        if ($this->isCheckAddressEnabled($salesChannelId)) {
+            $this->checkAddress($event);
         }
-
-        foreach ($event->getEntities() as $entity) {
-            if (!$entity instanceof CustomerAddressEntity) {
-                continue;
-            }
-
-            $this->ensureAddressIsSplit($event->getContext(), $entity);
+        if ($this->isStreetSplittingEnabled($salesChannelId)) {
+            $this->checkStreetField($event);
         }
     }
 
@@ -136,6 +132,32 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
             if (!empty($accountableSessionIds)) {
                 $this->enderecoService->closeSessions($accountableSessionIds, $event->getContext());
             }
+        }
+    }
+
+    private function checkAddress(EntityLoadedEvent $event): void
+    {
+        foreach ($event->getEntities() as $entity) {
+            if (!$entity instanceof CustomerAddressEntity) {
+                continue;
+            }
+            /* @var $enderecoAddress EnderecoAddressExtensionEntity */
+            $enderecoAddress = $entity->getExtension('enderecoAddress');
+
+            if (!$enderecoAddress->isAddressChecked()) {
+                $this->enderecoService->checkAddress($entity, $event->getContext());
+            }
+        }
+    }
+
+    private function checkStreetField(EntityLoadedEvent $event): void
+    {
+        foreach ($event->getEntities() as $entity) {
+            if (!$entity instanceof CustomerAddressEntity) {
+                continue;
+            }
+
+            $this->ensureAddressIsSplit($event->getContext(), $entity);
         }
     }
 

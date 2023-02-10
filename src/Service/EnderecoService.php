@@ -7,7 +7,10 @@ namespace Endereco\Shopware6Client\Service;
 use Endereco\Shopware6Client\Misc\EnderecoConstants;
 use Exception;
 use GuzzleHttp\Client;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use GuzzleHttp\Exception\RequestException;
 use Shopware\Core\Framework\Context;
@@ -26,17 +29,22 @@ class EnderecoService
 
     private EntityRepository $pluginRepository;
 
+    private EntityRepository $customerRepository;
+
     private LoggerInterface $logger;
 
     public function __construct(
         SystemConfigService $systemConfigService,
         EntityRepository    $pluginRepository,
+        EntityRepository    $customerRepository,
         LoggerInterface     $logger
-    ) {
+    )
+    {
         $this->httpClient = new Client(['timeout' => 3.0, 'connection_timeout' => 2.0]);
         $this->apiKey = $systemConfigService->getString('EnderecoShopware6Client.config.enderecoApiKey') ?? '';
         $this->serviceUrl = $systemConfigService->getString('EnderecoShopware6Client.config.enderecoRemoteUrl') ?? '';
         $this->pluginRepository = $pluginRepository;
+        $this->customerRepository = $customerRepository;
         $this->logger = $logger;
     }
 
@@ -101,6 +109,49 @@ class EnderecoService
             } catch (Throwable $e) {
                 $this->logger->warning('Serverside doConversion failed', ['error' => $e->getMessage()]);
             }
+        }
+    }
+
+    public function checkAddress(CustomerAddressEntity $address, Context $context): void
+    {
+        $customer = $this->fetchCustomerById($address->getCustomerId(), $context);
+        $locale = $customer->getLanguage()->getLocale();
+        $localeCode = explode('-', $locale->getCode())[0];
+        $payload = $this->preparePayload(
+            'addressCheck',
+            [
+                'country' => $address->getCountry()->getIso(),
+                'language' => $localeCode,
+                'postCode' => $address->getZipcode(),
+                'cityName' => $address->getCity(),
+                'streetFull' => $address->getStreet()
+            ]
+        );
+
+        try {
+            $response = $this->httpClient->post(
+                $this->serviceUrl,
+                array(
+                    'headers' => $this->prepareHeaders(
+                        $this->getEnderecoAgentInfo($context),
+                        $this->generateTid()
+                    ),
+                    'body' => json_encode($payload)
+                )
+            );
+
+
+            $result = json_decode($response->getBody()->getContents())->result;
+            //TODO handle result
+        } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $response = $e->getResponse();
+                if ($response && 500 <= $response->getStatusCode()) {
+                    $this->logger->error('Serverside checkAddress failed', ['error' => $e->getMessage()]);
+                }
+            }
+        } catch (Throwable $e) {
+            $this->logger->error('Serverside checkAddress failed', ['error' => $e->getMessage()]);
         }
     }
 
@@ -180,5 +231,13 @@ class EnderecoService
             'Endereco Shopware6 Client v%s',
             $this->pluginRepository->search($criteria, $context)->first()->getVersion()
         );
+    }
+
+    private function fetchCustomerById(string $customerId, Context $context): ?CustomerEntity
+    {
+        return $this->customerRepository->search(
+            (new Criteria([$customerId]))->addAssociation('language.locale'),
+            $context
+        )->first();
     }
 }

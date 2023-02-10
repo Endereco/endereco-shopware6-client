@@ -118,6 +118,15 @@ abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
                 ->getBool('EnderecoShopware6Client.config.enderecoSplitStreetAndHouseNumber', $salesChannelId);
     }
 
+    protected function isCheckAddressEnabled(?string $salesChannelId): bool
+    {
+        return
+            $this->systemConfigService
+                ->getBool('EnderecoShopware6Client.config.enderecoActiveInThisChannel', $salesChannelId) &&
+            $this->systemConfigService
+                ->getBool('EnderecoShopware6Client.config.enderecoCheckExistingAddress', $salesChannelId);
+    }
+
     protected function fetchSalesChannelId(Context $context): ?string
     {
         $source = $context->getSource();
