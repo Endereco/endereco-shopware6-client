@@ -16,29 +16,20 @@ use Shopware\Core\Framework\Event\DataMappingEvent;
 use Shopware\Core\Framework\Validation\BuildValidationEvent;
 use Shopware\Core\Framework\Validation\DataBag\DataBag;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 class AddressSubscriber extends AbstractEnderecoSubscriber
 {
-    private $requestStack;
-
-    public function __construct(SystemConfigService $systemConfigService, EnderecoService $enderecoService, EntityRepository $customerAddressRepository, EntityRepository $countryRepository, $requestStack)
-    {
-        $this->requestStack = $requestStack;
-        parent::__construct($systemConfigService, $enderecoService, $customerAddressRepository, $countryRepository);
-    }
-
     public static function getSubscribedEvents(): array
     {
         return [
             'framework.validation.address.create' => 'onFormValidation',
             'framework.validation.address.update' => 'onFormValidation',
-            'customer_address.loaded' => 'onAddressLoaded',
             CustomerEvents::MAPPING_ADDRESS_CREATE => 'onMappingCreate',
             CustomerEvents::MAPPING_REGISTER_ADDRESS_BILLING => 'onMappingCreate',
             CustomerEvents::MAPPING_REGISTER_ADDRESS_SHIPPING => 'onMappingCreate',
-            CustomerEvents::CUSTOMER_ADDRESS_WRITTEN_EVENT => 'extractAndAccountSessions'
+            CustomerEvents::CUSTOMER_ADDRESS_LOADED_EVENT => 'onAddressLoaded',
+            CustomerEvents::CUSTOMER_ADDRESS_WRITTEN_EVENT => [['extractAndAccountSessions'], ['clearAmsStatus']]
         ];
     }
 
@@ -46,11 +37,29 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
     {
         $salesChannelId = $this->fetchSalesChannelId($event->getContext());
 
+        if (is_null($salesChannelId)) {
+            return;
+        }
+
+        if ($this->isEnderecoActive($salesChannelId)) {
+            $this->checkEnderecoExtension($event);
+        }
+
         if ($this->isCheckAddressEnabled($salesChannelId)) {
             $this->checkAddress($event);
         }
         if ($this->isStreetSplittingEnabled($salesChannelId)) {
             $this->checkStreetField($event);
+        }
+    }
+
+    public function clearAmsStatus(EntityWrittenEvent $event): void
+    {
+        foreach ($event->getWriteResults() as $writeResult) {
+            $this->enderecoAddressExtensionRepository->upsert([[
+                'addressId' => $writeResult->getPrimaryKey(),
+                'amsStatus' => EnderecoAddressExtensionEntity::AMS_STATUS_NOT_CHECKED
+            ]], $event->getContext());
         }
     }
 
@@ -89,7 +98,7 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
 
         $enderecoStreet = $data->get('enderecoStreet');
         $enderecoHousenumber = $data->get('enderecoHousenumber');
-        $amsChecked = $data->get('amsChecked');
+
         if (!$enderecoStreet || !$enderecoHousenumber) {
             return;
         }
@@ -103,10 +112,6 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
             'street' => $enderecoStreet,
             'houseNumber' => $enderecoHousenumber
         ];
-
-        if ($amsChecked && in_array($amsChecked, EnderecoAddressExtensionEntity::AMS_STATUSES_MAP)) {
-            $enderecoExtension['amsStatus'] = $amsChecked;
-        }
         $output['extensions']['enderecoAddress'] = $enderecoExtension;
         $event->setOutput($output);
     }
@@ -135,15 +140,42 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
         }
     }
 
+    /**
+     * Creating new database entry for EnderecoAddressExtension if it's missing
+     */
+    private function checkEnderecoExtension(EntityLoadedEvent $event): void
+    {
+        foreach ($event->getEntities() as $entity) {
+            if (!$entity instanceof CustomerAddressEntity) {
+                continue;
+            }
+
+            $enderecoAddress = $entity->getExtension('enderecoAddress');
+
+            if ($enderecoAddress instanceof EnderecoAddressExtensionEntity) {
+                continue;
+            }
+
+            $this->enderecoAddressExtensionRepository->upsert([[
+                'addressId' => $entity->getId()
+            ]], $event->getContext());
+
+            $entity->addExtension('enderecoAddress', new EnderecoAddressExtensionEntity());
+        }
+    }
+
     private function checkAddress(EntityLoadedEvent $event): void
     {
         foreach ($event->getEntities() as $entity) {
             if (!$entity instanceof CustomerAddressEntity) {
                 continue;
             }
-            /* @var $enderecoAddress EnderecoAddressExtensionEntity */
+
             $enderecoAddress = $entity->getExtension('enderecoAddress');
 
+            if (!$enderecoAddress instanceof EnderecoAddressExtensionEntity) {
+                continue;
+            }
             if (!$enderecoAddress->isAddressChecked()) {
                 $this->enderecoService->checkAddress($entity, $event->getContext());
             }

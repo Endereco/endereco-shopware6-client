@@ -20,7 +20,9 @@ class Migration1675858542AddEnderecoAmsStatusColumn extends MigrationStep
     {
         $sql = <<<SQL
         ALTER TABLE `endereco_address_ext`
-            ADD COLUMN `ams_status` VARCHAR(30) NOT NULL DEFAULT 'not-checked' AFTER `address_id`;
+            ADD COLUMN `ams_status` VARCHAR(255) NOT NULL DEFAULT 'not-checked' AFTER `address_id`,
+            ADD COLUMN `ams_timestamp` INT NULL AFTER `ams_status`,
+            ADD COLUMN `ams_predictions` LONGTEXT NOT NULL DEFAULT '[]' AFTER `ams_timestamp`;
         SQL;
         $connection->executeStatement($sql);
     }

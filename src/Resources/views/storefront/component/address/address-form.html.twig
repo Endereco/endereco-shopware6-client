@@ -18,14 +18,18 @@
             data-locality-selector="{{ prefix }}[city]"
             data-street-full-selector="{{ prefix }}[street]"
             data-phone-selector="{{ prefix }}[phoneNumber]"
+            data-ams-status-selector="{{ prefix }}[amsStatus]"
+            data-ams-timestamp-selector="{{ prefix }}[amsTimestamp]"
+            data-ams-predictions-selector="{{ prefix }}[amsPredictions]"
             data-street-selector="{{ prefix }}[enderecoStreet]"
             data-house-number-selector="{{ prefix }}[enderecoHousenumber]"
         >
 
 
-        <input type="hidden" name="{{ prefix }}[amsChecked]"
-               value="{{ constant('Endereco\\Shopware6Client\\Entity\\EnderecoAddressExtension\\EnderecoAddressExtensionEntity::AMS_STATUS_CHECKED') }}">
 
+        <input type="hidden" name="{{ prefix }}[amsStatus]" value="{{ data.get('extensions')['enderecoAddress'].amsStatus }}">
+        <input type="hidden" name="{{ prefix }}[amsTimestamp]" value="{{ data.get('extensions')['enderecoAddress'].amsTimestamp }}">
+        <input type="hidden" name="{{ prefix }}[amsPredictions]" value="{{ data.get('extensions')['enderecoAddress'].amsPredictions|json_encode }}">
     {% endif %}
 {% endblock %}
 
