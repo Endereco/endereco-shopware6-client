@@ -7,6 +7,8 @@ namespace Endereco\Shopware6Client\Service;
 use Endereco\Shopware6Client\Misc\EnderecoConstants;
 use Exception;
 use GuzzleHttp\Client;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use GuzzleHttp\Exception\RequestException;
@@ -26,17 +28,29 @@ class EnderecoService
 
     private EntityRepository $pluginRepository;
 
+    private EntityRepository $customerRepository;
+
+    private EntityRepository $enderecoAddressExtensionRepository;
+
+    private EntityRepository $countryRepository;
+
     private LoggerInterface $logger;
 
     public function __construct(
         SystemConfigService $systemConfigService,
         EntityRepository    $pluginRepository,
+        EntityRepository    $customerRepository,
+        EntityRepository    $enderecoAddressExtensionRepository,
+        EntityRepository    $countryRepository,
         LoggerInterface     $logger
     ) {
         $this->httpClient = new Client(['timeout' => 3.0, 'connection_timeout' => 2.0]);
         $this->apiKey = $systemConfigService->getString('EnderecoShopware6Client.config.enderecoApiKey') ?? '';
         $this->serviceUrl = $systemConfigService->getString('EnderecoShopware6Client.config.enderecoRemoteUrl') ?? '';
         $this->pluginRepository = $pluginRepository;
+        $this->customerRepository = $customerRepository;
+        $this->enderecoAddressExtensionRepository = $enderecoAddressExtensionRepository;
+        $this->countryRepository = $countryRepository;
         $this->logger = $logger;
     }
 
@@ -101,6 +115,86 @@ class EnderecoService
             } catch (Throwable $e) {
                 $this->logger->warning('Serverside doConversion failed', ['error' => $e->getMessage()]);
             }
+        }
+    }
+
+    public function checkAddress(CustomerAddressEntity $address, Context $context): void
+    {
+        $customer = $this->fetchEntityById(
+            $address->getCustomerId(),
+            $this->customerRepository,
+            $context,
+            ['language.locale']
+        );
+        $country = $this->fetchEntityById($address->getCountryId(), $this->countryRepository, $context);
+        $locale = $customer->getLanguage()->getLocale();
+        $countryCode = strtoupper($country->getIso());
+        $localeCode = explode('-', $locale->getCode())[0];
+        $payload = $this->preparePayload(
+            'addressCheck',
+            [
+                'country' => $countryCode,
+                'language' => $localeCode,
+                'postCode' => $address->getZipcode(),
+                'cityName' => $address->getCity(),
+                'streetFull' => $address->getStreet()
+            ]
+        );
+
+        try {
+            $response = $this->httpClient->post(
+                $this->serviceUrl,
+                array(
+                    'headers' => $this->prepareHeaders(
+                        $this->getEnderecoAgentInfo($context),
+                        $this->generateTid()
+                    ),
+                    'body' => json_encode($payload)
+                )
+            );
+
+
+            $result = json_decode($response->getBody()->getContents(), true)['result'];
+
+            $statuses = implode(',', $result['status'] ?? '');
+            $predictions = [];
+
+            foreach ($result['predictions'] as $prediction) {
+                $tempAddress = array(
+                    'countryCode' => $prediction['country'] ?: $countryCode,
+                    'postalCode' => $prediction['postCode'],
+                    'locality' => $prediction['cityName'],
+                    'streetName' => $prediction['street'],
+                    'buildingNumber' => $prediction['houseNumber']
+                );
+
+                if (array_key_exists('additionalInfo', $prediction)) {
+                    $tempAddress['additionalInfo'] = $prediction['additionalInfo'];
+                }
+
+                if (array_key_exists('subdivisionCode', $prediction)) {
+                    $tempAddress['subdivisionCode'] = $prediction['subdivisionCode'];
+                }
+
+                $predictions[] = $tempAddress;
+            }
+
+
+            $this->enderecoAddressExtensionRepository->upsert([[
+                'addressId' => $address->getId(),
+                'amsStatus' => $statuses,
+                'amsPredictions' => $predictions,
+                'amsTimestamp' => time()
+            ]], $context);
+        } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $response = $e->getResponse();
+                if ($response && 500 <= $response->getStatusCode()) {
+                    $this->logger->error('Serverside checkAddress failed', ['error' => $e->getMessage()]);
+                }
+            }
+        } catch (Throwable $e) {
+            $this->logger->error('Serverside checkAddress failed', ['error' => $e->getMessage()]);
         }
     }
 
@@ -180,5 +274,21 @@ class EnderecoService
             'Endereco Shopware6 Client v%s',
             $this->pluginRepository->search($criteria, $context)->first()->getVersion()
         );
+    }
+
+    private function fetchEntityById(
+        string           $id,
+        EntityRepository $repository,
+        Context          $context,
+        array            $associations = []
+    ): ?Entity {
+        $criteria = new Criteria([$id]);
+        if (!empty($associations)) {
+            $criteria->addAssociations($associations);
+        }
+        return $repository->search(
+            $criteria,
+            $context
+        )->first();
     }
 }

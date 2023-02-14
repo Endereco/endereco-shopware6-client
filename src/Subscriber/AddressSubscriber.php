@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Endereco\Shopware6Client\Subscriber;
 
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoAddressExtensionEntity;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Checkout\Customer\CustomerEvents;
 use Shopware\Core\Framework\Context;
@@ -22,27 +23,39 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
         return [
             'framework.validation.address.create' => 'onFormValidation',
             'framework.validation.address.update' => 'onFormValidation',
-            'customer_address.loaded' => 'onAddressLoaded',
             CustomerEvents::MAPPING_ADDRESS_CREATE => 'onMappingCreate',
             CustomerEvents::MAPPING_REGISTER_ADDRESS_BILLING => 'onMappingCreate',
             CustomerEvents::MAPPING_REGISTER_ADDRESS_SHIPPING => 'onMappingCreate',
-            CustomerEvents::CUSTOMER_ADDRESS_WRITTEN_EVENT => 'extractAndAccountSessions'
+            CustomerEvents::CUSTOMER_ADDRESS_LOADED_EVENT => 'onAddressLoaded',
+            CustomerEvents::CUSTOMER_ADDRESS_WRITTEN_EVENT => [['extractAndAccountSessions'], ['clearAmsStatus']]
         ];
     }
 
-    public function onAddressLoaded(EntityLoadedEvent $event)
+    public function onAddressLoaded(EntityLoadedEvent $event): void
     {
         $salesChannelId = $this->fetchSalesChannelId($event->getContext());
-        if (!$this->isStreetSplittingEnabled($salesChannelId)) {
+        if (is_null($salesChannelId)) {
             return;
         }
+        if ($this->isEnderecoActive($salesChannelId)) {
+            $this->checkEnderecoExtension($event);
+        }
 
-        foreach ($event->getEntities() as $entity) {
-            if (!$entity instanceof CustomerAddressEntity) {
-                continue;
-            }
+        if ($this->isCheckAddressEnabled($salesChannelId)) {
+            $this->checkAddress($event);
+        }
+        if ($this->isStreetSplittingEnabled($salesChannelId)) {
+            $this->checkStreetField($event);
+        }
+    }
 
-            $this->ensureAddressIsSplit($event->getContext(), $entity);
+    public function clearAmsStatus(EntityWrittenEvent $event): void
+    {
+        foreach ($event->getWriteResults() as $writeResult) {
+            $this->enderecoAddressExtensionRepository->upsert([[
+                'addressId' => $writeResult->getPrimaryKey(),
+                'amsStatus' => EnderecoAddressExtensionEntity::AMS_STATUS_NOT_CHECKED
+            ]], $event->getContext());
         }
     }
 
@@ -81,6 +94,7 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
 
         $enderecoStreet = $data->get('enderecoStreet');
         $enderecoHousenumber = $data->get('enderecoHousenumber');
+
         if (!$enderecoStreet || !$enderecoHousenumber) {
             return;
         }
@@ -90,10 +104,11 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
             $enderecoHousenumber,
             $country ? $country->getIso() : ''
         );
-        $output['extensions']['enderecoAddress'] = [
+        $enderecoExtension = [
             'street' => $enderecoStreet,
             'houseNumber' => $enderecoHousenumber
         ];
+        $output['extensions']['enderecoAddress'] = $enderecoExtension;
         $event->setOutput($output);
     }
 
@@ -121,6 +136,59 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
         }
     }
 
+    /**
+     * Creating new database entry for EnderecoAddressExtension if it's missing
+     */
+    private function checkEnderecoExtension(EntityLoadedEvent $event): void
+    {
+        foreach ($event->getEntities() as $entity) {
+            if (!$entity instanceof CustomerAddressEntity) {
+                continue;
+            }
+
+            $enderecoAddress = $entity->getExtension('enderecoAddress');
+
+            if ($enderecoAddress instanceof EnderecoAddressExtensionEntity) {
+                continue;
+            }
+
+            $this->enderecoAddressExtensionRepository->upsert([[
+                'addressId' => $entity->getId()
+            ]], $event->getContext());
+
+            $entity->addExtension('enderecoAddress', new EnderecoAddressExtensionEntity());
+        }
+    }
+
+    private function checkAddress(EntityLoadedEvent $event): void
+    {
+        foreach ($event->getEntities() as $entity) {
+            if (!$entity instanceof CustomerAddressEntity) {
+                continue;
+            }
+
+            $enderecoAddress = $entity->getExtension('enderecoAddress');
+
+            if (!$enderecoAddress instanceof EnderecoAddressExtensionEntity) {
+                continue;
+            }
+            if (!$enderecoAddress->isAddressChecked()) {
+                $this->enderecoService->checkAddress($entity, $event->getContext());
+            }
+        }
+    }
+
+    private function checkStreetField(EntityLoadedEvent $event): void
+    {
+        foreach ($event->getEntities() as $entity) {
+            if (!$entity instanceof CustomerAddressEntity) {
+                continue;
+            }
+
+            $this->ensureAddressIsSplit($event->getContext(), $entity);
+        }
+    }
+
     private function overrideStreetWithSplittedData(?DataBag $address, Context $context): void
     {
         if (!$address instanceof RequestDataBag) {
@@ -128,20 +196,41 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
         }
         $enderecoStreet = $address->get('enderecoStreet');
         $enderecoHousenumber = $address->get('enderecoHousenumber');
+        $street = $address->get('street');
         $countryId = $address->get('countryId');
+        if (!empty($countryId)) {
+            $country = $this->fetchCountry($countryId, $context);
+        }
         if (!empty($enderecoStreet) &&
             !empty($enderecoHousenumber) &&
-            !empty($countryId)
+            !empty($country)
         ) {
-            $country = $this->fetchCountry($countryId, $context);
             $address->set(
                 'street',
                 $this->enderecoService->buildFullStreet(
                     $enderecoStreet,
                     $enderecoHousenumber,
-                    $country ? $country->getIso() : ''
+                    $country->getIso()
                 )
             );
+            return;
+        }
+        if (!empty($street) && !empty($country)) {
+            list($street, $houseNumber) =
+                $this->enderecoService->splitStreet($street, $country->getIso(), $context);
+
+            if ($street) {
+                $address->set('enderecoStreet', $street);
+                $address->set('enderecoHousenumber', $houseNumber);
+                $address->set(
+                    'street',
+                    $this->enderecoService->buildFullStreet(
+                        $street,
+                        $houseNumber,
+                        $country->getIso()
+                    )
+                );
+            }
         }
     }
 }

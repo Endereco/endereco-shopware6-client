@@ -21,6 +21,9 @@
         <service id="Endereco\Shopware6Client\Service\EnderecoService" >
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="plugin.repository"/>
+            <argument type="service" id="customer.repository"/>
+            <argument type="service" id="endereco_address_ext.repository"/>
+            <argument type="service" id="country.repository"/>
             <argument type="service" id="Endereco\Shopware6Client\Logger" />
         </service>
         <service id="Endereco\Shopware6Client\Service\AddDataToPage" >
@@ -41,7 +44,9 @@
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="Endereco\Shopware6Client\Service\EnderecoService" />
             <argument type="service" id="customer_address.repository"/>
+            <argument type="service" id="endereco_address_ext.repository"/>
             <argument type="service" id="country.repository"/>
+
         </service>
 
         <service id="Endereco\Shopware6Client\Subscriber\CheckoutSubscriber">
@@ -49,6 +54,7 @@
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="Endereco\Shopware6Client\Service\EnderecoService" />
             <argument type="service" id="customer_address.repository"/>
+            <argument type="service" id="endereco_address_ext.repository"/>
             <argument type="service" id="country.repository"/>
         </service>
     </services>

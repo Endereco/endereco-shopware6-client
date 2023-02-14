@@ -165,6 +165,9 @@
                   var houseNumberSelector = MarkerElement.getAttribute('data-house-number-selector');
                   var subdivisionCodeSelector = MarkerElement.getAttribute('data-subdivision-code-selector');
                   var phoneSelector = MarkerElement.getAttribute('data-phone-selector');
+                  var amsStatusSelector = MarkerElement.getAttribute('data-ams-status-selector');
+                  var amsTimestampSelector = MarkerElement.getAttribute('data-ams-timestamp-selector');
+                  var amsPredictionsSelector = MarkerElement.getAttribute('data-ams-predictions-selector');
                   var isAjax = false;
                   var EAO = window.EnderecoIntegrator.initAMS(
                           {
@@ -175,6 +178,9 @@
                             streetFull: `[data-endereco-ams-form-id="${formId}"] [name="${streetFullSelector}"]`,
                             streetName: `[data-endereco-ams-form-id="${formId}"] [name="${streetSelector}"]`,
                             buildingNumber: `[data-endereco-ams-form-id="${formId}"] [name="${houseNumberSelector}"]`,
+                              addressStatus:  `[data-endereco-ams-form-id="${formId}"] [name="${amsStatusSelector}"]`,
+                              addressTimestamp:  `[data-endereco-ams-form-id="${formId}"] [name="${amsTimestampSelector}"]`,
+                              addressPredictions:  `[data-endereco-ams-form-id="${formId}"] [name="${amsPredictionsSelector}"]`
                           }, {
                             name: `ams_${prefix}_${formId}`,
                             addressType: 'general_address'

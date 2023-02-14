@@ -346,6 +346,13 @@
             <label lang="de-DE">Straße in Straßenname und Hausnummer unterteilen</label>
             <defaultValue>false</defaultValue>
         </input-field>
+
+        <input-field type="bool">
+            <name>enderecoCheckExistingAddress</name>
+            <label>Existing customers who have not yet been checked are automatically checked when they log in and access an address form page</label>
+            <label lang="de-DE">Bestandskunden, die noch nicht geprüft wurden, werden bei einem Login und Aufruf einer Adressformular-Seite automatisch geprüft.</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
     </card>
 
     <card>

@@ -20,6 +20,7 @@ abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
     protected SystemConfigService $systemConfigService;
     protected EnderecoService $enderecoService;
     protected EntityRepository $customerAddressRepository;
+    protected EntityRepository $enderecoAddressExtensionRepository;
     protected EntityRepository $countryRepository;
 
     private array $countryMemCache = [];
@@ -28,11 +29,13 @@ abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
         SystemConfigService $systemConfigService,
         EnderecoService     $enderecoService,
         EntityRepository    $customerAddressRepository,
+        EntityRepository    $enderecoAddressExtensionRepository,
         EntityRepository    $countryRepository
     ) {
         $this->enderecoService = $enderecoService;
         $this->systemConfigService = $systemConfigService;
         $this->customerAddressRepository = $customerAddressRepository;
+        $this->enderecoAddressExtensionRepository = $enderecoAddressExtensionRepository;
         $this->countryRepository = $countryRepository;
     }
 
@@ -77,15 +80,11 @@ abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
         list($street, $houseNumber) = $this->enderecoService->splitStreet($address->getStreet(), $countryIso, $context);
 
         if ($street) {
-            $this->customerAddressRepository->update(
+            $this->enderecoAddressExtensionRepository->upsert(
                 [[
-                    'id' => $address->getId(),
-                    'extensions' => [
-                        'enderecoAddress' => [
-                            'street' => $street,
-                            'houseNumber' => $houseNumber
-                        ]
-                    ]
+                    'addressId' => $address->getId(),
+                    'street' => $street,
+                    'houseNumber' => $houseNumber
                 ]],
                 $context
             );
@@ -109,13 +108,26 @@ abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
             $this->countryRepository->search(new Criteria([$countryId]), $context)->first();
     }
 
+    protected function isEnderecoActive(?string $salesChannelId): bool
+    {
+        return $this->systemConfigService
+            ->getBool('EnderecoShopware6Client.config.enderecoActiveInThisChannel', $salesChannelId);
+    }
+
     protected function isStreetSplittingEnabled(?string $salesChannelId): bool
     {
         return
-            $this->systemConfigService
-                ->getBool('EnderecoShopware6Client.config.enderecoActiveInThisChannel', $salesChannelId) &&
+            $this->isEnderecoActive($salesChannelId) &&
             $this->systemConfigService
                 ->getBool('EnderecoShopware6Client.config.enderecoSplitStreetAndHouseNumber', $salesChannelId);
+    }
+
+    protected function isCheckAddressEnabled(?string $salesChannelId): bool
+    {
+        return
+            $this->isEnderecoActive($salesChannelId) &&
+            $this->systemConfigService
+                ->getBool('EnderecoShopware6Client.config.enderecoCheckExistingAddress', $salesChannelId);
     }
 
     protected function fetchSalesChannelId(Context $context): ?string

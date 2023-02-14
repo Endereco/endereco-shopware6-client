@@ -28,6 +28,7 @@ class CheckoutSubscriberTest extends TestCase
             $this->getSystemConfigService(),
             $enderecoServiceMock,
             $this->createMock(EntityRepository::class),
+            $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class)
         );
 
@@ -63,6 +64,7 @@ class CheckoutSubscriberTest extends TestCase
         $checkoutSubscriber = new CheckoutSubscriber(
             $this->getSystemConfigService(),
             $enderecoServiceMock,
+            $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class)
         );
@@ -102,6 +104,7 @@ class CheckoutSubscriberTest extends TestCase
         $checkoutSubscriber = new CheckoutSubscriber(
             $this->getSystemConfigService(),
             $enderecoServiceMock,
+            $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class)
         );
