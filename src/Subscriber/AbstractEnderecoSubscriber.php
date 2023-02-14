@@ -31,8 +31,7 @@ abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
         EntityRepository    $customerAddressRepository,
         EntityRepository    $enderecoAddressExtensionRepository,
         EntityRepository    $countryRepository
-    )
-    {
+    ) {
         $this->enderecoService = $enderecoService;
         $this->systemConfigService = $systemConfigService;
         $this->customerAddressRepository = $customerAddressRepository;
@@ -66,8 +65,7 @@ abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
     private function isEnderecoAddressValid(
         EnderecoAddressExtensionEntity $enderecoAddress,
         CustomerAddressEntity          $address
-    ): bool
-    {
+    ): bool {
         $enderecoFullStreet = $this->enderecoService->buildFullStreet(
             $enderecoAddress->getStreet(),
             $enderecoAddress->getHouseNumber(),
