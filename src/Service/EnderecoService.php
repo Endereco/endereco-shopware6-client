@@ -120,7 +120,12 @@ class EnderecoService
 
     public function checkAddress(CustomerAddressEntity $address, Context $context): void
     {
-        $customer = $this->fetchEntityById($address->getCustomerId(), $this->customerRepository, $context, ['language.locale']);
+        $customer = $this->fetchEntityById(
+            $address->getCustomerId(),
+            $this->customerRepository,
+            $context,
+            ['language.locale']
+        );
         $country = $this->fetchEntityById($address->getCountryId(), $this->countryRepository, $context);
         $locale = $customer->getLanguage()->getLocale();
         $countryCode = strtoupper($country->getIso());

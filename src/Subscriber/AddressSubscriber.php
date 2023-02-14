@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Endereco\Shopware6Client\Subscriber;
 
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoAddressExtensionEntity;
-use Endereco\Shopware6Client\Service\EnderecoService;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Checkout\Customer\CustomerEvents;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityLoadedEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityWrittenEvent;
 use Shopware\Core\Framework\Event\DataMappingEvent;
@@ -36,11 +34,9 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
     public function onAddressLoaded(EntityLoadedEvent $event): void
     {
         $salesChannelId = $this->fetchSalesChannelId($event->getContext());
-
         if (is_null($salesChannelId)) {
             return;
         }
-
         if ($this->isEnderecoActive($salesChannelId)) {
             $this->checkEnderecoExtension($event);
         }
