@@ -88,6 +88,9 @@ class AddDataToPage implements EventSubscriberInterface
         $configContainer->enderecoSplitStreet =
             $this->systemConfigService
                 ->get('EnderecoShopware6Client.config.enderecoSplitStreetAndHouseNumber', $salesChannelId);
+        $configContainer->enderecoCheckAddressEnabled =
+            $this->systemConfigService
+                ->get('EnderecoShopware6Client.config.enderecoCheckExistingAddress', $salesChannelId);
 
         $configContainer->pluginActive =
             $this->systemConfigService
