@@ -1,0 +1,17 @@
+{% sw_extends '@Storefront/storefront/page/checkout/confirm/confirm-address.html.twig' %}
+
+{% block page_checkout_confirm_address %}
+    {% set checkAddressEnabled = page.endereco_config.enderecoCheckAddressEnabled %}
+    {% set billingNeedsCorrection = checkAddressEnabled and billingAddress.extensions.enderecoAddress.needsCorrection() %}
+    {% set shippingNeedsCorrection = checkAddressEnabled and (billingAddress.id is not same as shippingAddress.id) ? shippingAddress.extensions.enderecoAddress.needsCorrection() : false %}
+    {% set options = {
+        billingNeedsCorrection: billingNeedsCorrection,
+        shippingNeedsCorrection: shippingNeedsCorrection
+    } %}
+
+    <div
+        class="row js-confirm-overview-addresses"{% if billingNeedsCorrection or shippingNeedsCorrection %} data-endereco-checkout-address data-endereco-checkout-address-options="{{ options|json_encode }}"{% endif %}>
+        {{ block("page_checkout_confirm_address_billing") }}
+        {{ block("page_checkout_confirm_address_shipping") }}
+    </div>
+{% endblock %}

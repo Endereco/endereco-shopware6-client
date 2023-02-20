@@ -97,6 +97,9 @@ class EnderecoAddressExtensionEntity extends Entity
 
     public function needsCorrection(): bool
     {
-        return $this->amsStatus === self::AMS_STATUS_NOT_CHECKED || str_contains($this->amsStatus, 'needs_correction');
+        return
+            $this->amsStatus === self::AMS_STATUS_NOT_CHECKED ||
+            str_contains($this->amsStatus, 'needs_correction') ||
+            str_contains($this->amsStatus, 'not_found');
     }
 }
