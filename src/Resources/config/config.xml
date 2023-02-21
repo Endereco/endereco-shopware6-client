@@ -46,6 +46,23 @@
     </card>
 
     <card>
+        <title>Personal Data Management Service</title>
+        <input-field type="bool">
+            <name>enderecoEmailCheckActive</name>
+            <label>Activate e-mail address verification</label>
+            <label lang="de-DE">E-Mail Adressprüfung aktivieren</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>enderecoNameCheckActive</name>
+            <label>Activate name check and set salutation automatically</label>
+            <label lang="de-DE">Namensprüfung aktivieren und Anrede automatisch setzen</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
+    </card>
+
+    <card>
         <title>Address-Management Service</title>
 
         <input-field type="bool">
@@ -351,20 +368,6 @@
             <name>enderecoCheckExistingAddress</name>
             <label>Existing customers who have not yet been checked are automatically checked when they log in and access an address form page</label>
             <label lang="de-DE">Bestandskunden, die noch nicht geprüft wurden, werden bei einem Login und Aufruf einer Adressformular-Seite automatisch geprüft.</label>
-            <defaultValue>false</defaultValue>
-        </input-field>
-
-        <input-field type="bool">
-            <name>enderecoEmailCheckActive</name>
-            <label>Activate e-mail address verification</label>
-            <label lang="de-DE">E-Mail Adressprüfung aktivieren</label>
-            <defaultValue>false</defaultValue>
-        </input-field>
-
-        <input-field type="bool">
-            <name>enderecoNameCheckActive</name>
-            <label>Activate name check and set salutation automatically</label>
-            <label lang="de-DE">Namensprüfung aktivieren und Anrede automatisch setzen</label>
             <defaultValue>false</defaultValue>
         </input-field>
     </card>
