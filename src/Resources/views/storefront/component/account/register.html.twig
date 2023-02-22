@@ -1,0 +1,16 @@
+{% sw_extends '@Storefront/storefront/component/account/register.html.twig' %}
+
+{% block component_account_register_personal_mail_input %}
+    {{ parent() }}
+
+    <input
+        type="hidden"
+        name="endereco_data_marker"
+        value="email"
+        data-container-selector="form"
+        data-container-type="form"
+        data-used-prefix="register"
+        data-has-object="no"
+        data-email-selector="email"
+    >
+{% endblock %}
