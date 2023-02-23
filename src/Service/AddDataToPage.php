@@ -97,6 +97,9 @@ class AddDataToPage implements EventSubscriberInterface
         $configContainer->enderecoNameCheckActive =
             $this->systemConfigService
                 ->get('EnderecoShopware6Client.config.enderecoNameCheckActive', $salesChannelId);
+        $configContainer->enderecoShowEmailStatus =
+            $this->systemConfigService
+                ->get('EnderecoShopware6Client.config.enderecoShowEmailStatus', $salesChannelId);
 
         $configContainer->pluginActive =
             $this->systemConfigService

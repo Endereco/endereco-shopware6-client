@@ -60,6 +60,13 @@
             <label lang="de-DE">Namensprüfung aktivieren und Anrede automatisch setzen</label>
             <defaultValue>false</defaultValue>
         </input-field>
+
+        <input-field type="bool">
+            <name>enderecoShowEmailStatus</name>
+            <label>Display email status messages</label>
+            <label lang="de-DE">E-Mail Statusmeldungen anzeigen</label>
+            <defaultValue>true</defaultValue>
+        </input-field>
     </card>
 
     <card>

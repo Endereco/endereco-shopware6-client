@@ -2,6 +2,18 @@
 
 {% block layout_head_meta_tags %}
   {% if page.endereco_config.pluginActive and ( not page.endereco_config.controllerOnlyWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
+      {% set mrSalutationId = null %}
+      {% set mrsSalutationId = null %}
+      {% if page.salutations %}
+          {% for salutation in page.salutations -%}
+              {% if salutation.salutationKey is same as 'mr' %}
+                  {% set mrSalutationId = salutation.id %}
+              {% endif %}
+              {% if salutation.salutationKey is same as 'mrs' %}
+                  {% set mrsSalutationId = salutation.id %}
+              {% endif %}
+          {% endfor %}
+      {% endif %}
   <script>
     if (undefined === window.EnderecoIntegrator) {
       window.EnderecoIntegrator = {};
@@ -65,6 +77,13 @@
       } else  {
         window.EnderecoIntegrator.config.apiUrl = '{{ asset('bundles/enderecoshopware6client/io.php') }}';
       }
+        {% if mrSalutationId %}
+        window.EnderecoIntegrator.mappings.gender.M = '{{ mrSalutationId }}'
+        {% endif %}
+
+        {% if mrsSalutationId %}
+        window.EnderecoIntegrator.mappings.gender.F = '{{ mrsSalutationId }}'
+        {% endif %}
 
       window.EnderecoIntegrator.config.apiKey = '{{ page.endereco_config.enderecoApiKey }}';
       window.EnderecoIntegrator.config.showDebugInfo = false;
@@ -75,7 +94,7 @@
       window.EnderecoIntegrator.config.ux.checkExisting = false;
       window.EnderecoIntegrator.config.ux.resumeSubmit = !!('{{ page.endereco_config.enderecoContinueSubmit }}');
       window.EnderecoIntegrator.config.ux.useStandardCss = true;
-      window.EnderecoIntegrator.config.ux.showEmailStatus = false;
+      window.EnderecoIntegrator.config.ux.showEmailStatus = !!('{{ page.endereco_config.enderecoShowEmailStatus }}');
       window.EnderecoIntegrator.config.ux.allowCloseModal = !!('{{ page.endereco_config.enderecoAllowCloseIcon }}');
       window.EnderecoIntegrator.config.ux.confirmWithCheckbox = !!('{{ page.endereco_config.enderecoConfirmWithCheckbox }}');
       window.EnderecoIntegrator.config.ux.changeFieldsOrder = true;
@@ -239,13 +258,25 @@
                     });
                   }
                 }
-                if ('email' === MarkerElement.value) {
+                if ('email' === markerValue) {
                     var emailSelector = MarkerElement.getAttribute('data-email-selector');
                     enderecoInitES({
                         'email': `[data-endereco-${markerValue}-form-id="${formId}"] [name="${emailSelector}"]`,
                     },{
-                        name: `ams_${prefix}_${formId}`,
+                        name: `${markerValue}_${prefix}_${formId}`,
                     });
+                }
+                if ('personal' === markerValue) {
+                      var firstNameSelector = MarkerElement.getAttribute('data-first-name-selector');
+                      var lastNameSelector = MarkerElement.getAttribute('data-last-name-selector');
+                      var salutationSelector = MarkerElement.getAttribute('data-salutation-selector');
+                      enderecoInitPS({
+                          'firstName': `[data-endereco-${markerValue}-form-id="${formId}"] [name="${firstNameSelector}"]`,
+                          'lastName': `[data-endereco-${markerValue}-form-id="${formId}"] [name="${lastNameSelector}"]`,
+                          'salutation': `[data-endereco-${markerValue}-form-id="${formId}"] [name="${salutationSelector}"]`
+                      },{
+                          name: `${markerValue}_${prefix}_${formId}`,
+                      });
                 }
                 MarkerElement.setAttribute('data-has-object', 'yes');
               });
