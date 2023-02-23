@@ -2,6 +2,18 @@
 
 {% block layout_head_meta_tags %}
   {% if page.endereco_config.pluginActive and ( not page.endereco_config.controllerOnlyWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
+      {% set mrSalutationId = null %}
+      {% set mrsSalutationId = null %}
+      {% if page.salutations %}
+          {% for salutation in page.salutations -%}
+              {% if salutation.salutationKey is same as 'mr' %}
+                  {% set mrSalutationId = salutation.id %}
+              {% endif %}
+              {% if salutation.salutationKey is same as 'mrs' %}
+                  {% set mrsSalutationId = salutation.id %}
+              {% endif %}
+          {% endfor %}
+      {% endif %}
   <script>
     if (undefined === window.EnderecoIntegrator) {
       window.EnderecoIntegrator = {};
@@ -45,7 +57,7 @@
     }
 
     function enderecoInitPS(prefix, config) {
-      if (undefined !== window.EnderecoIntegrator.initEmailServices) {
+      if (undefined !== window.EnderecoIntegrator.initPersonServices) {
         window.EnderecoIntegrator.initPersonServices(prefix, config);
       } else {
         window.EnderecoIntegrator.onLoad.push(function () {
@@ -65,6 +77,13 @@
       } else  {
         window.EnderecoIntegrator.config.apiUrl = '{{ asset('bundles/enderecoshopware6client/io.php') }}';
       }
+        {% if mrSalutationId %}
+        window.EnderecoIntegrator.mappings.gender.M = '{{ mrSalutationId }}'
+        {% endif %}
+
+        {% if mrsSalutationId %}
+        window.EnderecoIntegrator.mappings.gender.F = '{{ mrsSalutationId }}'
+        {% endif %}
 
       window.EnderecoIntegrator.config.apiKey = '{{ page.endereco_config.enderecoApiKey }}';
       window.EnderecoIntegrator.config.showDebugInfo = false;
@@ -75,7 +94,7 @@
       window.EnderecoIntegrator.config.ux.checkExisting = false;
       window.EnderecoIntegrator.config.ux.resumeSubmit = !!('{{ page.endereco_config.enderecoContinueSubmit }}');
       window.EnderecoIntegrator.config.ux.useStandardCss = true;
-      window.EnderecoIntegrator.config.ux.showEmailStatus = false;
+      window.EnderecoIntegrator.config.ux.showEmailStatus = !!('{{ page.endereco_config.enderecoShowEmailStatus }}');
       window.EnderecoIntegrator.config.ux.allowCloseModal = !!('{{ page.endereco_config.enderecoAllowCloseIcon }}');
       window.EnderecoIntegrator.config.ux.confirmWithCheckbox = !!('{{ page.endereco_config.enderecoConfirmWithCheckbox }}');
       window.EnderecoIntegrator.config.ux.changeFieldsOrder = true;
@@ -148,15 +167,16 @@
             this.loop = setInterval( function() {
               document.querySelectorAll('[name="endereco_data_marker"][data-has-object="no"]').forEach( function(MarkerElement) {
                 var formElement = MarkerElement.closest('form');
+                var markerValue =  MarkerElement.value;
                 var formId = '';
-                if (formElement.getAttribute('data-endereco-ams-form-id')) {
-                  formId = formElement.getAttribute('data-endereco-ams-form-id');
+                if (formElement.getAttribute(`data-endereco-${markerValue}-form-id`)) {
+                  formId = formElement.getAttribute(`data-endereco-${markerValue}-form-id`);
                 } else {
                   formId = (Math.floor(Math.random() * 100) * Date.now()).toString(16);
-                  formElement.setAttribute('data-endereco-ams-form-id', formId);
+                  formElement.setAttribute(`data-endereco-${markerValue}-form-id`, formId);
                 }
-                if ('ams' === MarkerElement.value) {
-                  var prefix = MarkerElement.getAttribute('data-used-prefix');
+                var prefix = MarkerElement.getAttribute('data-used-prefix');
+                if ('ams' === markerValue) {
                   var countryCodeSelector = MarkerElement.getAttribute('data-country-code-selector');
                   var postalCodeSelector = MarkerElement.getAttribute('data-postal-code-selector');
                   var localitySelector = MarkerElement.getAttribute('data-locality-selector');
@@ -165,22 +185,21 @@
                   var houseNumberSelector = MarkerElement.getAttribute('data-house-number-selector');
                   var subdivisionCodeSelector = MarkerElement.getAttribute('data-subdivision-code-selector');
                   var phoneSelector = MarkerElement.getAttribute('data-phone-selector');
-                  var amsStatusSelector = MarkerElement.getAttribute('data-ams-status-selector');
-                  var amsTimestampSelector = MarkerElement.getAttribute('data-ams-timestamp-selector');
-                  var amsPredictionsSelector = MarkerElement.getAttribute('data-ams-predictions-selector');
-                  var isAjax = false;
+                  var amsStatusSelector = MarkerElement.getAttribute(`data-${markerValue}-status-selector`);
+                  var amsTimestampSelector = MarkerElement.getAttribute(`data-${markerValue}-timestamp-selector`);
+                  var amsPredictionsSelector = MarkerElement.getAttribute(`data-${markerValue}-predictions-selector`);
                   var EAO = window.EnderecoIntegrator.initAMS(
                           {
-                            countryCode: `[data-endereco-ams-form-id="${formId}"] [name="${countryCodeSelector}"]`,
-                            subdivisionCode:  `[data-endereco-ams-form-id="${formId}"] [name="${subdivisionCodeSelector}"]`,
-                            postalCode: `[data-endereco-ams-form-id="${formId}"] [name="${postalCodeSelector}"]`,
-                            locality: `[data-endereco-ams-form-id="${formId}"] [name="${localitySelector}"]`,
-                            streetFull: `[data-endereco-ams-form-id="${formId}"] [name="${streetFullSelector}"]`,
-                            streetName: `[data-endereco-ams-form-id="${formId}"] [name="${streetSelector}"]`,
-                            buildingNumber: `[data-endereco-ams-form-id="${formId}"] [name="${houseNumberSelector}"]`,
-                              addressStatus:  `[data-endereco-ams-form-id="${formId}"] [name="${amsStatusSelector}"]`,
-                              addressTimestamp:  `[data-endereco-ams-form-id="${formId}"] [name="${amsTimestampSelector}"]`,
-                              addressPredictions:  `[data-endereco-ams-form-id="${formId}"] [name="${amsPredictionsSelector}"]`
+                            countryCode: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${countryCodeSelector}"]`,
+                            subdivisionCode:  `[data-endereco-${markerValue}-form-id="${formId}"] [name="${subdivisionCodeSelector}"]`,
+                            postalCode: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${postalCodeSelector}"]`,
+                            locality: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${localitySelector}"]`,
+                            streetFull: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${streetFullSelector}"]`,
+                            streetName: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${streetSelector}"]`,
+                            buildingNumber: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${houseNumberSelector}"]`,
+                              addressStatus:  `[data-endereco-${markerValue}-form-id="${formId}"] [name="${amsStatusSelector}"]`,
+                              addressTimestamp:  `[data-endereco-${markerValue}-form-id="${formId}"] [name="${amsTimestampSelector}"]`,
+                              addressPredictions:  `[data-endereco-${markerValue}-form-id="${formId}"] [name="${amsPredictionsSelector}"]`
                           }, {
                             name: `ams_${prefix}_${formId}`,
                             addressType: 'general_address'
@@ -189,8 +208,8 @@
 
                   window.EnderecoIntegrator.initPhoneServices(
                       {
-                          phone: `[data-endereco-ams-form-id="${formId}"] [name="${phoneSelector}"]`,
-                          countryCode: `[data-endereco-ams-form-id="${formId}"] [name="${countryCodeSelector}"]`
+                          phone: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${phoneSelector}"]`,
+                          countryCode: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${countryCodeSelector}"]`
                       }, {
                           name: `phs_${prefix}_${formId}`,
                           addressType: 'general_address_phs'
@@ -198,7 +217,7 @@
                   );
 
                   // If ajax, add click listener.
-                  isAjax = 'true' === formElement.getAttribute('data-form-ajax-submit');
+                  var isAjax = 'true' === formElement.getAttribute('data-form-ajax-submit');
                   if (isAjax) {
                     formElement.querySelector('[type="submit"]').addEventListener('click', function(e) {
                       if (EAO.util.shouldBeChecked()) {
@@ -238,6 +257,26 @@
                       }
                     });
                   }
+                }
+                if ('email' === markerValue) {
+                    var emailSelector = MarkerElement.getAttribute('data-email-selector');
+                    enderecoInitES({
+                        'email': `[data-endereco-${markerValue}-form-id="${formId}"] [name="${emailSelector}"]`,
+                    },{
+                        name: `${markerValue}_${prefix}_${formId}`,
+                    });
+                }
+                if ('personal' === markerValue) {
+                      var firstNameSelector = MarkerElement.getAttribute('data-first-name-selector');
+                      var lastNameSelector = MarkerElement.getAttribute('data-last-name-selector');
+                      var salutationSelector = MarkerElement.getAttribute('data-salutation-selector');
+                      enderecoInitPS({
+                          'firstName': `[data-endereco-${markerValue}-form-id="${formId}"] [name="${firstNameSelector}"]`,
+                          'lastName': `[data-endereco-${markerValue}-form-id="${formId}"] [name="${lastNameSelector}"]`,
+                          'salutation': `[data-endereco-${markerValue}-form-id="${formId}"] [name="${salutationSelector}"]`
+                      },{
+                          name: `${markerValue}_${prefix}_${formId}`,
+                      });
                 }
                 MarkerElement.setAttribute('data-has-object', 'yes');
               });

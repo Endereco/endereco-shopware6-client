@@ -1,0 +1,37 @@
+{% sw_extends '@Storefront/storefront/page/account/profile/index.html.twig' %}
+
+
+{% block page_account_profile_personal_fields %}
+    {{ parent() }}
+
+    {% if page.endereco_config.pluginActive and ( not page.endereco_config.controllerOnlyWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
+        <input
+            type="hidden"
+            name="endereco_data_marker"
+            value="personal"
+            data-container-selector="form"
+            data-container-type="form"
+            data-used-prefix="account_profile"
+            data-has-object="no"
+            data-first-name-selector="firstName"
+            data-last-name-selector="lastName"
+            data-salutation-selector="salutation"
+        >
+    {% endif %}
+{% endblock %}
+
+{% block page_account_profile_mail_input %}
+    {{ parent() }}
+    {% if page.endereco_config.pluginActive and ( not page.endereco_config.controllerOnlyWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
+        <input
+            type="hidden"
+            name="endereco_data_marker"
+            value="email"
+            data-container-selector="form"
+            data-container-type="form"
+            data-used-prefix="account_profile"
+            data-has-object="no"
+            data-email-selector="email[email]"
+        >
+    {% endif %}
+{% endblock %}
