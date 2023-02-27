@@ -10,8 +10,8 @@ use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 class EnderecoAddressExtensionEntity extends Entity
 {
     protected string $addressId;
-    protected string $street;
-    protected string $houseNumber;
+    protected string $street = '';
+    protected string $houseNumber = '';
 
     protected ?CustomerAddressEntity $address = null;
 
