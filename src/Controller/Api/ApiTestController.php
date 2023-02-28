@@ -2,12 +2,12 @@
 
 namespace Endereco\Shopware6Client\Controller\Api;
 
-use Psr\Log\LoggerInterface;
+use Endereco\Shopware6Client\Service\EnderecoService;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use GuzzleHttp\Client;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 /**
@@ -15,80 +15,38 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class ApiTestController extends AbstractController
 {
-    /** @var LoggerInterface */
-    private $logger;
+    private EnderecoService $enderecoService;
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct(EnderecoService $enderecoService)
     {
-        $this->logger = $logger;
+        $this->enderecoService = $enderecoService;
     }
 
     /**
      * @Route("/api/_action/endereco-shopware6-client/verify", name="api.api-test.check")
      */
-    public function check(Request $request): JsonResponse
+    public function check(Request $request, Context  $context): JsonResponse
     {
-        return $this->checkAPICredetials($request);
+        return $this->checkAPICredentials($request, $context);
     }
 
     /**
      * @Route("/api/v{version}/_action/endereco-shopware6-client/verify", name="api.api-test.checkOld")
      */
-    public function checkOld(Request $request): JsonResponse
+    public function checkOld(Request $request, Context  $context): JsonResponse
     {
-        return $this->checkAPICredetials($request);
+        return $this->checkAPICredentials($request, $context);
     }
 
-    private function checkAPICredetials(Request $request): JsonResponse
+    private function checkAPICredentials(Request $request, Context  $context): JsonResponse
     {
-        $apiKey = $request->get('EnderecoShopware6Client.config.enderecoApiKey');
-        $endpointUrl = $request->get('EnderecoShopware6Client.config.enderecoRemoteUrl');
-
-        $success = false;
-
-        // Check the connection.
-        $readinessCheckRequest = array(
-            'jsonrpc' => '2.0',
-            'id' => 1,
-            'method' => 'readinessCheck',
-        );
-        $dataString = json_encode($readinessCheckRequest);
-
-        if (empty(trim($apiKey))) {
-            return new JsonResponse(['success' => $success]);
+        $apiKey = $request->get('EnderecoShopware6Client.config.enderecoApiKey', '');
+        $endpointUrl = $request->get('EnderecoShopware6Client.config.enderecoRemoteUrl', '');
+        if (empty(trim($apiKey)) || empty(trim($endpointUrl))) {
+            return new JsonResponse(['success' => false]);
         }
-
-        if (empty(trim($endpointUrl))) {
-            return new JsonResponse(['success' => $success]);
-        }
-
-        $enderecoAgentInfo = 'Endereco Shopware6 Client v1.0.0';
-        $guzzleClient = new Client(['timeout' => 3.0, 'connection_timeout' => 2.0]);
-        try {
-            $response = $guzzleClient->post(
-                $endpointUrl,
-                array(
-                    'headers' => [
-                        'Content-Type' => 'application/json',
-                        'X-Auth-Key' => $apiKey,
-                        'X-Transaction-Id' => 'not_required',
-                        'X-Transaction-Referer' => $_SERVER['HTTP_REFERER'],
-                        'X-Agent' => $enderecoAgentInfo,
-                    ],
-                    'body' => $dataString
-                )
-            );
-            $status = json_decode($response->getBody(), true);
-            if ('ready' === $status['result']['status']) {
-                $success = true;
-            } else {
-                $this->logger->warning("Credentials test failed", ['responseFromEndereco' => json_encode($status)]);
-            }
-        } catch (\Exception $e) {
-            $success = false;
-            $this->logger->warning("Credentials test failed", ['error' => $e->getMessage()]);
-        }
-
-        return new JsonResponse(['success' => $success]);
+        return  new JsonResponse([
+            'success' => $this->enderecoService->checkApiCredentials($endpointUrl, $apiKey, $context)
+        ]);
     }
 }

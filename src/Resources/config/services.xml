@@ -13,7 +13,7 @@
         </service>
 
         <service id="Endereco\Shopware6Client\Controller\Api\ApiTestController" public="true">
-            <argument type="service" id="Endereco\Shopware6Client\Logger" />
+            <argument type="service" id="Endereco\Shopware6Client\Service\EnderecoService" />
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>

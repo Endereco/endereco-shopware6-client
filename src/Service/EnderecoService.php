@@ -7,9 +7,12 @@ namespace Endereco\Shopware6Client\Service;
 use Endereco\Shopware6Client\Misc\EnderecoConstants;
 use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\System\Country\CountryEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use GuzzleHttp\Exception\RequestException;
 use Shopware\Core\Framework\Context;
@@ -52,17 +55,6 @@ class EnderecoService
         $this->enderecoAddressExtensionRepository = $enderecoAddressExtensionRepository;
         $this->countryRepository = $countryRepository;
         $this->logger = $logger;
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function generateTid(): string
-    {
-        $data = random_bytes(16);
-        $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
-        $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
-        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 
     /**
@@ -127,6 +119,9 @@ class EnderecoService
             ['language.locale']
         );
         $country = $this->fetchEntityById($address->getCountryId(), $this->countryRepository, $context);
+        if (!$country instanceof CountryEntity || !$customer instanceof CustomerEntity) {
+            return;
+        }
         $locale = $customer->getLanguage()->getLocale();
         $countryCode = strtoupper($country->getIso());
         $localeCode = explode('-', $locale->getCode())[0];
@@ -234,6 +229,33 @@ class EnderecoService
         return [$fullStreet, ''];
     }
 
+    public function checkApiCredentials(string $endpointUrl, string $apiKey, Context $context): bool
+    {
+        $headers = $this->prepareHeaders($this->getEnderecoAgentInfo($context));
+        $headers['X-Auth-Key'] = $apiKey;
+        try {
+            $response = $this->httpClient->post(
+                $endpointUrl,
+                array(
+                    'headers' => $headers,
+                    'body' => json_encode($this->preparePayload('readinessCheck'))
+                )
+            );
+
+
+            $status = json_decode($response->getBody()->getContents(), true);
+            if ('ready' === $status['result']['status']) {
+                return true;
+            } else {
+                $this->logger->warning("Credentials test failed", ['responseFromEndereco' => json_encode($status)]);
+            }
+        } catch (GuzzleException $e) {
+            $this->logger->warning("Credentials test failed", ['error' => $e->getMessage()]);
+        }
+
+        return false;
+    }
+
     public function buildFullStreet(string $street, string $housenumber, string $countryIso): string
     {
         $order =
@@ -290,5 +312,16 @@ class EnderecoService
             $criteria,
             $context
         )->first();
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function generateTid(): string
+    {
+        $data = random_bytes(16);
+        $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
+        $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 }
