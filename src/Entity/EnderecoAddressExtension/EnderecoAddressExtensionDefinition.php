@@ -17,7 +17,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
 
 class EnderecoAddressExtensionDefinition extends EntityDefinition
 {
-    private const ENTITY_NAME = 'endereco_address_ext';
+    public const ENTITY_NAME = 'endereco_address_ext';
 
     public function getEntityName(): string
     {
@@ -32,7 +32,12 @@ class EnderecoAddressExtensionDefinition extends EntityDefinition
     protected function defineFields(): FieldCollection
     {
         return new FieldCollection([
-            (new FkField('address_id', 'addressId', CustomerAddressDefinition::class))->addFlags(new Required(), new PrimaryKey()),
+            (new FkField(
+                'address_id',
+                'addressId',
+                CustomerAddressDefinition::class
+            )
+            )->addFlags(new Required(), new PrimaryKey()),
             (new StringField('ams_status', 'amsStatus')),
             (new IntField('ams_timestamp', 'amsTimestamp')),
             (new JsonField('ams_predictions', 'amsPredictions')),
