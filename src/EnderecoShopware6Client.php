@@ -2,6 +2,7 @@
 
 namespace Endereco\Shopware6Client;
 
+use Doctrine\DBAL\Exception;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Shopware\Core\Framework\Plugin\Context\InstallContext;
@@ -12,32 +13,26 @@ class EnderecoShopware6Client extends Plugin
 {
 
     /**
-     * @inheritDoc
+     * @throws Exception
      */
-    public function uninstall(UninstallContext $context): void
+    public function uninstall(UninstallContext $uninstallContext): void
     {
-        parent::uninstall($context);
+        parent::uninstall($uninstallContext);
 
-        (new PluginLifecycle($this->container))->uninstall($context);
+        (new PluginLifecycle($this->container))->uninstall($uninstallContext);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function install(InstallContext $context): void
+    public function install(InstallContext $installContext): void
     {
-        parent::install($context);
+        parent::install($installContext);
 
-        (new PluginLifecycle($this->container))->install($context);
+        (new PluginLifecycle($this->container))->install();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function update(UpdateContext $context): void
+    public function update(UpdateContext $updateContext): void
     {
-        parent::update($context);
+        parent::update($updateContext);
 
-        (new PluginLifecycle($this->container))->update($context);
+        (new PluginLifecycle($this->container))->update();
     }
 }
