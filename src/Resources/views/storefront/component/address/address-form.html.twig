@@ -17,7 +17,6 @@
             data-postal-code-selector="{{ prefix }}[zipcode]"
             data-locality-selector="{{ prefix }}[city]"
             data-street-full-selector="{{ prefix }}[street]"
-            data-phone-selector="{{ prefix }}[phoneNumber]"
             data-ams-status-selector="{{ prefix }}[amsStatus]"
             data-ams-timestamp-selector="{{ prefix }}[amsTimestamp]"
             data-ams-predictions-selector="{{ prefix }}[amsPredictions]"
@@ -25,11 +24,25 @@
             data-house-number-selector="{{ prefix }}[enderecoHousenumber]"
         >
 
+        <input
+            type="hidden"
+            name="endereco_data_marker" value="phone"
+            data-container-selector="form"
+            data-container-type="form"
+            data-used-prefix="{{ prefix }}"
+            data-has-object="no"
+            data-name=""
+            data-type=""
+            data-country-code-selector="{{ prefix }}[countryId]"
+            data-phone-selector="{{ prefix }}[phoneNumber]"
+        >
 
-
-        <input type="hidden" name="{{ prefix }}[amsStatus]" value="{{ data.get('extensions')['enderecoAddress'].amsStatus }}">
-        <input type="hidden" name="{{ prefix }}[amsTimestamp]" value="{{ data.get('extensions')['enderecoAddress'].amsTimestamp }}">
-        <input type="hidden" name="{{ prefix }}[amsPredictions]" value="{{ data.get('extensions')['enderecoAddress'].amsPredictions|json_encode }}">
+        <input type="hidden" name="{{ prefix }}[amsStatus]"
+               value="{{ data.get('extensions')['enderecoAddress'].amsStatus }}">
+        <input type="hidden" name="{{ prefix }}[amsTimestamp]"
+               value="{{ data.get('extensions')['enderecoAddress'].amsTimestamp }}">
+        <input type="hidden" name="{{ prefix }}[amsPredictions]"
+               value="{{ data.get('extensions')['enderecoAddress'].amsPredictions|json_encode }}">
     {% endif %}
 {% endblock %}
 

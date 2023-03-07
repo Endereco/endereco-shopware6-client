@@ -184,7 +184,6 @@
                   var streetSelector = MarkerElement.getAttribute('data-street-selector');
                   var houseNumberSelector = MarkerElement.getAttribute('data-house-number-selector');
                   var subdivisionCodeSelector = MarkerElement.getAttribute('data-subdivision-code-selector');
-                  var phoneSelector = MarkerElement.getAttribute('data-phone-selector');
                   var amsStatusSelector = MarkerElement.getAttribute(`data-${markerValue}-status-selector`);
                   var amsTimestampSelector = MarkerElement.getAttribute(`data-${markerValue}-timestamp-selector`);
                   var amsPredictionsSelector = MarkerElement.getAttribute(`data-${markerValue}-predictions-selector`);
@@ -204,16 +203,6 @@
                             name: `ams_${prefix}_${formId}`,
                             addressType: 'general_address'
                           }
-                  );
-
-                  window.EnderecoIntegrator.initPhoneServices(
-                      {
-                          phone: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${phoneSelector}"]`,
-                          countryCode: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${countryCodeSelector}"]`
-                      }, {
-                          name: `phs_${prefix}_${formId}`,
-                          addressType: 'general_address_phs'
-                      }
                   );
 
                   // If ajax, add click listener.
@@ -257,6 +246,19 @@
                       }
                     });
                   }
+                }
+                if ('phone' === markerValue) {
+                    var countryCodeSelector = MarkerElement.getAttribute('data-country-code-selector');
+                    var phoneSelector = MarkerElement.getAttribute('data-phone-selector');
+                    window.EnderecoIntegrator.initPhoneServices(
+                        {
+                            phone: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${phoneSelector}"]`,
+                            countryCode: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${countryCodeSelector}"]`
+                        }, {
+                            name: `phs_${prefix}_${formId}`,
+                            addressType: 'general_address_phs'
+                        }
+                    );
                 }
                 if ('email' === markerValue) {
                     var emailSelector = MarkerElement.getAttribute('data-email-selector');
