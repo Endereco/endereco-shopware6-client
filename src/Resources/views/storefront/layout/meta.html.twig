@@ -247,16 +247,17 @@
                     });
                   }
                 }
-                if ('phone' === markerValue) {
+                if ('phoneServices' === markerValue) {
                     var countryCodeSelector = MarkerElement.getAttribute('data-country-code-selector');
                     var phoneSelector = MarkerElement.getAttribute('data-phone-selector');
+                    var numberType = MarkerElement.getAttribute('data-number-type') ?? window.EnderecoIntegrator.config.defaultPhoneType;
                     window.EnderecoIntegrator.initPhoneServices(
                         {
                             phone: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${phoneSelector}"]`,
                             countryCode: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${countryCodeSelector}"]`
                         }, {
                             name: `phs_${prefix}_${formId}`,
-                            addressType: 'general_address_phs'
+                            numberType,
                         }
                     );
                 }
