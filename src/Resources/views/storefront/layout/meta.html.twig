@@ -258,7 +258,7 @@
                     });
                   }
                 }
-                if ('email' === markerValue) {
+                if ('emailServices' === markerValue) {
                     var emailSelector = MarkerElement.getAttribute('data-email-selector');
                     enderecoInitES({
                         'email': `[data-endereco-${markerValue}-form-id="${formId}"] [name="${emailSelector}"]`,
@@ -266,7 +266,7 @@
                         name: `${markerValue}_${prefix}_${formId}`,
                     });
                 }
-                if ('personal' === markerValue) {
+                if ('personServices' === markerValue) {
                       var firstNameSelector = MarkerElement.getAttribute('data-first-name-selector');
                       var lastNameSelector = MarkerElement.getAttribute('data-last-name-selector');
                       var salutationSelector = MarkerElement.getAttribute('data-salutation-selector');
