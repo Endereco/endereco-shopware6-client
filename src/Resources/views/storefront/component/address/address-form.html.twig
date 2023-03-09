@@ -12,16 +12,16 @@
             data-has-object="no"
             data-name=""
             data-type=""
-            data-country-code-selector="{{ prefix }}[countryId]"
-            data-subdivision-code-selector="{{ prefix }}[countryStateId]"
-            data-postal-code-selector="{{ prefix }}[zipcode]"
-            data-locality-selector="{{ prefix }}[city]"
-            data-street-full-selector="{{ prefix }}[street]"
-            data-ams-status-selector="{{ prefix }}[amsStatus]"
-            data-ams-timestamp-selector="{{ prefix }}[amsTimestamp]"
-            data-ams-predictions-selector="{{ prefix }}[amsPredictions]"
-            data-street-selector="{{ prefix }}[enderecoStreet]"
-            data-house-number-selector="{{ prefix }}[enderecoHousenumber]"
+            data-country-code-selector="[name='{{ prefix }}[countryId]']"
+            data-subdivision-code-selector="[name='{{ prefix }}[countryStateId]']"
+            data-postal-code-selector="[name='{{ prefix }}[zipcode]']"
+            data-locality-selector="[name='{{ prefix }}[city]']"
+            data-street-full-selector="[name='{{ prefix }}[street]']"
+            data-ams-status-selector="[name='{{ prefix }}[amsStatus]']"
+            data-ams-timestamp-selector="[name='{{ prefix }}[amsTimestamp]']"
+            data-ams-predictions-selector="[name='{{ prefix }}[amsPredictions]']"
+            data-street-selector="[name='{{ prefix }}[enderecoStreet]']"
+            data-house-number-selector="[name='{{ prefix }}[enderecoHousenumber]']"
         >
 
         <input
@@ -34,8 +34,8 @@
             data-has-object="no"
             data-name=""
             data-type=""
-            data-country-code-selector="{{ prefix }}[countryId]"
-            data-phone-selector="{{ prefix }}[phoneNumber]"
+            data-country-code-selector="[name='{{ prefix }}[countryId]']"
+            data-phone-selector="[name='{{ prefix }}[phoneNumber]']"
         >
 
         <input type="hidden" name="{{ prefix }}[amsStatus]"

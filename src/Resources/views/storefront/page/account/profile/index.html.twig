@@ -13,9 +13,9 @@
             data-container-type="form"
             data-used-prefix="account_profile"
             data-has-object="no"
-            data-first-name-selector="firstName"
-            data-last-name-selector="lastName"
-            data-salutation-selector="salutation"
+            data-first-name-selector="[name='firstName']"
+            data-last-name-selector="[name='lastName']"
+            data-salutation-selector="[name='salutation']"
         >
     {% endif %}
 {% endblock %}
@@ -31,7 +31,7 @@
             data-container-type="form"
             data-used-prefix="account_profile"
             data-has-object="no"
-            data-email-selector="email[email]"
+            data-email-selector="[name='email[email]']"
         >
     {% endif %}
 {% endblock %}
