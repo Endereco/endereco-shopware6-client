@@ -189,16 +189,16 @@
                   var amsPredictionsSelector = MarkerElement.getAttribute(`data-${markerValue}-predictions-selector`);
                   var EAO = window.EnderecoIntegrator.initAMS(
                           {
-                            countryCode: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${countryCodeSelector}"]`,
-                            subdivisionCode:  `[data-endereco-${markerValue}-form-id="${formId}"] [name="${subdivisionCodeSelector}"]`,
-                            postalCode: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${postalCodeSelector}"]`,
-                            locality: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${localitySelector}"]`,
-                            streetFull: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${streetFullSelector}"]`,
-                            streetName: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${streetSelector}"]`,
-                            buildingNumber: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${houseNumberSelector}"]`,
-                              addressStatus:  `[data-endereco-${markerValue}-form-id="${formId}"] [name="${amsStatusSelector}"]`,
-                              addressTimestamp:  `[data-endereco-${markerValue}-form-id="${formId}"] [name="${amsTimestampSelector}"]`,
-                              addressPredictions:  `[data-endereco-${markerValue}-form-id="${formId}"] [name="${amsPredictionsSelector}"]`
+                            countryCode: `[data-endereco-${markerValue}-form-id="${formId}"] ${countryCodeSelector}`,
+                            subdivisionCode:  `[data-endereco-${markerValue}-form-id="${formId}"] ${subdivisionCodeSelector}`,
+                            postalCode: `[data-endereco-${markerValue}-form-id="${formId}"] ${postalCodeSelector}`,
+                            locality: `[data-endereco-${markerValue}-form-id="${formId}"] ${localitySelector}`,
+                            streetFull: `[data-endereco-${markerValue}-form-id="${formId}"] ${streetFullSelector}`,
+                            streetName: `[data-endereco-${markerValue}-form-id="${formId}"] ${streetSelector}`,
+                            buildingNumber: `[data-endereco-${markerValue}-form-id="${formId}"] ${houseNumberSelector}`,
+                              addressStatus:  `[data-endereco-${markerValue}-form-id="${formId}"] ${amsStatusSelector}`,
+                              addressTimestamp:  `[data-endereco-${markerValue}-form-id="${formId}"] ${amsTimestampSelector}`,
+                              addressPredictions:  `[data-endereco-${markerValue}-form-id="${formId}"] ${amsPredictionsSelector}`
                           }, {
                             name: `ams_${prefix}_${formId}`,
                             addressType: 'general_address'
@@ -253,8 +253,8 @@
                     var numberType = MarkerElement.getAttribute('data-number-type') ?? window.EnderecoIntegrator.config.defaultPhoneType;
                     window.EnderecoIntegrator.initPhoneServices(
                         {
-                            phone: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${phoneSelector}"]`,
-                            countryCode: `[data-endereco-${markerValue}-form-id="${formId}"] [name="${countryCodeSelector}"]`
+                            phone: `[data-endereco-${markerValue}-form-id="${formId}"] ${phoneSelector}`,
+                            countryCode: `[data-endereco-${markerValue}-form-id="${formId}"] ${countryCodeSelector}`
                         }, {
                             name: `phs_${prefix}_${formId}`,
                             numberType,
@@ -264,7 +264,7 @@
                 if ('emailServices' === markerValue) {
                     var emailSelector = MarkerElement.getAttribute('data-email-selector');
                     enderecoInitES({
-                        'email': `[data-endereco-${markerValue}-form-id="${formId}"] [name="${emailSelector}"]`,
+                        'email': `[data-endereco-${markerValue}-form-id="${formId}"] ${emailSelector}`,
                     },{
                         name: `${markerValue}_${prefix}_${formId}`,
                     });
@@ -274,9 +274,9 @@
                       var lastNameSelector = MarkerElement.getAttribute('data-last-name-selector');
                       var salutationSelector = MarkerElement.getAttribute('data-salutation-selector');
                       enderecoInitPS({
-                          'firstName': `[data-endereco-${markerValue}-form-id="${formId}"] [name="${firstNameSelector}"]`,
-                          'lastName': `[data-endereco-${markerValue}-form-id="${formId}"] [name="${lastNameSelector}"]`,
-                          'salutation': `[data-endereco-${markerValue}-form-id="${formId}"] [name="${salutationSelector}"]`
+                          'firstName': `[data-endereco-${markerValue}-form-id="${formId}"] ${firstNameSelector}`,
+                          'lastName': `[data-endereco-${markerValue}-form-id="${formId}"] ${lastNameSelector}`,
+                          'salutation': `[data-endereco-${markerValue}-form-id="${formId}"] ${salutationSelector}`
                       },{
                           name: `${markerValue}_${prefix}_${formId}`,
                       });
