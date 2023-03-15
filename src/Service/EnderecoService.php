@@ -137,12 +137,13 @@ class EnderecoService
         );
 
         try {
+            $tid = $this->generateTid();
             $response = $this->httpClient->post(
                 $this->serviceUrl,
                 array(
                     'headers' => $this->prepareHeaders(
                         $this->getEnderecoAgentInfo($context),
-                        $this->generateTid()
+                        $tid
                     ),
                     'body' => json_encode($payload)
                 )
@@ -181,6 +182,9 @@ class EnderecoService
                 'amsPredictions' => $predictions,
                 'amsTimestamp' => time()
             ]], $context);
+
+
+            $this->doAccountings([$tid], $context);
         } catch (RequestException $e) {
             if ($e->hasResponse()) {
                 $response = $e->getResponse();
@@ -227,6 +231,69 @@ class EnderecoService
             $this->logger->error('Serverside splitStreet failed', ['error' => $e->getMessage()]);
         }
         return [$fullStreet, ''];
+    }
+
+    public function doAccountings(array $sessionIds, Context $context): void
+    {
+        if (empty($sessionIds)) {
+            return;
+        }
+
+        $hasAccounting = false;
+        foreach ($sessionIds as $sessionId) {
+            $payload = $this->preparePayload(
+                'doAccounting',
+                [
+                    'sessionId' => $sessionId
+                ]
+            );
+            try {
+                $this->httpClient->post(
+                    $this->serviceUrl,
+                    array(
+                        'headers' => $this->prepareHeaders($this->getEnderecoAgentInfo($context), $sessionId),
+                        'body' => json_encode($payload)
+                    )
+                );
+
+                $hasAccounting = true;
+            } catch (RequestException $e) {
+                if ($e->hasResponse()) {
+                    $response = $e->getResponse();
+                    if ($response && 500 <= $response->getStatusCode()) {
+                        $this->logger->error('Serverside doAccounting failed', ['error' => $e->getMessage()]);
+                    }
+                }
+            } catch (Throwable $e) {
+                $this->logger->error('Serverside doAccounting failed', ['error' => $e->getMessage()]);
+            }
+        }
+
+        if ($hasAccounting) {
+            $this->doConversion($context);
+        }
+    }
+
+    public function doConversion(Context $context): void
+    {
+        try {
+            $this->httpClient->post(
+                $this->serviceUrl,
+                array(
+                    'headers' => $this->prepareHeaders($this->getEnderecoAgentInfo($context)),
+                    'body' => json_encode($this->preparePayload('doConversion'))
+                )
+            );
+        } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $response = $e->getResponse();
+                if ($response && 500 <= $response->getStatusCode()) {
+                    $this->logger->error('Serverside doConversion failed', ['error' => $e->getMessage()]);
+                }
+            }
+        } catch (Throwable $e) {
+            $this->logger->error('Serverside doConversion failed', ['error' => $e->getMessage()]);
+        }
     }
 
     public function checkApiCredentials(string $endpointUrl, string $apiKey, Context $context): bool
