@@ -18,6 +18,9 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 class AddressSubscriber extends AbstractEnderecoSubscriber
 {
+    private array $checkedAddressIds = [];
+    private array $splittedAddressIds = [];
+
     public static function getSubscribedEvents(): array
     {
         return [
@@ -167,6 +170,10 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
                 continue;
             }
 
+            if (in_array($entity->getId(), $this->checkedAddressIds)) {
+                continue;
+            }
+
             $enderecoAddress = $entity->getExtension('enderecoAddress');
 
             if (!$enderecoAddress instanceof EnderecoAddressExtensionEntity) {
@@ -174,6 +181,7 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
             }
             if (!$enderecoAddress->isAddressChecked()) {
                 $this->enderecoService->checkAddress($entity, $event->getContext());
+                $this->checkedAddressIds[] = $entity->getId();
             }
         }
     }
@@ -185,7 +193,12 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
                 continue;
             }
 
+            if (in_array($entity->getId(), $this->splittedAddressIds)) {
+                continue;
+            }
+
             $this->ensureAddressIsSplit($event->getContext(), $entity);
+            $this->splittedAddressIds[] = $entity->getId();
         }
     }
 
