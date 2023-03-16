@@ -15,6 +15,8 @@ class EnderecoAddressExtensionEntity extends Entity
     protected string $amsStatus = self::AMS_STATUS_NOT_CHECKED;
     protected int $amsTimestamp = 0;
     protected array $amsPredictions = [];
+
+    protected bool $isPayPalAddress = false;
     protected string $street = '';
     protected string $houseNumber = '';
 
@@ -58,6 +60,16 @@ class EnderecoAddressExtensionEntity extends Entity
     public function setAmsPredictions(array $amsPredictions): void
     {
         $this->amsPredictions = $amsPredictions;
+    }
+
+    public function isPayPalAddress(): bool
+    {
+        return $this->isPayPalAddress;
+    }
+
+    public function setIsPayPalAddress(bool $isPayPalAddress): void
+    {
+        $this->isPayPalAddress = $isPayPalAddress;
     }
 
     public function getStreet(): string

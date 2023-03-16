@@ -14,6 +14,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\Country\CountryEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
 {
@@ -22,7 +23,7 @@ abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
     protected EntityRepository $customerAddressRepository;
     protected EntityRepository $enderecoAddressExtensionRepository;
     protected EntityRepository $countryRepository;
-
+    private RequestStack $requestStack;
     private array $countryMemCache = [];
 
     public function __construct(
@@ -30,13 +31,15 @@ abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
         EnderecoService     $enderecoService,
         EntityRepository    $customerAddressRepository,
         EntityRepository    $enderecoAddressExtensionRepository,
-        EntityRepository    $countryRepository
+        EntityRepository    $countryRepository,
+        RequestStack        $requestStack
     ) {
         $this->enderecoService = $enderecoService;
         $this->systemConfigService = $systemConfigService;
         $this->customerAddressRepository = $customerAddressRepository;
         $this->enderecoAddressExtensionRepository = $enderecoAddressExtensionRepository;
         $this->countryRepository = $countryRepository;
+        $this->requestStack = $requestStack;
     }
 
     abstract public static function getSubscribedEvents(): array;
@@ -128,6 +131,14 @@ abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
             $this->isEnderecoActive($salesChannelId) &&
             $this->systemConfigService
                 ->getBool('EnderecoShopware6Client.config.enderecoCheckExistingAddress', $salesChannelId);
+    }
+
+    protected function isCheckPayPalExpressAddressEnabled(?string $salesChannelId): bool
+    {
+        return
+            $this->isEnderecoActive($salesChannelId) &&
+            $this->systemConfigService
+                ->getBool('EnderecoShopware6Client.config.enderecoCheckPayPalExpressAddress', $salesChannelId);
     }
 
     protected function fetchSalesChannelId(Context $context): ?string

@@ -6,6 +6,7 @@ namespace Endereco\Shopware6Client\Entity\EnderecoAddressExtension;
 
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityDefinition;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\BoolField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\FkField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\PrimaryKey;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
@@ -41,6 +42,7 @@ class EnderecoAddressExtensionDefinition extends EntityDefinition
             (new StringField('ams_status', 'amsStatus')),
             (new IntField('ams_timestamp', 'amsTimestamp')),
             (new JsonField('ams_predictions', 'amsPredictions')),
+            (new BoolField('is_paypal_address', 'isPayPalAddress')),
             (new StringField('street', 'street')),
             (new StringField('house_number', 'houseNumber')),
             new OneToOneAssociationField('address', 'address_id', 'id', CustomerAddressDefinition::class, false)
