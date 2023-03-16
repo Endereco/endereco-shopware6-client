@@ -377,6 +377,13 @@
             <label lang="de-DE">Bestandskunden, die noch nicht geprüft wurden, werden bei einem Login und Aufruf einer Adressformular-Seite automatisch geprüft.</label>
             <defaultValue>false</defaultValue>
         </input-field>
+
+        <input-field type="bool">
+            <name>enderecoCheckPayPalExpressAddress</name>
+            <label>Check addresses from PayPal Express Checkout</label>
+            <label lang="de-DE">PayPal Express Checkout Adressen prüfen</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
     </card>
 
     <card>
