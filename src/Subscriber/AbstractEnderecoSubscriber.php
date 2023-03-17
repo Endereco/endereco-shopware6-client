@@ -23,7 +23,7 @@ abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
     protected EntityRepository $customerAddressRepository;
     protected EntityRepository $enderecoAddressExtensionRepository;
     protected EntityRepository $countryRepository;
-    private RequestStack $requestStack;
+    protected RequestStack $requestStack;
     private array $countryMemCache = [];
 
     public function __construct(

@@ -16,6 +16,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\System\Country\CountryEntity;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class CheckoutSubscriberTest extends TestCase
 {
@@ -29,7 +30,8 @@ class CheckoutSubscriberTest extends TestCase
             $enderecoServiceMock,
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
-            $this->createMock(EntityRepository::class)
+            $this->createMock(EntityRepository::class),
+            $this->createMock(RequestStack::class)
         );
 
         $event = $this->createConfiguredMock(CheckoutConfirmPageLoadedEvent::class, [
@@ -66,7 +68,8 @@ class CheckoutSubscriberTest extends TestCase
             $enderecoServiceMock,
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
-            $this->createMock(EntityRepository::class)
+            $this->createMock(EntityRepository::class),
+            $this->createMock(RequestStack::class)
         );
 
         $event = $this->createConfiguredMock(CheckoutConfirmPageLoadedEvent::class, [
@@ -106,7 +109,8 @@ class CheckoutSubscriberTest extends TestCase
             $enderecoServiceMock,
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
-            $this->createMock(EntityRepository::class)
+            $this->createMock(EntityRepository::class),
+            $this->createMock(RequestStack::class)
         );
 
         $event = $this->createConfiguredMock(CheckoutConfirmPageLoadedEvent::class, [
