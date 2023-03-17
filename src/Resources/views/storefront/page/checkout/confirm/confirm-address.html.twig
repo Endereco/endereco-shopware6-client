@@ -2,8 +2,18 @@
 
 {% block page_checkout_confirm_address %}
     {% set checkAddressEnabled = page.endereco_config.enderecoCheckAddressEnabled %}
+    {% set checkPayPalAddressEnabled = page.endereco_config.enderecoCheckPayPalExpressAddress %}
     {% set billingNeedsCorrection = checkAddressEnabled and billingAddress.extensions.enderecoAddress.needsCorrection() %}
     {% set shippingNeedsCorrection = checkAddressEnabled and (billingAddress.id is not same as shippingAddress.id) ? shippingAddress.extensions.enderecoAddress.needsCorrection() : false %}
+
+    {% if not checkPayPalAddressEnabled and billingAddress.extensions.enderecoAddress.isPayPalAddress %}
+        {% set billingNeedsCorrection = false %}
+    {% endif %}
+
+    {% if not checkPayPalAddressEnabled and shippingAddress.extensions.enderecoAddress.isPayPalAddress %}
+        {% set shippingNeedsCorrection = false %}
+    {% endif %}
+
     {% set options = {
         billingNeedsCorrection: billingNeedsCorrection,
         shippingNeedsCorrection: shippingNeedsCorrection

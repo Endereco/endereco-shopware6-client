@@ -22,6 +22,7 @@ use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\Framework\Validation\DataValidationDefinition;
 use Shopware\Core\System\Country\CountryEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class AddressSubscriberTest extends TestCase
 {
@@ -35,6 +36,7 @@ class AddressSubscriberTest extends TestCase
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
+            $this->createMock(RequestStack::class)
         );
 
         $definitionMock = $this->createMock(DataValidationDefinition::class);
@@ -56,6 +58,7 @@ class AddressSubscriberTest extends TestCase
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
+            $this->createMock(RequestStack::class)
         );
 
         $definitionMock = $this->createMock(DataValidationDefinition::class);
@@ -87,6 +90,7 @@ class AddressSubscriberTest extends TestCase
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
             $countryRepositoryMock,
+            $this->createMock(RequestStack::class)
         );
 
 
@@ -120,6 +124,7 @@ class AddressSubscriberTest extends TestCase
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
+            $this->createMock(RequestStack::class)
         );
 
         $event = $this->createConfiguredMock(EntityLoadedEvent::class, [
@@ -160,6 +165,7 @@ class AddressSubscriberTest extends TestCase
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
+            $this->createMock(RequestStack::class)
         );
 
         $event = $this->createConfiguredMock(EntityLoadedEvent::class, [
