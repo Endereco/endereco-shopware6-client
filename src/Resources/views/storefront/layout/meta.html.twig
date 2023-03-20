@@ -100,6 +100,7 @@
       window.EnderecoIntegrator.config.ux.changeFieldsOrder = true;
       window.EnderecoIntegrator.config.ux.showPhoneErrors = {{ page.endereco_config.enderecoShowPhoneErrors ? 'true':'false' }};
       window.EnderecoIntegrator.config.ux.showPhoneFlag = true;
+      window.EnderecoIntegrator.config.ux.correctTranspositionedNames = {{ page.endereco_config.enderecoExchangeNamesAutomatically ? 'true':'false' }};
       window.EnderecoIntegrator.config.phoneFormat = '{{ page.endereco_config.enderecoPhsUseFormat }}';
       window.EnderecoIntegrator.config.defaultPhoneType = '{{ page.endereco_config.enderecoPhsDefaultFieldType }}';
       window.EnderecoIntegrator.config.splitStreet = {{ page.endereco_config.enderecoSplitStreet ? 'true':'false' }};
