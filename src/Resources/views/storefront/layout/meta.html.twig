@@ -273,10 +273,12 @@
                       var firstNameSelector = MarkerElement.getAttribute('data-first-name-selector');
                       var lastNameSelector = MarkerElement.getAttribute('data-last-name-selector');
                       var salutationSelector = MarkerElement.getAttribute('data-salutation-selector');
+                      var titleSelector = MarkerElement.getAttribute('data-title-selector');
                       enderecoInitPS({
                           'firstName': `[data-endereco-${markerValue}-form-id="${formId}"] ${firstNameSelector}`,
                           'lastName': `[data-endereco-${markerValue}-form-id="${formId}"] ${lastNameSelector}`,
-                          'salutation': `[data-endereco-${markerValue}-form-id="${formId}"] ${salutationSelector}`
+                          'salutation': `[data-endereco-${markerValue}-form-id="${formId}"] ${salutationSelector}`,
+                          'title': `[data-endereco-${markerValue}-form-id="${formId}"] ${titleSelector}`
                       },{
                           name: `${markerValue}_${prefix}_${formId}`,
                       });
