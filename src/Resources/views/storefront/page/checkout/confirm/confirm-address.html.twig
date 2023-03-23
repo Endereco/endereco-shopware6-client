@@ -15,3 +15,24 @@
         {{ block("page_checkout_confirm_address_shipping") }}
     </div>
 {% endblock %}
+
+
+{% block page_checkout_confirm_address_shipping_actions %}
+    <div class="card-actions">
+
+        {% set addressEditorOptions = {
+            changeShipping: true,
+            addressId: shippingAddress.id,
+            csrfToken: sw_csrf("frontend.account.addressbook", {"mode": "token"})
+        } %}
+
+        <a href="{{ path('frontend.account.address.edit.page', {'addressId': shippingAddress.id}) }}"
+           title="{{ "account.overviewChangeShipping"|trans|striptags }}"
+           class="btn btn-light"
+           data-address-editor="true"
+           data-address-editor-options='{{ addressEditorOptions|json_encode }}'>
+            {{ "account.overviewChangeShipping"|trans|sw_sanitize }}
+        </a>
+
+    </div>
+{% endblock %}
