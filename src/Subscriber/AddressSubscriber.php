@@ -45,7 +45,7 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
         }
 
         if ($this->isCheckAddressEnabled($salesChannelId)) {
-            $this->checkAddress($event);
+            $this->checkAddress($event, $salesChannelId);
         }
         if ($this->isStreetSplittingEnabled($salesChannelId)) {
             $this->checkStreetField($event);
@@ -88,31 +88,37 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
     {
         $context = $event->getContext();
         $salesChannelId = $this->fetchSalesChannelId($context);
-        if (!$this->isStreetSplittingEnabled($salesChannelId)) {
-            return;
-        }
 
         $data = $event->getInput();
         $output = $event->getOutput();
+        $hasModification = false;
+        $enderecoExtension = [];
+        if ($this->isStreetSplittingEnabled($salesChannelId)) {
+            $enderecoStreet = $data->get('enderecoStreet');
+            $enderecoHousenumber = $data->get('enderecoHousenumber');
 
-        $enderecoStreet = $data->get('enderecoStreet');
-        $enderecoHousenumber = $data->get('enderecoHousenumber');
-
-        if (!$enderecoStreet || !$enderecoHousenumber) {
-            return;
+            if ($enderecoStreet && $enderecoHousenumber) {
+                $country = $this->fetchCountry($data->get('countryId', ''), $context);
+                $output['street'] = $this->enderecoService->buildFullStreet(
+                    $enderecoStreet,
+                    $enderecoHousenumber,
+                    $country ? $country->getIso() : ''
+                );
+                $enderecoExtension['street'] = $enderecoStreet;
+                $enderecoExtension['houseNumber'] = $enderecoHousenumber;
+                $hasModification = true;
+            }
         }
-        $country = $this->fetchCountry($data->get('countryId', ''), $context);
-        $output['street'] = $this->enderecoService->buildFullStreet(
-            $enderecoStreet,
-            $enderecoHousenumber,
-            $country ? $country->getIso() : ''
-        );
-        $enderecoExtension = [
-            'street' => $enderecoStreet,
-            'houseNumber' => $enderecoHousenumber
-        ];
-        $output['extensions']['enderecoAddress'] = $enderecoExtension;
-        $event->setOutput($output);
+
+        if ($this->isPaypalCheckoutRequest()) {
+            $hasModification = true;
+            $enderecoExtension['isPayPalAddress'] = true;
+        }
+
+        if ($hasModification) {
+            $output['extensions']['enderecoAddress'] = $enderecoExtension;
+            $event->setOutput($output);
+        }
     }
 
     public function extractAndAccountSessions(EntityWrittenEvent $event): void
@@ -139,6 +145,17 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
         }
     }
 
+    private function isPaypalCheckoutRequest(): bool
+    {
+        $currentRequest = $this->requestStack->getCurrentRequest();
+
+        if (!$currentRequest) {
+            return false;
+        }
+
+        return str_contains($currentRequest->getPathInfo(), '/store-api/paypal');
+    }
+
     /**
      * Creating new database entry for EnderecoAddressExtension if it's missing
      */
@@ -163,7 +180,7 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
         }
     }
 
-    private function checkAddress(EntityLoadedEvent $event): void
+    private function checkAddress(EntityLoadedEvent $event, string $salesChannelId): void
     {
         foreach ($event->getEntities() as $entity) {
             if (!$entity instanceof CustomerAddressEntity) {
@@ -179,6 +196,11 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
             if (!$enderecoAddress instanceof EnderecoAddressExtensionEntity) {
                 continue;
             }
+
+            if (!$this->isCheckPayPalExpressAddressEnabled($salesChannelId) && $enderecoAddress->isPayPalAddress()) {
+                continue;
+            }
+
             if (!$enderecoAddress->isAddressChecked()) {
                 $this->enderecoService->checkAddress($entity, $event->getContext());
                 $this->checkedAddressIds[] = $entity->getId();
