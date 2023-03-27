@@ -11,7 +11,11 @@ use GuzzleHttp\Client;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 /**
- * @RouteScope(scopes={"administration"})
+ * This one is for SW Version < 6.4.11.0
+ * @RouteScope(scopes={"api"})
+ *
+ * This one is for SW Version >= 6.4.11.0
+ * @Route(defaults={"_routeScope"={"api"}})
  */
 class ApiTestController extends AbstractController
 {
@@ -23,23 +27,7 @@ class ApiTestController extends AbstractController
         $this->logger = $logger;
     }
 
-    /**
-     * @Route("/api/_action/endereco-shopware6-client/verify", name="api.api-test.check")
-     */
-    public function check(Request $request): JsonResponse
-    {
-        return $this->checkAPICredetials($request);
-    }
-
-    /**
-     * @Route("/api/v{version}/_action/endereco-shopware6-client/verify", name="api.api-test.checkOld")
-     */
-    public function checkOld(Request $request): JsonResponse
-    {
-        return $this->checkAPICredetials($request);
-    }
-
-    private function checkAPICredetials(Request $request): JsonResponse
+    public function checkAPICredentials(Request $request): JsonResponse
     {
         $apiKey = $request->get('EnderecoShopware6Client.config.enderecoApiKey');
         $endpointUrl = $request->get('EnderecoShopware6Client.config.enderecoRemoteUrl');
