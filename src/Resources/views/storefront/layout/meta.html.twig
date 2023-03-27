@@ -165,6 +165,9 @@
         window.EnderecoIntegrator.$formScanner = {
           loop: null,
           start: function() {
+            if (window.EnderecoIntegrator.formScannerStarted){
+                return;
+            }
             this.loop = setInterval( function() {
               document.querySelectorAll('[name="endereco_data_marker"][data-has-object="no"]').forEach( function(MarkerElement) {
                 var formElement = MarkerElement.closest('form');
@@ -287,6 +290,7 @@
                 MarkerElement.setAttribute('data-has-object', 'yes');
               });
             }, 1);
+            window.EnderecoIntegrator.formScannerStarted = true;
           },
           stop: function() {
 
@@ -297,12 +301,17 @@
     }
 
     function enderecoLoadAMSConfig() {
+      if (window.EnderecoIntegrator.configScannerStarted){
+          return;
+      }
+
       var $interval = setInterval( function() {
         if (!!window.EnderecoIntegrator.config) {
           enderecoSetConfigValues();
           clearInterval($interval);
         }
       }, 1);
+      window.EnderecoIntegrator.configScannerStarted = true;
     }
   </script>
   {% endif %}
