@@ -113,8 +113,13 @@ abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
 
     protected function isEnderecoActive(?string $salesChannelId): bool
     {
-        return $this->systemConfigService
-            ->getBool('EnderecoShopware6Client.config.enderecoActiveInThisChannel', $salesChannelId);
+        return
+            $this->systemConfigService
+                ->getBool('EnderecoShopware6Client.config.enderecoActiveInThisChannel', $salesChannelId)
+            && !empty(
+                $this->systemConfigService
+                ->get('EnderecoShopware6Client.config.enderecoApiKey', $salesChannelId)
+            );
     }
 
     protected function isStreetSplittingEnabled(?string $salesChannelId): bool

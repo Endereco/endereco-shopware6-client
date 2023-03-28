@@ -117,6 +117,8 @@ class AddressSubscriberTest extends TestCase
             ->will(
                 $this->onConsecutiveCalls(true, false, true, true)
             );
+        $systemConfigServiceMock
+            ->method('get')->willReturn('test-api-key');
         $enderecoServiceMock = $this->createMock(EnderecoService::class);
         $addressSubscriber = new AddressSubscriber(
             $systemConfigServiceMock,

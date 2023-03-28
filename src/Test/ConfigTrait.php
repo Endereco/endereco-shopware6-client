@@ -14,6 +14,11 @@ trait ConfigTrait
             ->will(
                 $this->onConsecutiveCalls(true, $splittingEnabled)
             );
+        $systemConfigServiceMock
+            ->method('get')
+            ->will(
+                $this->onConsecutiveCalls('test-api-key')
+            );
         return $systemConfigServiceMock;
     }
 }
