@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Endereco\Shopware6Client\Installer;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoAddressExtensionDefinition;
 use RuntimeException;
-use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
-use Shopware\Core\Framework\Plugin\Context\UpdateContext;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class PluginLifecycle
@@ -21,7 +21,7 @@ class PluginLifecycle
     }
 
     /**
-     * @inheritDoc
+     * @throws Exception
      */
     public function uninstall(UninstallContext $context): void
     {
@@ -36,14 +36,18 @@ class PluginLifecycle
             unlink($pathToCopyIoPhp);
         }
 
+        $dropTables = [
+            EnderecoAddressExtensionDefinition::ENTITY_NAME
+        ];
+
         $conn = $this->getConnection();
-        $conn->executeStatement('DROP TABLE IF EXISTS endereco_address_ext');
+
+        foreach ($dropTables as $dropTable) {
+            $conn->executeStatement(sprintf('DROP TABLE IF EXISTS %s', $dropTable));
+        }
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function install(InstallContext $context): void
+    public function install(): void
     {
         $pathToOriginIoPhp = dirname(__FILE__, 2) . '/Resources/public/io.php';
         $pathToCopyIoPhp = dirname(__FILE__, 6) . '/public/io.php';
@@ -52,10 +56,7 @@ class PluginLifecycle
         copy($pathToOriginIoPhp, $pathToCopyIoPhp);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function update(UpdateContext $context): void
+    public function update(): void
     {
         $pathToOriginIoPhp = dirname(__FILE__, 2) . '/Resources/public/io.php';
         $pathToCopyIoPhp = dirname(__FILE__, 6) . '/public/io.php';

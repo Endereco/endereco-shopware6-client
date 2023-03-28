@@ -4,6 +4,7 @@ namespace Endereco\Shopware6Client\Service;
 
 use Shopware\Core\Framework\Api\Context\SalesChannelApiSource;
 use Shopware\Storefront\Page\GenericPageLoadedEvent;
+use stdClass;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -43,7 +44,7 @@ class AddDataToPage implements EventSubscriberInterface
     public function addEnderecoConfigToPage(GenericPageLoadedEvent $event): void
     {
         $context = $event->getContext();
-        $configContainer = new \stdClass();
+        $configContainer = new stdClass();
         $salesChannelId = null;
         $source = $context->getSource();
         if ($source instanceof SalesChannelApiSource) {
@@ -87,6 +88,24 @@ class AddDataToPage implements EventSubscriberInterface
         $configContainer->enderecoSplitStreet =
             $this->systemConfigService
                 ->get('EnderecoShopware6Client.config.enderecoSplitStreetAndHouseNumber', $salesChannelId);
+        $configContainer->enderecoCheckAddressEnabled =
+            $this->systemConfigService
+                ->get('EnderecoShopware6Client.config.enderecoCheckExistingAddress', $salesChannelId);
+        $configContainer->enderecoCheckPayPalExpressAddress = 
+            $this->systemConfigService
+                ->get('EnderecoShopware6Client.config.enderecoCheckPayPalExpressAddress', $salesChannelId);
+        $configContainer->enderecoNameCheckActive =
+            $this->systemConfigService
+                ->get('EnderecoShopware6Client.config.enderecoNameCheckActive', $salesChannelId);
+        $configContainer->enderecoExchangeNamesAutomatically =
+            $this->systemConfigService
+                ->get('EnderecoShopware6Client.config.enderecoExchangeNamesAutomatically', $salesChannelId);
+        $configContainer->enderecoEmailCheckActive =
+            $this->systemConfigService
+                ->get('EnderecoShopware6Client.config.enderecoEmailCheckActive', $salesChannelId);
+        $configContainer->enderecoShowEmailStatus =
+            $this->systemConfigService
+                ->get('EnderecoShopware6Client.config.enderecoShowEmailStatus', $salesChannelId);
 
         $configContainer->pluginActive =
             $this->systemConfigService

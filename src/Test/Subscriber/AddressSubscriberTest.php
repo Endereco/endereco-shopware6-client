@@ -10,15 +10,19 @@ use Endereco\Shopware6Client\Subscriber\AddressSubscriber;
 use Endereco\Shopware6Client\Test\ConfigTrait;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Shopware\Core\Framework\Api\Context\SalesChannelApiSource;
 use Shopware\Core\Framework\Api\Context\SystemSource;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityLoadedEvent;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\Validation\BuildValidationEvent;
 use Shopware\Core\Framework\Validation\DataBag\DataBag;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\Framework\Validation\DataValidationDefinition;
 use Shopware\Core\System\Country\CountryEntity;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class AddressSubscriberTest extends TestCase
 {
@@ -31,6 +35,8 @@ class AddressSubscriberTest extends TestCase
             $this->createMock(EnderecoService::class),
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
+            $this->createMock(EntityRepository::class),
+            $this->createMock(RequestStack::class)
         );
 
         $definitionMock = $this->createMock(DataValidationDefinition::class);
@@ -51,6 +57,8 @@ class AddressSubscriberTest extends TestCase
             $this->createMock(EnderecoService::class),
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
+            $this->createMock(EntityRepository::class),
+            $this->createMock(RequestStack::class)
         );
 
         $definitionMock = $this->createMock(DataValidationDefinition::class);
@@ -70,17 +78,25 @@ class AddressSubscriberTest extends TestCase
             'buildFullStreet' => 'Testing 44'
         ]);
 
+        $countryRepositoryMock = $this->createConfiguredMock(EntityRepository::class, [
+            'search' => $this->createConfiguredMock(EntitySearchResult::class, [
+                'first' => $this->createConfiguredMock(CountryEntity::class, ['getIso' => 'DE'])
+            ])
+        ]);
+
         $addressSubscriber = new AddressSubscriber(
             $this->getSystemConfigService(),
             $enderecoServiceMock,
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
+            $countryRepositoryMock,
+            $this->createMock(RequestStack::class)
         );
 
 
         $dataMock = $this->createMock(RequestDataBag::class);
         $dataMock->method('get')->will(
-            $this->onConsecutiveCalls(null, null, null, 'Testing', '44', 'some-country-uuid')
+            $this->onConsecutiveCalls(null, null, null, 'Testing', '44', null, 'some-country-uuid')
         );
 
         $dataMock->expects($this->once())->method('set')->with('street', 'Testing 44');
@@ -95,16 +111,28 @@ class AddressSubscriberTest extends TestCase
 
     public function testIfAddressSubscriberWillSplitAddressOnLoadedEvent()
     {
+        $systemConfigServiceMock = $this->createMock(SystemConfigService::class);
+        $systemConfigServiceMock
+            ->method('getBool')
+            ->will(
+                $this->onConsecutiveCalls(true, false, true, true)
+            );
         $enderecoServiceMock = $this->createMock(EnderecoService::class);
         $addressSubscriber = new AddressSubscriber(
-            $this->getSystemConfigService(),
+            $systemConfigServiceMock,
             $enderecoServiceMock,
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
+            $this->createMock(EntityRepository::class),
+            $this->createMock(RequestStack::class)
         );
 
         $event = $this->createConfiguredMock(EntityLoadedEvent::class, [
-            'getContext' => $this->createMock(Context::class),
+            'getContext' => $this->createConfiguredMock(Context::class, [
+                'getSource' => $this->createConfiguredMock(SalesChannelApiSource::class, [
+                    'getSalesChannelId' => 'some-sales-channel-id'
+                ])
+            ]),
             'getEntities' => [
                 $this->createConfiguredMock(CustomerAddressEntity::class, [
                     'getCountry' => $this->createConfiguredMock(CountryEntity::class, [
@@ -136,6 +164,8 @@ class AddressSubscriberTest extends TestCase
             $enderecoServiceMock,
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
+            $this->createMock(EntityRepository::class),
+            $this->createMock(RequestStack::class)
         );
 
         $event = $this->createConfiguredMock(EntityLoadedEvent::class, [

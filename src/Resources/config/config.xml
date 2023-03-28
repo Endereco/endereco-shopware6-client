@@ -46,6 +46,41 @@
     </card>
 
     <card>
+        <title>Personal Data Management Service</title>
+
+        <input-field type="bool">
+            <name>enderecoNameCheckActive</name>
+            <label>Activate name check and set salutation automatically</label>
+            <label lang="de-DE">Namensprüfung aktivieren und Anrede automatisch setzen</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>enderecoExchangeNamesAutomatically</name>
+            <label>Correct transposed first and lastname (BETA)</label>
+            <label lang="de-DE">Vertauschten Vor- und Nachnamen korrigieren (BETA)</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
+    </card>
+
+    <card>
+        <title>E-Mail Management Service</title>
+        <input-field type="bool">
+            <name>enderecoEmailCheckActive</name>
+            <label>Activate e-mail address verification</label>
+            <label lang="de-DE">E-Mail Adressprüfung aktivieren</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>enderecoShowEmailStatus</name>
+            <label>Display email status messages</label>
+            <label lang="de-DE">E-Mail Statusmeldungen anzeigen</label>
+            <defaultValue>true</defaultValue>
+        </input-field>
+    </card>
+
+    <card>
         <title>Address-Management Service</title>
 
         <input-field type="bool">
@@ -344,6 +379,20 @@
             <name>enderecoSplitStreetAndHouseNumber</name>
             <label>Divide street into street name and house number</label>
             <label lang="de-DE">Straße in Straßenname und Hausnummer unterteilen</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>enderecoCheckExistingAddress</name>
+            <label>Existing customers who have not yet been checked are automatically checked when they log in and access an address form page</label>
+            <label lang="de-DE">Bestandskunden, die noch nicht geprüft wurden, werden bei einem Login und Aufruf einer Adressformular-Seite automatisch geprüft.</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>enderecoCheckPayPalExpressAddress</name>
+            <label>Check addresses from PayPal Express Checkout</label>
+            <label lang="de-DE">PayPal Express Checkout Adressen prüfen</label>
             <defaultValue>false</defaultValue>
         </input-field>
     </card>
