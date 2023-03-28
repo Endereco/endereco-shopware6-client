@@ -91,7 +91,7 @@ class AddDataToPage implements EventSubscriberInterface
         $configContainer->enderecoCheckAddressEnabled =
             $this->systemConfigService
                 ->get('EnderecoShopware6Client.config.enderecoCheckExistingAddress', $salesChannelId);
-        $configContainer->enderecoCheckPayPalExpressAddress = 
+        $configContainer->enderecoCheckPayPalExpressAddress =
             $this->systemConfigService
                 ->get('EnderecoShopware6Client.config.enderecoCheckPayPalExpressAddress', $salesChannelId);
         $configContainer->enderecoNameCheckActive =
@@ -109,7 +109,8 @@ class AddDataToPage implements EventSubscriberInterface
 
         $configContainer->pluginActive =
             $this->systemConfigService
-                ->get('EnderecoShopware6Client.config.enderecoActiveInThisChannel', $salesChannelId);
+                ->get('EnderecoShopware6Client.config.enderecoActiveInThisChannel', $salesChannelId)
+            && !empty($configContainer->enderecoApiKey);
         $configContainer->enderecoPhsActive =
             $this->systemConfigService
                 ->getBool('EnderecoShopware6Client.config.enderecoPhsActive', $salesChannelId);
