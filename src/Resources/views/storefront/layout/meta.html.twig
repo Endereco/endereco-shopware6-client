@@ -68,8 +68,7 @@
 
     function enderecoSetConfigValues() {
       window.EnderecoIntegrator.themeName = '';
-      window.EnderecoIntegrator.defaultCountrySelect = !!('{{ page.endereco_config.defaultCountrySelect }}');
-      window.EnderecoIntegrator.defaultCountry = '{{ page.endereco_config.defaultCountry }}';
+      window.EnderecoIntegrator.defaultCountrySelect = false;
       window.EnderecoIntegrator.config.agentName = '{{ page.endereco_config.enderecoAgentInfo }}';
 
       if ('{{ page.endereco_config.pathToIoPhp }}' !== '') {
