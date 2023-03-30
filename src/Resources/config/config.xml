@@ -83,15 +83,6 @@
     <card>
         <title>Address-Management Service</title>
 
-        <input-field type="bool">
-            <name>enderecoPreselectDefaultCountry</name>
-            <label>Preselect default country</label>
-            <label lang="de-DE">Standardland vorauswählen</label>
-            <defaultValue>false</defaultValue>
-            <helpText>If this function is active, the selected default country is automatically set when loading an address form.</helpText>
-            <helpText lang="de-DE">Ist diese Funktion aktiv, wird automatisch beim Laden eines Adressformulars das gewählte Standardland gesetzt.</helpText>
-        </input-field>
-
         <input-field type="single-select">
             <name>enderecoPreselectDefaultCountryCode</name>
             <options>

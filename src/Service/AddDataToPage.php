@@ -55,9 +55,6 @@ class AddDataToPage implements EventSubscriberInterface
         $version = $this->pluginRepository->search($criteria, $context)->first()->getVersion();
         $configContainer->enderecoAgentInfo = 'Endereco Shopware6 Client (Download) v' . $version;
         $configContainer->enderecoVersion = $version;
-        $configContainer->defaultCountrySelect =
-            $this->systemConfigService
-                ->get('EnderecoShopware6Client.config.enderecoPreselectDefaultCountry', $salesChannelId);
         $configContainer->defaultCountry =
             $this->systemConfigService
                 ->get('EnderecoShopware6Client.config.enderecoPreselectDefaultCountryCode', $salesChannelId);
