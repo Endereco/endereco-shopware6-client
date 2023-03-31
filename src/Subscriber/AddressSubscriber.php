@@ -37,19 +37,17 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
     public function onAddressLoaded(EntityLoadedEvent $event): void
     {
         $salesChannelId = $this->fetchSalesChannelId($event->getContext());
-        if (is_null($salesChannelId)) {
+        if (is_null($salesChannelId) || !$this->isEnderecoActive($salesChannelId)) {
             return;
         }
-        if ($this->isEnderecoActive($salesChannelId)) {
-            $this->checkEnderecoExtension($event);
-        }
+
+        $this->checkEnderecoExtension($event);
 
         if ($this->isCheckAddressEnabled($salesChannelId)) {
             $this->checkAddress($event, $salesChannelId);
         }
-        if ($this->isStreetSplittingEnabled($salesChannelId)) {
-            $this->checkStreetField($event);
-        }
+
+        $this->checkStreetField($event);
     }
 
     public function clearAmsStatus(EntityWrittenEvent $event): void

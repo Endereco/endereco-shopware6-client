@@ -16,7 +16,7 @@ class CheckoutSubscriber extends AbstractEnderecoSubscriber
     public function ensureAddressesAreSplit(CheckoutConfirmPageLoadedEvent $event): void
     {
         $salesChannelContext = $event->getSalesChannelContext();
-        if (!$this->isStreetSplittingEnabled($salesChannelContext->getSalesChannelId())) {
+        if (!$this->isEnderecoActive($salesChannelContext->getSalesChannelId())) {
             return;
         }
 
