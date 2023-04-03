@@ -213,7 +213,7 @@
                   var isAjax = 'true' === formElement.getAttribute('data-form-ajax-submit');
                   if (isAjax) {
                     formElement.querySelector('[type="submit"]').addEventListener('click', function(e) {
-                      if (EAO.util.shouldBeChecked()) {
+                      if (shouldBlockFormSubmission(EAO)) {
                         e.preventDefault();
                         // Resume click after ac is done.
                         window.EnderecoIntegrator.submitResume = function() {
@@ -227,7 +227,9 @@
                                             }
                                     )
                             )) {
-                              e.target.click();
+                              if (!shouldBlockFormSubmission(EAO)) {
+                                  e.target.click();
+                              }
                             }
                           }).catch();
                         }
@@ -298,6 +300,10 @@
         }
         window.EnderecoIntegrator.$formScanner.start();
       })();
+    }
+
+    function shouldBlockFormSubmission(EAO){
+        return EAO.util.shouldBeChecked() || EAO._awaits > 0;
     }
 
     function enderecoLoadAMSConfig() {
