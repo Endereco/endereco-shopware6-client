@@ -42,11 +42,7 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
         }
 
         $this->checkEnderecoExtension($event);
-
-        if ($this->isCheckAddressEnabled($salesChannelId)) {
-            $this->checkAddress($event, $salesChannelId);
-        }
-
+        $this->checkAddress($event, $salesChannelId);
         $this->checkStreetField($event);
     }
 
@@ -180,6 +176,8 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
 
     private function checkAddress(EntityLoadedEvent $event, string $salesChannelId): void
     {
+        $checkAddressEnabled = $this->isCheckAddressEnabled($salesChannelId);
+        $paypalCheckEnabled = $this->isCheckPayPalExpressAddressEnabled($salesChannelId);
         foreach ($event->getEntities() as $entity) {
             if (!$entity instanceof CustomerAddressEntity) {
                 continue;
@@ -191,18 +189,20 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
 
             $enderecoAddress = $entity->getExtension('enderecoAddress');
 
-            if (!$enderecoAddress instanceof EnderecoAddressExtensionEntity) {
+            if (!$enderecoAddress instanceof EnderecoAddressExtensionEntity || $enderecoAddress->isAddressChecked()) {
                 continue;
             }
 
-            if (!$this->isCheckPayPalExpressAddressEnabled($salesChannelId) && $enderecoAddress->isPayPalAddress()) {
+            if (!(
+                ($checkAddressEnabled && !$enderecoAddress->isPayPalAddress())
+                || ($paypalCheckEnabled && $enderecoAddress->isPayPalAddress())
+            )
+            ) {
                 continue;
             }
 
-            if (!$enderecoAddress->isAddressChecked()) {
-                $this->enderecoService->checkAddress($entity, $event->getContext());
-                $this->checkedAddressIds[] = $entity->getId();
-            }
+            $this->enderecoService->checkAddress($entity, $event->getContext());
+            $this->checkedAddressIds[] = $entity->getId();
         }
     }
 

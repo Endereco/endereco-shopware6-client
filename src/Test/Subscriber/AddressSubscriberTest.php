@@ -115,7 +115,7 @@ class AddressSubscriberTest extends TestCase
         $systemConfigServiceMock
             ->method('getBool')
             ->will(
-                $this->onConsecutiveCalls(true, false, true, true)
+                $this->onConsecutiveCalls(true, false, true, true, true, true)
             );
         $systemConfigServiceMock
             ->method('get')->willReturn('test-api-key');
