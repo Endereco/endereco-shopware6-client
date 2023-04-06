@@ -93,7 +93,7 @@
       window.EnderecoIntegrator.config.ux.smartFill = false;
       window.EnderecoIntegrator.config.ux.checkExisting = false;
       window.EnderecoIntegrator.config.ux.resumeSubmit = !!('{{ page.endereco_config.enderecoContinueSubmit }}');
-      window.EnderecoIntegrator.config.ux.useStandardCss = true;
+      window.EnderecoIntegrator.config.ux.useStandardCss = !!('{{ page.endereco_config.enderecoUseDefaultCss }}');
       window.EnderecoIntegrator.config.ux.showEmailStatus = !!('{{ page.endereco_config.enderecoShowEmailStatus }}');
       window.EnderecoIntegrator.config.ux.allowCloseModal = !!('{{ page.endereco_config.enderecoAllowCloseIcon }}');
       window.EnderecoIntegrator.config.ux.confirmWithCheckbox = !!('{{ page.endereco_config.enderecoConfirmWithCheckbox }}');

@@ -506,6 +506,13 @@
         </input-field>
 
         <input-field type="bool">
+            <name>enderecoUseDefaultCss</name>
+            <label>Use standard CSS</label>
+            <label lang="de-DE">Standard-CSS nutzen</label>
+            <defaultValue>true</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
             <name>enderecoWhitelistController</name>
             <label>Load endereco.min.js only on whitelisted pages (standard pages containing address forms).</label>
             <label lang="de-DE">Endereco JavaScript Datei nur auf bestimmten Seiten laden (Standardseiten mit Adressformularen).</label>
