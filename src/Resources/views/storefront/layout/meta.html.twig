@@ -84,6 +84,7 @@
         {% if mrsSalutationId %}
         window.EnderecoIntegrator.mappings.gender.F = '{{ mrsSalutationId }}'
         {% endif %}
+        {% set cssPath = asset('bundles/enderecoshopware6client/endereco.css') ~ '?var=' ~ page.endereco_config.enderecoVersion  %}
 
       window.EnderecoIntegrator.config.apiKey = '{{ page.endereco_config.enderecoApiKey }}';
       window.EnderecoIntegrator.config.showDebugInfo = false;
@@ -94,6 +95,7 @@
       window.EnderecoIntegrator.config.ux.checkExisting = false;
       window.EnderecoIntegrator.config.ux.resumeSubmit = !!('{{ page.endereco_config.enderecoContinueSubmit }}');
       window.EnderecoIntegrator.config.ux.useStandardCss = true;
+      window.EnderecoIntegrator.config.ux.cssFilePath = '{{ cssPath }}';
       window.EnderecoIntegrator.config.ux.showEmailStatus = !!('{{ page.endereco_config.enderecoShowEmailStatus }}');
       window.EnderecoIntegrator.config.ux.allowCloseModal = !!('{{ page.endereco_config.enderecoAllowCloseIcon }}');
       window.EnderecoIntegrator.config.ux.confirmWithCheckbox = !!('{{ page.endereco_config.enderecoConfirmWithCheckbox }}');
