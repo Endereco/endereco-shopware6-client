@@ -165,7 +165,7 @@
                   var houseNumberSelector = MarkerElement.getAttribute('data-house-number-selector');
                   var subdivisionCodeSelector = MarkerElement.getAttribute('data-subdivision-code-selector');
                   var phoneSelector = MarkerElement.getAttribute('data-phone-selector');
-                  var isAjax = false;
+                  var isAjax = 'true' === MarkerElement.getAttribute('data-form-handle-ajax-submit');
                   var EAO = window.EnderecoIntegrator.initAMS(
                           {
                             countryCode: `[data-endereco-ams-form-id="${formId}"] [name="${countryCodeSelector}"]`,
@@ -177,7 +177,8 @@
                             buildingNumber: `[data-endereco-ams-form-id="${formId}"] [name="${houseNumberSelector}"]`,
                           }, {
                             name: `ams_${prefix}_${formId}`,
-                            addressType: 'general_address'
+                            addressType: 'general_address',
+                            ajaxForm: isAjax
                           }
                   );
 
@@ -190,48 +191,6 @@
                           addressType: 'general_address_phs'
                       }
                   );
-
-                  // If ajax, add click listener.
-                  isAjax = 'true' === formElement.getAttribute('data-form-ajax-submit');
-                  if (isAjax) {
-                    formElement.querySelector('[type="submit"]').addEventListener('click', function(e) {
-                      if (EAO.util.shouldBeChecked()) {
-                        e.preventDefault();
-                        // Resume click after ac is done.
-                        window.EnderecoIntegrator.submitResume = function() {
-                          EAO.waitUntilReady().then( function() {
-                            if(e.target.dispatchEvent(
-                                    new EAO.util.CustomEvent(
-                                            'click',
-                                            {
-                                              'bubbles': true,
-                                              'cancelable': true
-                                            }
-                                    )
-                            )) {
-                              e.target.click();
-                            }
-                          }).catch();
-                        }
-                        EAO.util.checkAddress().then().catch(function() {
-                          EAO.waitUntilReady().then( function() {
-                            if(e.target.dispatchEvent(
-                                    new EAO.util.CustomEvent(
-                                            'click',
-                                            {
-                                              'bubbles': true,
-                                              'cancelable': true
-                                            }
-                                    )
-                            )) {
-                              e.target.click();
-                            }
-                          }).catch();
-                        });
-                        return false;
-                      }
-                    });
-                  }
                 }
                 MarkerElement.setAttribute('data-has-object', 'yes');
               });
