@@ -124,36 +124,65 @@ EnderecoIntegrator.onAjaxFormHandler.push( function(EAO) {
     EAO.forms.forEach( function(form) {
         var submitButtons = form.querySelectorAll('[type="submit"]');
         submitButtons.forEach( function(buttonElement) {
+
             buttonElement.addEventListener('click', function(e) {
-                if (EAO.util.shouldBeChecked()) {
+
+                /**
+                 * Essentially this event listener tries to recreate submit listener,
+                 * so if in the setting there is no submit listener, then this logic
+                 * should not be used, too.
+                 */
+                if (!EAO.config.trigger.onsubmit) {
+                    return true;
+                }
+
+                if (EAO.util.shouldBeChecked() || EAO._awaits > 0) {
                     e.preventDefault();
                     e.stopPropagation();
+                } else {
+                    return true;
+                }
 
-                    if (window.EnderecoIntegrator && !window.EnderecoIntegrator.submitResume) {
-                        window.EnderecoIntegrator.submitResume = function() {
-                            if(form.dispatchEvent(
+                /**
+                 * This block defines a code that is executed, if submit has to be continued
+                 * after the address correction has been selected.
+                 */
+                if (window.EnderecoIntegrator && !window.EnderecoIntegrator.submitResume) {
+                    window.EnderecoIntegrator.submitResume = function() {
+
+                        window.EnderecoIntegrator.submitResume = undefined;
+
+                        if (EAO.config.ux.resumeSubmit) {
+                            if(buttonElement.dispatchEvent(
                                 new EAO.util.CustomEvent(
-                                    'submit',
+                                    'click',
                                     {
                                         'bubbles': true,
                                         'cancelable': true
                                     }
                                 )
                             )) {
-                                form.submit();
+                                buttonElement.click();
                             }
-                            window.EnderecoIntegrator.submitResume = undefined;
                         }
                     }
+                }
 
-                    EAO.util.checkAddress()
-                        .catch(function() {
-                            EAO.waitForAllPopupsToClose().then(function() {
-                                if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
-                                    window.EnderecoIntegrator.submitResume();
-                                }
-                            }).catch()
+                if (EAO.util.shouldBeChecked()) {
+                    window.EnderecoIntegrator.hasSubmit = true;
+
+                    setTimeout(function() {
+                        EAO.util.checkAddress()
+                            .catch(function() {
+                                EAO.waitForAllPopupsToClose().then(function() {
+                                    if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
+                                        window.EnderecoIntegrator.submitResume();
+                                    }
+                                }).catch()
+                            }).finally( function() {
+                                window.EnderecoIntegrator.hasSubmit = false;
                         });
+                    }, 300);
 
                     return false;
                 }
