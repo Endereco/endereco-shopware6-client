@@ -2,49 +2,52 @@
 
 {% block component_address_form_address_fields %}
     {{ parent() }}
-    {% if page.endereco_config.pluginActive and ( not page.endereco_config.controllerOnlyWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
-        <input
-            type="hidden"
-            name="endereco_data_marker" value="ams"
-            data-container-selector="form"
-            data-container-type="form"
-            data-used-prefix="{{ prefix }}"
-            data-has-object="no"
-            data-name=""
-            data-type=""
-            data-country-code-selector="[name='{{ prefix }}[countryId]']"
-            data-subdivision-code-selector="[name='{{ prefix }}[countryStateId]']"
-            data-postal-code-selector="[name='{{ prefix }}[zipcode]']"
-            data-locality-selector="[name='{{ prefix }}[city]']"
-            data-street-full-selector="[name='{{ prefix }}[street]']"
-            data-ams-status-selector="[name='{{ prefix }}[amsStatus]']"
-            data-ams-timestamp-selector="[name='{{ prefix }}[amsTimestamp]']"
-            data-ams-predictions-selector="[name='{{ prefix }}[amsPredictions]']"
-            data-street-selector="[name='{{ prefix }}[enderecoStreet]']"
-            data-house-number-selector="[name='{{ prefix }}[enderecoHousenumber]']"
-        >
 
-        <input
-            type="hidden"
-            name="endereco_data_marker"
-            value="phoneServices"
-            data-container-selector="form"
-            data-container-type="form"
-            data-used-prefix="{{ prefix }}"
-            data-has-object="no"
-            data-name=""
-            data-type=""
-            data-country-code-selector="[name='{{ prefix }}[countryId]']"
-            data-phone-selector="[name='{{ prefix }}[phoneNumber]']"
-        >
+    {% block component_address_form_endereco_marker %}
+        {% if page.endereco_config.pluginActive and ( not page.endereco_config.controllerOnlyWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
+            <input
+                type="hidden"
+                name="endereco_data_marker" value="ams"
+                data-container-selector="form"
+                data-container-type="form"
+                data-used-prefix="{{ prefix }}"
+                data-has-object="no"
+                data-name=""
+                data-type=""
+                data-country-code-selector="[name='{{ prefix }}[countryId]']"
+                data-subdivision-code-selector="[name='{{ prefix }}[countryStateId]']"
+                data-postal-code-selector="[name='{{ prefix }}[zipcode]']"
+                data-locality-selector="[name='{{ prefix }}[city]']"
+                data-street-full-selector="[name='{{ prefix }}[street]']"
+                data-ams-status-selector="[name='{{ prefix }}[amsStatus]']"
+                data-ams-timestamp-selector="[name='{{ prefix }}[amsTimestamp]']"
+                data-ams-predictions-selector="[name='{{ prefix }}[amsPredictions]']"
+                data-street-selector="[name='{{ prefix }}[enderecoStreet]']"
+                data-house-number-selector="[name='{{ prefix }}[enderecoHousenumber]']"
+            >
 
-        <input type="hidden" name="{{ prefix }}[amsStatus]"
-               value="{{ data.get('extensions')['enderecoAddress'].amsStatus }}">
-        <input type="hidden" name="{{ prefix }}[amsTimestamp]"
-               value="{{ data.get('extensions')['enderecoAddress'].amsTimestamp }}">
-        <input type="hidden" name="{{ prefix }}[amsPredictions]"
-               value="{{ data.get('extensions')['enderecoAddress'].amsPredictions|json_encode }}">
-    {% endif %}
+            <input
+                type="hidden"
+                name="endereco_data_marker"
+                value="phoneServices"
+                data-container-selector="form"
+                data-container-type="form"
+                data-used-prefix="{{ prefix }}"
+                data-has-object="no"
+                data-name=""
+                data-type=""
+                data-country-code-selector="[name='{{ prefix }}[countryId]']"
+                data-phone-selector="[name='{{ prefix }}[phoneNumber]']"
+            >
+
+            <input type="hidden" name="{{ prefix }}[amsStatus]"
+                   value="{{ data.get('extensions')['enderecoAddress'].amsStatus }}">
+            <input type="hidden" name="{{ prefix }}[amsTimestamp]"
+                   value="{{ data.get('extensions')['enderecoAddress'].amsTimestamp }}">
+            <input type="hidden" name="{{ prefix }}[amsPredictions]"
+                   value="{{ data.get('extensions')['enderecoAddress'].amsPredictions|json_encode }}">
+        {% endif %}
+    {% endblock %}
 {% endblock %}
 
 

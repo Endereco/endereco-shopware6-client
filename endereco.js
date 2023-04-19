@@ -120,18 +120,18 @@ EnderecoIntegrator.resolvers.salutationRead = function (value) {
     });
 }
 
-EnderecoIntegrator.onAjaxFormHandler.push( function(EAO) {
-    EAO.forms.forEach( function(form) {
+EnderecoIntegrator.onAjaxFormHandler.push(function (EAO) {
+    EAO.forms.forEach(function (form) {
         var submitButtons = form.querySelectorAll('[type="submit"]');
-        submitButtons.forEach( function(buttonElement) {
-            buttonElement.addEventListener('click', function(e) {
+        submitButtons.forEach(function (buttonElement) {
+            buttonElement.addEventListener('click', function (e) {
                 if (EAO.util.shouldBeChecked()) {
                     e.preventDefault();
                     e.stopPropagation();
 
                     if (window.EnderecoIntegrator && !window.EnderecoIntegrator.submitResume) {
-                        window.EnderecoIntegrator.submitResume = function() {
-                            if(form.dispatchEvent(
+                        window.EnderecoIntegrator.submitResume = function () {
+                            if (form.dispatchEvent(
                                 new EAO.util.CustomEvent(
                                     'submit',
                                     {
@@ -147,8 +147,8 @@ EnderecoIntegrator.onAjaxFormHandler.push( function(EAO) {
                     }
 
                     EAO.util.checkAddress()
-                        .catch(function() {
-                            EAO.waitForAllPopupsToClose().then(function() {
+                        .catch(function () {
+                            EAO.waitForAllPopupsToClose().then(function () {
                                 if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
                                     window.EnderecoIntegrator.submitResume();
                                 }
@@ -163,8 +163,29 @@ EnderecoIntegrator.onAjaxFormHandler.push( function(EAO) {
 
 });
 
-EnderecoIntegrator.afterAMSActivation.push( function(EAO) {
+EnderecoIntegrator.afterAMSActivation.push(function (EAO) {
+    EAO.onEditAddress.push((d) => {
+        const targetForm = d.forms[0].getAttribute('data-end-target-link');
+        if (targetForm) {
+            const targetLink = document.querySelector(`[data-end-address-edit-id="${targetForm}"]`);
+            if (targetLink) {
+                targetLink.click();
+            }
+        }
 
+    })
+
+    EAO.onAfterAddressCheckSelected.push((d) => {
+        const form = d.forms[0];
+        const targetForm = form.getAttribute('data-end-target-link');
+        if (targetForm) {
+            const submit = form.querySelector('[type="submit"]');
+            if (submit) {
+                submit.click();
+                window.location.reload();
+            }
+        }
+    })
 });
 
 if (window.EnderecoIntegrator) {
@@ -182,8 +203,8 @@ window.EnderecoIntegrator.waitUntilReady().then(function () {
     //
 });
 
-var $waitForConfig = setInterval( function() {
-    if(typeof enderecoLoadAMSConfig === 'function'){
+var $waitForConfig = setInterval(function () {
+    if (typeof enderecoLoadAMSConfig === 'function') {
         enderecoLoadAMSConfig();
         clearInterval($waitForConfig);
     }
