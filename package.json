@@ -4,7 +4,7 @@
   "description": "",
   "main": "endereco.js",
   "scripts": {
-    "build": "cross-env NODE_ENV=production webpack --progress"
+    "build": "cross-env NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider webpack --progress"
   },
   "author": "ilja_weber <ilja@endereco.de>",
   "license": "ISC",
