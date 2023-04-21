@@ -165,9 +165,9 @@ EnderecoIntegrator.onAjaxFormHandler.push(function (EAO) {
 
 EnderecoIntegrator.afterAMSActivation.push(function (EAO) {
     EAO.onEditAddress.push((d) => {
-        const targetForm = d.forms[0].getAttribute('data-end-target-link');
-        if (targetForm) {
-            const targetLink = document.querySelector(`[data-end-address-edit-id="${targetForm}"]`);
+        const targetFormLinkSelector = d.forms[0].getAttribute('data-end-target-link-selector');
+        if (targetFormLinkSelector) {
+            const targetLink = document.querySelector(targetFormLinkSelector);
             if (targetLink) {
                 targetLink.click();
             }
@@ -177,12 +177,22 @@ EnderecoIntegrator.afterAMSActivation.push(function (EAO) {
 
     EAO.onAfterAddressCheckSelected.push((d) => {
         const form = d.forms[0];
-        const targetForm = form.getAttribute('data-end-target-link');
-        if (targetForm) {
-            const submit = form.querySelector('[type="submit"]');
-            if (submit) {
-                submit.click();
-                window.location.reload();
+        if (form) {
+            const targetForm = form.getAttribute('data-end-target-link-selector');
+            const ajaxPlugin = window.PluginManager.getPluginInstanceFromElement(form, 'FormAjaxSubmit')
+            if (targetForm && ajaxPlugin) {
+                ajaxPlugin.$emitter.subscribe('onAfterAjaxSubmit', ({detail: {response}}) => {
+                    try {
+                        const {addressSaved} = JSON.parse(response);
+                        if (addressSaved) {
+                            window.location.reload();
+                        }
+                    } catch (e) {
+                        console.warn('[ENDERECO] Failed to save new address', e);
+                    }
+                });
+
+                ajaxPlugin._fireRequest();
             }
         }
     })

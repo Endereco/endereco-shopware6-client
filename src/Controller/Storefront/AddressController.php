@@ -80,7 +80,6 @@ class AddressController extends StorefrontController
 
         $this->addressRepository->upsert([$addressData], $context->getContext());
 
-
         return new JsonResponse(['addressSaved' => true]);
     }
 

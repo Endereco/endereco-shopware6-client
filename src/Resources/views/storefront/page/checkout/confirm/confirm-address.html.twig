@@ -15,23 +15,39 @@
             {% set shippingNeedsCorrection = false %}
         {% endif %}
 
-        {% set options = {
-            billingNeedsCorrection: billingNeedsCorrection,
-            shippingNeedsCorrection: shippingNeedsCorrection
-        } %}
-
         {% if billingNeedsCorrection %}
             <form method="post"
+                  id="endHiddenBillingForm"
                   action="{{ path('frontend.endereco.account.address.edit.save') }}"
                   class="d-none"
-                  data-end-target-link="billingEdit"
-                  data-form-ajax-submit="true">
+                  data-end-target-link-selector=".confirm-billing-address [data-address-editor]"
+                  data-form-ajax-submit="true"
+            >
                 {{ sw_csrf('frontend.endereco.account.address.edit.save') }}
-
 
                 {% sw_include '@EnderecoShopware6Client/storefront/component/address/hidden-address-form.html.twig' with {
                     'prefix': 'address',
                     'data': billingAddress,
+                } %}
+
+                <button type="submit">
+                </button>
+            </form>
+        {% endif %}
+
+        {% if shippingNeedsCorrection %}
+            <form method="post"
+                  id="endHiddenShippingForm"
+                  action="{{ path('frontend.endereco.account.address.edit.save') }}"
+                  class="d-none"
+                  data-end-target-link-selector=".confirm-shipping-address [data-address-editor]"
+                  data-form-ajax-submit="true"
+            >
+                {{ sw_csrf('frontend.endereco.account.address.edit.save') }}
+
+                {% sw_include '@EnderecoShopware6Client/storefront/component/address/hidden-address-form.html.twig' with {
+                    'prefix': 'address',
+                    'data': shippingAddress,
                 } %}
 
                 <button type="submit">
@@ -43,16 +59,4 @@
     {% else %}
         {{ parent() }}
     {% endif %}
-{% endblock %}
-
-
-{% block  page_checkout_confirm_address_billing_actions_link %}
-    <a href="{{ path('frontend.account.address.edit.page', {'addressId': billingAddress.id}) }}"
-       title="{{ "account.overviewChangeBilling"|trans|striptags }}"
-       class="btn btn-light"
-       data-end-address-edit-id="billingEdit"
-       data-address-editor="true"
-       data-address-editor-options='{{ addressEditorOptions|json_encode }}'>
-        {{ "account.overviewChangeBilling"|trans|sw_sanitize }}
-    </a>
 {% endblock %}
