@@ -23,6 +23,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+
 use function count;
 
 /**
@@ -33,7 +34,7 @@ class AddressController extends StorefrontController
     private EntityRepository $addressRepository;
     private EventDispatcherInterface $eventDispatcher;
     public function __construct(
-        EntityRepository         $addressRepository,
+        EntityRepository $addressRepository,
         EventDispatcherInterface $eventDispatcher
     ) {
         $this->addressRepository = $addressRepository;
