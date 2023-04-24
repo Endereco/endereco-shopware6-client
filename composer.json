@@ -13,7 +13,9 @@
     ],
     "require": {
         "shopware/core": "~6.4",
-        "shopware/storefront": "~6.4"
+        "shopware/storefront": "~6.4",
+        "ext-curl": "*",
+        "ext-json": "*"
     },
     "extra": {
         "shopware-plugin-class": "Endereco\\Shopware6Client\\EnderecoShopware6Client",
@@ -32,7 +34,7 @@
         "phpunit/phpunit": "9.5.*"
     },
     "scripts": {
-        "cs-check": "php vendor/bin/phpcs --standard=PSR1,PSR2 ./src/**/*.php",
+        "cs-check": "php vendor/bin/phpcs --standard=PSR1,PSR2,PSR12  --extensions=php ./src",
         "unit-test": "php vendor/phpunit/phpunit/phpunit --bootstrap src/Test/bootstrap.php src/Test"
     }
 }

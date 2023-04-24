@@ -118,12 +118,13 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
     public function extractAndAccountSessions(EntityWrittenEvent $event): void
     {
         $accountableSessionIds = [];
-
-        if (isset($_SERVER)
+        $isPostRequest =
+            isset($_SERVER)
             && is_array($_SERVER)
             && array_key_exists('REQUEST_METHOD', $_SERVER)
-            && 'POST' === $_SERVER['REQUEST_METHOD']
-        ) {
+            && 'POST' === $_SERVER['REQUEST_METHOD'];
+
+        if ($isPostRequest) {
             foreach ($_POST as $sVarName => $sVarValue) {
                 if ((strpos($sVarName, '_session_counter') !== false) && 0 < intval($sVarValue)) {
                     $sSessionIdName = str_replace('_session_counter', '', $sVarName) . '_session_id';
@@ -193,11 +194,11 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
                 continue;
             }
 
-            if (!(
+            $shouldCheckAddress =
                 ($checkAddressEnabled && !$enderecoAddress->isPayPalAddress())
-                || ($paypalCheckEnabled && $enderecoAddress->isPayPalAddress())
-            )
-            ) {
+                || ($paypalCheckEnabled && $enderecoAddress->isPayPalAddress());
+
+            if (!$shouldCheckAddress) {
                 continue;
             }
 
@@ -234,10 +235,7 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
         if (!empty($countryId)) {
             $country = $this->fetchCountry($countryId, $context);
         }
-        if (!empty($enderecoStreet) &&
-            !empty($enderecoHousenumber) &&
-            !empty($country)
-        ) {
+        if (!empty($enderecoStreet) && !empty($enderecoHousenumber) && !empty($country)) {
             $address->set(
                 'street',
                 $this->enderecoService->buildFullStreet(

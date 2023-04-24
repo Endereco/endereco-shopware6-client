@@ -12,8 +12,6 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class EnderecoServiceTest extends TestCase
 {
-
-
     /**
      * @dataProvider provideCountryIsoStreetOrderData
      */
