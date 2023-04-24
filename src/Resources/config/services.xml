@@ -18,6 +18,15 @@
                 <argument type="service" id="service_container"/>
             </call>
         </service>
+
+        <service id="Endereco\Shopware6Client\Controller\Storefront\AddressController" public="true">
+            <argument type="service" id="customer_address.repository" />
+            <argument type="service" id="event_dispatcher"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
         <service id="Endereco\Shopware6Client\Service\EnderecoService" >
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="plugin.repository"/>
