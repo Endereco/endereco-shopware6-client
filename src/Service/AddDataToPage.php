@@ -23,9 +23,9 @@ class AddDataToPage implements EventSubscriberInterface
 
     public function __construct(
         SystemConfigService $systemConfigService,
-        EntityRepository    $countryRepository,
-        EntityRepository    $stateRepository,
-        EntityRepository    $pluginRepository
+        EntityRepository $countryRepository,
+        EntityRepository $stateRepository,
+        EntityRepository $pluginRepository
     ) {
         $this->systemConfigService = $systemConfigService;
         $this->countryRepository = $countryRepository;
@@ -171,16 +171,14 @@ class AddDataToPage implements EventSubscriberInterface
         $configContainer->subdivisionMapping = str_replace("'", "\'", json_encode($statesMapping));
         $configContainer->subdivisionMappingReverse = str_replace("'", "\'", json_encode($statesMappingReverse));
 
+        $ioPathFile = $this->systemConfigService->get(
+            'EnderecoShopware6Client.config.enderecoPathToIOPhp',
+            $salesChannelId
+        );
+
         // Calculate path to file.
-        if (!empty(
-            $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoPathToIOPhp', $salesChannelId)
-        )
-        ) {
-            $configContainer->pathToIoPhp =
-                $this->systemConfigService->get('EnderecoShopware6Client.config.enderecoPathToIOPhp', $salesChannelId);
-        } else {
-            $configContainer->pathToIoPhp = '';
-        }
+        $configContainer->pathToIoPhp = !empty($ioPathFile) ? $ioPathFile : '';
+
 
         $event->getPage()->assign(['endereco_config' => $configContainer]);
     }
