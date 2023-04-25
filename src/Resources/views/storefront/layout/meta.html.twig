@@ -1,328 +1,287 @@
 {% sw_extends '@Storefront/storefront/layout/meta.html.twig' %}
 
 {% block layout_head_meta_tags %}
-  {% if page.endereco_config.pluginActive and ( not page.endereco_config.controllerOnlyWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
-      {% set mrSalutationId = null %}
-      {% set mrsSalutationId = null %}
-      {% if page.salutations %}
-          {% for salutation in page.salutations -%}
-              {% if salutation.salutationKey is same as 'mr' %}
-                  {% set mrSalutationId = salutation.id %}
-              {% endif %}
-              {% if salutation.salutationKey is same as 'mrs' %}
-                  {% set mrsSalutationId = salutation.id %}
-              {% endif %}
-          {% endfor %}
-      {% endif %}
-  <script>
-    if (undefined === window.EnderecoIntegrator) {
-      window.EnderecoIntegrator = {};
-    }
-    if (!window.EnderecoIntegrator.onLoad) {
-      window.EnderecoIntegrator.onLoad = [];
-    }
-
-    window.EnderecoIntegrator.countryCodeToNameMapping = JSON.parse('{{ page.endereco_config.countryCodeToNameMapping|raw }}');
-    window.EnderecoIntegrator.countryMapping = JSON.parse('{{ page.endereco_config.countryMapping|raw }}');
-    window.EnderecoIntegrator.countryMappingReverse = JSON.parse('{{ page.endereco_config.countryMappingReverse|raw }}');
-
-    window.EnderecoIntegrator.subdivisionCodeToNameMapping = JSON.parse('{{ page.endereco_config.subdivisionCodeToNameMapping|raw }}');
-    window.EnderecoIntegrator.subdivisionMapping = JSON.parse('{{ page.endereco_config.subdivisionMapping|raw }}');
-    window.EnderecoIntegrator.subdivisionMappingReverse = JSON.parse('{{ page.endereco_config.subdivisionMappingReverse|raw }}');
-
-    function enderecoInitAMS(prefix, config, cb) {
-      if (undefined !== window.EnderecoIntegrator.initAMS) {
-        var EAO = window.EnderecoIntegrator.initAMS(prefix, config);
-        if (cb) {
-          cb(EAO);
-        }
-      } else {
-        window.EnderecoIntegrator.onLoad.push(function () {
-          var EAO = window.EnderecoIntegrator.initAMS(prefix, config);
-          if (cb) {
-            cb(EAO);
-          }
-        });
-      }
-    }
-
-    function enderecoInitES(prefix, config) {
-      if (undefined !== window.EnderecoIntegrator.initEmailServices) {
-        window.EnderecoIntegrator.initEmailServices(prefix, config);
-      } else {
-        window.EnderecoIntegrator.onLoad.push(function () {
-          window.EnderecoIntegrator.initEmailServices(prefix, config);
-        });
-      }
-    }
-
-    function enderecoInitPS(prefix, config) {
-      if (undefined !== window.EnderecoIntegrator.initPersonServices) {
-        window.EnderecoIntegrator.initPersonServices(prefix, config);
-      } else {
-        window.EnderecoIntegrator.onLoad.push(function () {
-          window.EnderecoIntegrator.initPersonServices(prefix, config);
-        });
-      }
-    }
-
-    function enderecoSetConfigValues() {
-      window.EnderecoIntegrator.themeName = '';
-      window.EnderecoIntegrator.defaultCountrySelect = false;
-      window.EnderecoIntegrator.defaultCountry = '{{ page.endereco_config.defaultCountry }}';
-      window.EnderecoIntegrator.config.agentName = '{{ page.endereco_config.enderecoAgentInfo }}';
-
-      if ('{{ page.endereco_config.pathToIoPhp }}' !== '') {
-        window.EnderecoIntegrator.config.apiUrl = '{{ page.endereco_config.pathToIoPhp }}';
-      } else  {
-        window.EnderecoIntegrator.config.apiUrl = '{{ asset('bundles/enderecoshopware6client/io.php') }}';
-      }
-        {% if mrSalutationId %}
-        window.EnderecoIntegrator.mappings.gender.M = '{{ mrSalutationId }}'
+    {% if page.endereco_config.pluginActive and ( not page.endereco_config.controllerOnlyWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
+        {% set mrSalutationId = null %}
+        {% set mrsSalutationId = null %}
+        {% if page.salutations %}
+            {% for salutation in page.salutations -%}
+                {% if salutation.salutationKey is same as 'mr' %}
+                    {% set mrSalutationId = salutation.id %}
+                {% endif %}
+                {% if salutation.salutationKey is same as 'mrs' %}
+                    {% set mrsSalutationId = salutation.id %}
+                {% endif %}
+            {% endfor %}
         {% endif %}
-
-        {% if mrsSalutationId %}
-        window.EnderecoIntegrator.mappings.gender.F = '{{ mrsSalutationId }}'
-        {% endif %}
-        {% set cssPath = asset('bundles/enderecoshopware6client/endereco.css') ~ '?var=' ~ page.endereco_config.enderecoVersion  %}
-
-      window.EnderecoIntegrator.config.apiKey = '{{ page.endereco_config.enderecoApiKey }}';
-      window.EnderecoIntegrator.config.showDebugInfo = false;
-      window.EnderecoIntegrator.config.remoteApiUrl = '{{ page.endereco_config.enderecoRemoteUrl }}';
-      window.EnderecoIntegrator.config.trigger.onblur = !!('{{ page.endereco_config.enderecoTriggerOnBlur }}');
-      window.EnderecoIntegrator.config.trigger.onsubmit = !!('{{ page.endereco_config.enderecoTriggerOnSubmit }}');
-      window.EnderecoIntegrator.config.ux.smartFill = false;
-      window.EnderecoIntegrator.config.ux.checkExisting = false;
-      window.EnderecoIntegrator.config.ux.resumeSubmit = !!('{{ page.endereco_config.enderecoContinueSubmit }}');
-      window.EnderecoIntegrator.config.ux.useStandardCss = !!('{{ page.endereco_config.enderecoUseDefaultCss }}');
-      window.EnderecoIntegrator.config.ux.cssFilePath = '{{ cssPath }}';
-      window.EnderecoIntegrator.config.ux.showEmailStatus = !!('{{ page.endereco_config.enderecoShowEmailStatus }}');
-      window.EnderecoIntegrator.config.ux.allowCloseModal = !!('{{ page.endereco_config.enderecoAllowCloseIcon }}');
-      window.EnderecoIntegrator.config.ux.confirmWithCheckbox = !!('{{ page.endereco_config.enderecoConfirmWithCheckbox }}');
-      window.EnderecoIntegrator.config.ux.changeFieldsOrder = true;
-      window.EnderecoIntegrator.config.ux.showPhoneErrors = {{ page.endereco_config.enderecoShowPhoneErrors ? 'true':'false' }};
-      window.EnderecoIntegrator.config.ux.showPhoneFlag = true;
-      window.EnderecoIntegrator.config.ux.correctTranspositionedNames = {{ page.endereco_config.enderecoExchangeNamesAutomatically ? 'true':'false' }};
-      window.EnderecoIntegrator.config.phoneFormat = '{{ page.endereco_config.enderecoPhsUseFormat }}';
-      window.EnderecoIntegrator.config.defaultPhoneType = '{{ page.endereco_config.enderecoPhsDefaultFieldType }}';
-      window.EnderecoIntegrator.config.splitStreet = {{ page.endereco_config.enderecoSplitStreet ? 'true':'false' }};
-      window.EnderecoIntegrator.countryMappingUrl = '';
-      window.EnderecoIntegrator.config.templates.primaryButtonClasses = 'btn btn-primary btn-lg';
-      window.EnderecoIntegrator.config.templates.secondaryButtonClasses = 'btn btn-secondary btn-lg';
-      window.EnderecoIntegrator.config.texts = {
-        popUpHeadline: '{{ "enderecoshopware6client.texts.popUpHeadline"|trans|sw_sanitize|escape }}',
-        popUpSubline: '{{ "enderecoshopware6client.texts.popUpSubline"|trans|sw_sanitize|escape }}',
-        mistakeNoPredictionSubline: '{{ "enderecoshopware6client.texts.mistakeNoPredictionSubline"|trans|sw_sanitize|escape }}',
-        confirmMyAddressCheckbox: '{{ "enderecoshopware6client.texts.confirmMyAddressCheckbox"|trans|sw_sanitize|escape }}',
-        notFoundSubline: '{{ "enderecoshopware6client.texts.notFoundSubline"|trans|sw_sanitize|escape }}',
-        yourInput: '{{ "enderecoshopware6client.texts.yourInput"|trans|sw_sanitize|escape }}',
-        editYourInput: '{{ "enderecoshopware6client.texts.editYourInput"|trans|sw_sanitize|escape }}',
-        ourSuggestions: '{{ "enderecoshopware6client.texts.ourSuggestions"|trans|sw_sanitize|escape }}',
-        useSelected: '{{ "enderecoshopware6client.texts.useSelected"|trans|sw_sanitize|escape }}',
-        confirmAddress: '{{ "enderecoshopware6client.texts.confirmAddress"|trans|sw_sanitize|escape }}',
-        editAddress: '{{ "enderecoshopware6client.texts.editAddress"|trans|sw_sanitize|escape }}',
-        warningText: '{{ "enderecoshopware6client.texts.warningText"|trans|sw_sanitize|escape }}',
-        popupHeadlines: {
-          general_address: '{{ "enderecoshopware6client.texts.general_address"|trans|sw_sanitize|escape }}',
-          billing_address: '{{ "enderecoshopware6client.texts.billing_address"|trans|sw_sanitize|escape }}',
-          shipping_address: '{{ "enderecoshopware6client.texts.shipping_address"|trans|sw_sanitize|escape }}',
-        },
-        statuses: {
-          email_not_correct: '{{ "enderecoshopware6client.statuses.email_not_correct"|trans|sw_sanitize|escape }}',
-          email_cant_receive: '{{ "enderecoshopware6client.statuses.email_cant_receive"|trans|sw_sanitize|escape }}',
-          email_syntax_error: '{{ "enderecoshopware6client.statuses.email_syntax_error"|trans|sw_sanitize|escape }}',
-          email_no_mx: '{{ "enderecoshopware6client.statuses.email_no_mx"|trans|sw_sanitize|escape }}',
-          building_number_is_missing: '{{ "enderecoshopware6client.statuses.building_number_is_missing"|trans|sw_sanitize|escape }}',
-          building_number_not_found: '{{ "enderecoshopware6client.statuses.building_number_not_found"|trans|sw_sanitize|escape }}',
-          street_name_needs_correction: '{{ "enderecoshopware6client.statuses.street_name_needs_correction"|trans|sw_sanitize|escape }}',
-          locality_needs_correction: '{{ "enderecoshopware6client.statuses.locality_needs_correction"|trans|sw_sanitize|escape }}',
-          postal_code_needs_correction: '{{ "enderecoshopware6client.statuses.postal_code_needs_correction"|trans|sw_sanitize|escape }}',
-          country_code_needs_correction: '{{ "enderecoshopware6client.statuses.country_code_needs_correction"|trans|sw_sanitize|escape }}',
-            phone_invalid: '{{ "enderecoshopware6client.statuses.phone_invalid"|trans|sw_sanitize|escape }}',
-            phone_format_needs_correction: '{{ "enderecoshopware6client.statuses.phone_format_needs_correction"|trans|sw_sanitize|escape }}',
-            phone_should_be_fixed: '{{ "enderecoshopware6client.statuses.phone_should_be_fixed"|trans|sw_sanitize|escape }}',
-            phone_should_be_mobile: '{{ "enderecoshopware6client.statuses.phone_should_be_mobile"|trans|sw_sanitize|escape }}',
-        },
-          requiredFormat: {
-              E164: '{{ "enderecoshopware6client.requiredFormat.hintFormatE164"|trans|sw_sanitize|escape }}',
-              INTERNATIONAL: '{{ "enderecoshopware6client.requiredFormat.hintFormatInternational"|trans|sw_sanitize|escape }}',
-              NATIONAL: '{{ "enderecoshopware6client.requiredFormat.hintFormatNational"|trans|sw_sanitize|escape }}',
-          }
-      };
-      window.EnderecoIntegrator.activeServices = {
-        ams: true,
-        emailService: {{ page.endereco_config.enderecoEmailCheckActive ? 'true':'false' }},
-        personService: {{ page.endereco_config.enderecoNameCheckActive ? 'true':'false' }},
-        phs: {{ page.endereco_config.enderecoPhsActive ? 'true':'false' }}
-      }
-
-      // Execute all function that have been called throughout the page.
-      window.EnderecoIntegrator.onLoad.forEach(function (callback) {
-        callback();
-      });
-
-      window.EnderecoIntegrator.ready = true;
-
-      (function() {
-        window.EnderecoIntegrator.$formScanner = {
-          loop: null,
-          start: function() {
-            if (window.EnderecoIntegrator.formScannerStarted){
-                return;
+        <script>
+            if (undefined === window.EnderecoIntegrator) {
+                window.EnderecoIntegrator = {};
             }
-            this.loop = setInterval( function() {
-              document.querySelectorAll('[name="endereco_data_marker"][data-has-object="no"]').forEach( function(MarkerElement) {
-                var formElement = MarkerElement.closest('form');
-                var markerValue =  MarkerElement.value;
-                var formId = '';
-                if (formElement.getAttribute(`data-endereco-${markerValue}-form-id`)) {
-                  formId = formElement.getAttribute(`data-endereco-${markerValue}-form-id`);
+            if (!window.EnderecoIntegrator.onLoad) {
+                window.EnderecoIntegrator.onLoad = [];
+            }
+
+            window.EnderecoIntegrator.countryCodeToNameMapping = JSON.parse('{{ page.endereco_config.countryCodeToNameMapping|raw }}');
+            window.EnderecoIntegrator.countryMapping = JSON.parse('{{ page.endereco_config.countryMapping|raw }}');
+            window.EnderecoIntegrator.countryMappingReverse = JSON.parse('{{ page.endereco_config.countryMappingReverse|raw }}');
+
+            window.EnderecoIntegrator.subdivisionCodeToNameMapping = JSON.parse('{{ page.endereco_config.subdivisionCodeToNameMapping|raw }}');
+            window.EnderecoIntegrator.subdivisionMapping = JSON.parse('{{ page.endereco_config.subdivisionMapping|raw }}');
+            window.EnderecoIntegrator.subdivisionMappingReverse = JSON.parse('{{ page.endereco_config.subdivisionMappingReverse|raw }}');
+
+            function enderecoInitAMS(prefix, config, cb) {
+                if (undefined !== window.EnderecoIntegrator.initAMS) {
+                    var EAO = window.EnderecoIntegrator.initAMS(prefix, config);
+                    if (cb) {
+                        cb(EAO);
+                    }
                 } else {
-                  formId = (Math.floor(Math.random() * 100) * Date.now()).toString(16);
-                  formElement.setAttribute(`data-endereco-${markerValue}-form-id`, formId);
-                }
-                var prefix = MarkerElement.getAttribute('data-used-prefix');
-                if ('ams' === markerValue) {
-                  var countryCodeSelector = MarkerElement.getAttribute('data-country-code-selector');
-                  var postalCodeSelector = MarkerElement.getAttribute('data-postal-code-selector');
-                  var localitySelector = MarkerElement.getAttribute('data-locality-selector');
-                  var streetFullSelector = MarkerElement.getAttribute('data-street-full-selector');
-                  var streetSelector = MarkerElement.getAttribute('data-street-selector');
-                  var houseNumberSelector = MarkerElement.getAttribute('data-house-number-selector');
-                  var subdivisionCodeSelector = MarkerElement.getAttribute('data-subdivision-code-selector');
-                  var amsStatusSelector = MarkerElement.getAttribute(`data-${markerValue}-status-selector`);
-                  var amsTimestampSelector = MarkerElement.getAttribute(`data-${markerValue}-timestamp-selector`);
-                  var amsPredictionsSelector = MarkerElement.getAttribute(`data-${markerValue}-predictions-selector`);
-                  var EAO = window.EnderecoIntegrator.initAMS(
-                          {
-                            countryCode: `[data-endereco-${markerValue}-form-id="${formId}"] ${countryCodeSelector}`,
-                            subdivisionCode:  `[data-endereco-${markerValue}-form-id="${formId}"] ${subdivisionCodeSelector}`,
-                            postalCode: `[data-endereco-${markerValue}-form-id="${formId}"] ${postalCodeSelector}`,
-                            locality: `[data-endereco-${markerValue}-form-id="${formId}"] ${localitySelector}`,
-                            streetFull: `[data-endereco-${markerValue}-form-id="${formId}"] ${streetFullSelector}`,
-                            streetName: `[data-endereco-${markerValue}-form-id="${formId}"] ${streetSelector}`,
-                            buildingNumber: `[data-endereco-${markerValue}-form-id="${formId}"] ${houseNumberSelector}`,
-                              addressStatus:  `[data-endereco-${markerValue}-form-id="${formId}"] ${amsStatusSelector}`,
-                              addressTimestamp:  `[data-endereco-${markerValue}-form-id="${formId}"] ${amsTimestampSelector}`,
-                              addressPredictions:  `[data-endereco-${markerValue}-form-id="${formId}"] ${amsPredictionsSelector}`
-                          }, {
-                            name: `ams_${prefix}_${formId}`,
-                            addressType: 'general_address'
-                          }
-                  );
-
-                  // If ajax, add click listener.
-                  var isAjax = 'true' === formElement.getAttribute('data-form-ajax-submit');
-                  if (isAjax) {
-                    formElement.querySelector('[type="submit"]').addEventListener('click', function(e) {
-                      if (shouldBlockFormSubmission(EAO)) {
-                        e.preventDefault();
-                        // Resume click after ac is done.
-                        window.EnderecoIntegrator.submitResume = function() {
-                          EAO.waitUntilReady().then( function() {
-                            if(e.target.dispatchEvent(
-                                    new EAO.util.CustomEvent(
-                                            'click',
-                                            {
-                                              'bubbles': true,
-                                              'cancelable': true
-                                            }
-                                    )
-                            )) {
-                              if (!shouldBlockFormSubmission(EAO)) {
-                                  e.target.click();
-                              }
-                            }
-                          }).catch();
+                    window.EnderecoIntegrator.onLoad.push(function () {
+                        var EAO = window.EnderecoIntegrator.initAMS(prefix, config);
+                        if (cb) {
+                            cb(EAO);
                         }
-                        EAO.util.checkAddress().then().catch(function() {
-                          EAO.waitUntilReady().then( function() {
-                            if(e.target.dispatchEvent(
-                                    new EAO.util.CustomEvent(
-                                            'click',
-                                            {
-                                              'bubbles': true,
-                                              'cancelable': true
-                                            }
-                                    )
-                            )) {
-                              e.target.click();
-                            }
-                          }).catch();
-                        });
-                        return false;
-                      }
-                    });
-                  }
-                }
-                if ('phoneServices' === markerValue) {
-                    var countryCodeSelector = MarkerElement.getAttribute('data-country-code-selector');
-                    var phoneSelector = MarkerElement.getAttribute('data-phone-selector');
-                    var numberType = MarkerElement.getAttribute('data-number-type') ?? window.EnderecoIntegrator.config.defaultPhoneType;
-                    window.EnderecoIntegrator.initPhoneServices(
-                        {
-                            phone: `[data-endereco-${markerValue}-form-id="${formId}"] ${phoneSelector}`,
-                            countryCode: `[data-endereco-${markerValue}-form-id="${formId}"] ${countryCodeSelector}`
-                        }, {
-                            name: `phs_${prefix}_${formId}`,
-                            numberType,
-                        }
-                    );
-                }
-                if ('emailServices' === markerValue) {
-                    var emailSelector = MarkerElement.getAttribute('data-email-selector');
-                    enderecoInitES({
-                        'email': `[data-endereco-${markerValue}-form-id="${formId}"] ${emailSelector}`,
-                    },{
-                        name: `${markerValue}_${prefix}_${formId}`,
                     });
                 }
-                if ('personServices' === markerValue) {
-                      var firstNameSelector = MarkerElement.getAttribute('data-first-name-selector');
-                      var lastNameSelector = MarkerElement.getAttribute('data-last-name-selector');
-                      var salutationSelector = MarkerElement.getAttribute('data-salutation-selector');
-                      var titleSelector = MarkerElement.getAttribute('data-title-selector');
-                      enderecoInitPS({
-                          'firstName': `[data-endereco-${markerValue}-form-id="${formId}"] ${firstNameSelector}`,
-                          'lastName': `[data-endereco-${markerValue}-form-id="${formId}"] ${lastNameSelector}`,
-                          'salutation': `[data-endereco-${markerValue}-form-id="${formId}"] ${salutationSelector}`,
-                          'title': `[data-endereco-${markerValue}-form-id="${formId}"] ${titleSelector}`
-                      },{
-                          name: `${markerValue}_${prefix}_${formId}`,
-                      });
+            }
+
+            function enderecoInitES(prefix, config) {
+                if (undefined !== window.EnderecoIntegrator.initEmailServices) {
+                    window.EnderecoIntegrator.initEmailServices(prefix, config);
+                } else {
+                    window.EnderecoIntegrator.onLoad.push(function () {
+                        window.EnderecoIntegrator.initEmailServices(prefix, config);
+                    });
                 }
-                MarkerElement.setAttribute('data-has-object', 'yes');
-              });
-            }, 1);
-            window.EnderecoIntegrator.formScannerStarted = true;
-          },
-          stop: function() {
+            }
 
-          }
-        }
-        window.EnderecoIntegrator.$formScanner.start();
-      })();
-    }
+            function enderecoInitPS(prefix, config) {
+                if (undefined !== window.EnderecoIntegrator.initPersonServices) {
+                    window.EnderecoIntegrator.initPersonServices(prefix, config);
+                } else {
+                    window.EnderecoIntegrator.onLoad.push(function () {
+                        window.EnderecoIntegrator.initPersonServices(prefix, config);
+                    });
+                }
+            }
 
-    function shouldBlockFormSubmission(EAO){
-        return EAO.util.shouldBeChecked() || EAO._awaits > 0;
-    }
+            function enderecoSetConfigValues() {
+                window.EnderecoIntegrator.themeName = '';
+                window.EnderecoIntegrator.defaultCountrySelect = false;
+                window.EnderecoIntegrator.defaultCountry = '{{ page.endereco_config.defaultCountry }}';
+                window.EnderecoIntegrator.config.agentName = '{{ page.endereco_config.enderecoAgentInfo }}';
 
-    function enderecoLoadAMSConfig() {
-      if (window.EnderecoIntegrator.configScannerStarted){
-          return;
-      }
+                if ('{{ page.endereco_config.pathToIoPhp }}' !== '') {
+                    window.EnderecoIntegrator.config.apiUrl = '{{ page.endereco_config.pathToIoPhp }}';
+                } else {
+                    window.EnderecoIntegrator.config.apiUrl = '{{ asset('bundles/enderecoshopware6client/io.php') }}';
+                }
+                {% if mrSalutationId %}
+                window.EnderecoIntegrator.mappings.gender.M = '{{ mrSalutationId }}'
+                {% endif %}
 
-      var $interval = setInterval( function() {
-        if (!!window.EnderecoIntegrator.config) {
-          enderecoSetConfigValues();
-          clearInterval($interval);
-        }
-      }, 1);
-      window.EnderecoIntegrator.configScannerStarted = true;
-    }
-  </script>
-  {% endif %}
+                {% if mrsSalutationId %}
+                window.EnderecoIntegrator.mappings.gender.F = '{{ mrsSalutationId }}'
+                {% endif %}
 
-  {{ parent() }}
+                {% set cssPath = asset('bundles/enderecoshopware6client/endereco.css') ~ '?var=' ~ page.endereco_config.enderecoVersion  %}
+
+                window.EnderecoIntegrator.config.apiKey = '{{ page.endereco_config.enderecoApiKey }}';
+                window.EnderecoIntegrator.config.showDebugInfo = false;
+                window.EnderecoIntegrator.config.remoteApiUrl = '{{ page.endereco_config.enderecoRemoteUrl }}';
+                window.EnderecoIntegrator.config.trigger.onblur = !!('{{ page.endereco_config.enderecoTriggerOnBlur }}');
+                window.EnderecoIntegrator.config.trigger.onsubmit = !!('{{ page.endereco_config.enderecoTriggerOnSubmit }}');
+                window.EnderecoIntegrator.config.ux.smartFill = false;
+                window.EnderecoIntegrator.config.ux.checkExisting = false;
+                window.EnderecoIntegrator.config.ux.resumeSubmit = !!('{{ page.endereco_config.enderecoContinueSubmit }}');
+                window.EnderecoIntegrator.config.ux.useStandardCss = !!('{{ page.endereco_config.enderecoUseDefaultCss }}');
+                window.EnderecoIntegrator.config.ux.cssFilePath = '{{ cssPath }}';
+                window.EnderecoIntegrator.config.ux.showEmailStatus = !!('{{ page.endereco_config.enderecoShowEmailStatus }}');
+                window.EnderecoIntegrator.config.ux.allowCloseModal = !!('{{ page.endereco_config.enderecoAllowCloseIcon }}');
+                window.EnderecoIntegrator.config.ux.confirmWithCheckbox = !!('{{ page.endereco_config.enderecoConfirmWithCheckbox }}');
+                window.EnderecoIntegrator.config.ux.changeFieldsOrder = true;
+                window.EnderecoIntegrator.config.ux.showPhoneErrors = {{ page.endereco_config.enderecoShowPhoneErrors ? 'true':'false' }};
+                window.EnderecoIntegrator.config.ux.showPhoneFlag = true;
+                window.EnderecoIntegrator.config.ux.correctTranspositionedNames = {{ page.endereco_config.enderecoExchangeNamesAutomatically ? 'true':'false' }};
+                window.EnderecoIntegrator.config.phoneFormat = '{{ page.endereco_config.enderecoPhsUseFormat }}';
+                window.EnderecoIntegrator.config.defaultPhoneType = '{{ page.endereco_config.enderecoPhsDefaultFieldType }}';
+                window.EnderecoIntegrator.config.splitStreet = {{ page.endereco_config.enderecoSplitStreet ? 'true':'false' }};
+                window.EnderecoIntegrator.countryMappingUrl = '';
+                window.EnderecoIntegrator.config.templates.primaryButtonClasses = 'btn btn-primary btn-lg';
+                window.EnderecoIntegrator.config.templates.secondaryButtonClasses = 'btn btn-secondary btn-lg';
+                window.EnderecoIntegrator.config.texts = {
+                    popUpHeadline: '{{ "enderecoshopware6client.texts.popUpHeadline"|trans|sw_sanitize|escape }}',
+                    popUpSubline: '{{ "enderecoshopware6client.texts.popUpSubline"|trans|sw_sanitize|escape }}',
+                    mistakeNoPredictionSubline: '{{ "enderecoshopware6client.texts.mistakeNoPredictionSubline"|trans|sw_sanitize|escape }}',
+                    confirmMyAddressCheckbox: '{{ "enderecoshopware6client.texts.confirmMyAddressCheckbox"|trans|sw_sanitize|escape }}',
+                    notFoundSubline: '{{ "enderecoshopware6client.texts.notFoundSubline"|trans|sw_sanitize|escape }}',
+                    yourInput: '{{ "enderecoshopware6client.texts.yourInput"|trans|sw_sanitize|escape }}',
+                    editYourInput: '{{ "enderecoshopware6client.texts.editYourInput"|trans|sw_sanitize|escape }}',
+                    ourSuggestions: '{{ "enderecoshopware6client.texts.ourSuggestions"|trans|sw_sanitize|escape }}',
+                    useSelected: '{{ "enderecoshopware6client.texts.useSelected"|trans|sw_sanitize|escape }}',
+                    confirmAddress: '{{ "enderecoshopware6client.texts.confirmAddress"|trans|sw_sanitize|escape }}',
+                    editAddress: '{{ "enderecoshopware6client.texts.editAddress"|trans|sw_sanitize|escape }}',
+                    warningText: '{{ "enderecoshopware6client.texts.warningText"|trans|sw_sanitize|escape }}',
+                    popupHeadlines: {
+                        general_address: '{{ "enderecoshopware6client.texts.general_address"|trans|sw_sanitize|escape }}',
+                        billing_address: '{{ "enderecoshopware6client.texts.billing_address"|trans|sw_sanitize|escape }}',
+                        shipping_address: '{{ "enderecoshopware6client.texts.shipping_address"|trans|sw_sanitize|escape }}',
+                    },
+                    statuses: {
+                        email_not_correct: '{{ "enderecoshopware6client.statuses.email_not_correct"|trans|sw_sanitize|escape }}',
+                        email_cant_receive: '{{ "enderecoshopware6client.statuses.email_cant_receive"|trans|sw_sanitize|escape }}',
+                        email_syntax_error: '{{ "enderecoshopware6client.statuses.email_syntax_error"|trans|sw_sanitize|escape }}',
+                        email_no_mx: '{{ "enderecoshopware6client.statuses.email_no_mx"|trans|sw_sanitize|escape }}',
+                        building_number_is_missing: '{{ "enderecoshopware6client.statuses.building_number_is_missing"|trans|sw_sanitize|escape }}',
+                        building_number_not_found: '{{ "enderecoshopware6client.statuses.building_number_not_found"|trans|sw_sanitize|escape }}',
+                        street_name_needs_correction: '{{ "enderecoshopware6client.statuses.street_name_needs_correction"|trans|sw_sanitize|escape }}',
+                        locality_needs_correction: '{{ "enderecoshopware6client.statuses.locality_needs_correction"|trans|sw_sanitize|escape }}',
+                        postal_code_needs_correction: '{{ "enderecoshopware6client.statuses.postal_code_needs_correction"|trans|sw_sanitize|escape }}',
+                        country_code_needs_correction: '{{ "enderecoshopware6client.statuses.country_code_needs_correction"|trans|sw_sanitize|escape }}',
+                        phone_invalid: '{{ "enderecoshopware6client.statuses.phone_invalid"|trans|sw_sanitize|escape }}',
+                        phone_format_needs_correction: '{{ "enderecoshopware6client.statuses.phone_format_needs_correction"|trans|sw_sanitize|escape }}',
+                        phone_should_be_fixed: '{{ "enderecoshopware6client.statuses.phone_should_be_fixed"|trans|sw_sanitize|escape }}',
+                        phone_should_be_mobile: '{{ "enderecoshopware6client.statuses.phone_should_be_mobile"|trans|sw_sanitize|escape }}',
+                    },
+                    requiredFormat: {
+                        E164: '{{ "enderecoshopware6client.requiredFormat.hintFormatE164"|trans|sw_sanitize|escape }}',
+                        INTERNATIONAL: '{{ "enderecoshopware6client.requiredFormat.hintFormatInternational"|trans|sw_sanitize|escape }}',
+                        NATIONAL: '{{ "enderecoshopware6client.requiredFormat.hintFormatNational"|trans|sw_sanitize|escape }}',
+                    }
+                };
+                window.EnderecoIntegrator.activeServices = {
+                    ams: true,
+                    emailService: {{ page.endereco_config.enderecoEmailCheckActive ? 'true':'false' }},
+                    personService: {{ page.endereco_config.enderecoNameCheckActive ? 'true':'false' }},
+                    phs: {{ page.endereco_config.enderecoPhsActive ? 'true':'false' }}
+                }
+
+                // Execute all function that have been called throughout the page.
+                window.EnderecoIntegrator.onLoad.forEach(function (callback) {
+                    callback();
+                });
+
+                window.EnderecoIntegrator.ready = true;
+
+                (function () {
+                    window.EnderecoIntegrator.$formScanner = {
+                        loop: null,
+                        start: function () {
+                            if (window.EnderecoIntegrator.formScannerStarted) {
+                                return;
+                            }
+                            this.loop = setInterval(function () {
+                                document.querySelectorAll('[name="endereco_data_marker"][data-has-object="no"]').forEach(function (MarkerElement) {
+                                    var formElement = MarkerElement.closest('form');
+                                    var markerValue = MarkerElement.value;
+                                    var formId = '';
+                                    if (formElement.getAttribute(`data-endereco-${markerValue}-form-id`)) {
+                                        formId = formElement.getAttribute(`data-endereco-${markerValue}-form-id`);
+                                    } else {
+                                        formId = (Math.floor(Math.random() * 100) * Date.now()).toString(16);
+                                        formElement.setAttribute(`data-endereco-${markerValue}-form-id`, formId);
+                                    }
+                                    var prefix = MarkerElement.getAttribute('data-used-prefix');
+                                    if ('ams' === markerValue) {
+                                        var countryCodeSelector = MarkerElement.getAttribute('data-country-code-selector');
+                                        var postalCodeSelector = MarkerElement.getAttribute('data-postal-code-selector');
+                                        var localitySelector = MarkerElement.getAttribute('data-locality-selector');
+                                        var streetFullSelector = MarkerElement.getAttribute('data-street-full-selector');
+                                        var streetSelector = MarkerElement.getAttribute('data-street-selector');
+                                        var houseNumberSelector = MarkerElement.getAttribute('data-house-number-selector');
+                                        var subdivisionCodeSelector = MarkerElement.getAttribute('data-subdivision-code-selector');
+                                        var amsStatusSelector = MarkerElement.getAttribute(`data-${markerValue}-status-selector`);
+                                        var amsTimestampSelector = MarkerElement.getAttribute(`data-${markerValue}-timestamp-selector`);
+                                        var amsPredictionsSelector = MarkerElement.getAttribute(`data-${markerValue}-predictions-selector`);
+                                        var isAjax = 'true' === MarkerElement.getAttribute('data-form-handle-ajax-submit');
+                                        var EAO = window.EnderecoIntegrator.initAMS(
+                                            {
+                                                countryCode: `[data-endereco-${markerValue}-form-id="${formId}"] ${countryCodeSelector}`,
+                                                subdivisionCode: `[data-endereco-${markerValue}-form-id="${formId}"] ${subdivisionCodeSelector}`,
+                                                postalCode: `[data-endereco-${markerValue}-form-id="${formId}"] ${postalCodeSelector}`,
+                                                locality: `[data-endereco-${markerValue}-form-id="${formId}"] ${localitySelector}`,
+                                                streetFull: `[data-endereco-${markerValue}-form-id="${formId}"] ${streetFullSelector}`,
+                                                streetName: `[data-endereco-${markerValue}-form-id="${formId}"] ${streetSelector}`,
+                                                buildingNumber: `[data-endereco-${markerValue}-form-id="${formId}"] ${houseNumberSelector}`,
+                                                addressStatus: `[data-endereco-${markerValue}-form-id="${formId}"] ${amsStatusSelector}`,
+                                                addressTimestamp: `[data-endereco-${markerValue}-form-id="${formId}"] ${amsTimestampSelector}`,
+                                                addressPredictions: `[data-endereco-${markerValue}-form-id="${formId}"] ${amsPredictionsSelector}`
+                                            }, {
+                                                name: `ams_${prefix}_${formId}`,
+                                                addressType: 'general_address',
+                                                ajaxForm: isAjax
+                                            }
+                                        );
+                                    }
+                                    if ('phoneServices' === markerValue) {
+                                        var countryCodeSelector = MarkerElement.getAttribute('data-country-code-selector');
+                                        var phoneSelector = MarkerElement.getAttribute('data-phone-selector');
+                                        var numberType = MarkerElement.getAttribute('data-number-type') ?? window.EnderecoIntegrator.config.defaultPhoneType;
+                                        window.EnderecoIntegrator.initPhoneServices(
+                                            {
+                                                phone: `[data-endereco-${markerValue}-form-id="${formId}"] ${phoneSelector}`,
+                                                countryCode: `[data-endereco-${markerValue}-form-id="${formId}"] ${countryCodeSelector}`
+                                            }, {
+                                                name: `phs_${prefix}_${formId}`,
+                                                numberType,
+                                            }
+                                        );
+                                    }
+                                    if ('emailServices' === markerValue) {
+                                        var emailSelector = MarkerElement.getAttribute('data-email-selector');
+                                        enderecoInitES({
+                                            'email': `[data-endereco-${markerValue}-form-id="${formId}"] ${emailSelector}`,
+                                        }, {
+                                            name: `${markerValue}_${prefix}_${formId}`,
+                                        });
+                                    }
+                                    if ('personServices' === markerValue) {
+                                        var firstNameSelector = MarkerElement.getAttribute('data-first-name-selector');
+                                        var lastNameSelector = MarkerElement.getAttribute('data-last-name-selector');
+                                        var salutationSelector = MarkerElement.getAttribute('data-salutation-selector');
+                                        var titleSelector = MarkerElement.getAttribute('data-title-selector');
+                                        enderecoInitPS({
+                                            'firstName': `[data-endereco-${markerValue}-form-id="${formId}"] ${firstNameSelector}`,
+                                            'lastName': `[data-endereco-${markerValue}-form-id="${formId}"] ${lastNameSelector}`,
+                                            'salutation': `[data-endereco-${markerValue}-form-id="${formId}"] ${salutationSelector}`,
+                                            'title': `[data-endereco-${markerValue}-form-id="${formId}"] ${titleSelector}`
+                                        }, {
+                                            name: `${markerValue}_${prefix}_${formId}`,
+                                        });
+                                    }
+                                    MarkerElement.setAttribute('data-has-object', 'yes');
+                                });
+                            }, 1);
+                            window.EnderecoIntegrator.formScannerStarted = true;
+                        },
+                        stop: function () {
+
+                        }
+                    }
+                    window.EnderecoIntegrator.$formScanner.start();
+                })();
+            }
+
+            function shouldBlockFormSubmission(EAO) {
+                return EAO.util.shouldBeChecked() || EAO._awaits > 0;
+            }
+
+            function enderecoLoadAMSConfig() {
+                if (window.EnderecoIntegrator.configScannerStarted) {
+                    return;
+                }
+
+                var $interval = setInterval(function () {
+                    if (!!window.EnderecoIntegrator.config) {
+                        enderecoSetConfigValues();
+                        clearInterval($interval);
+                    }
+                }, 1);
+                window.EnderecoIntegrator.configScannerStarted = true;
+            }
+        </script>
+    {% endif %}
+
+    {{ parent() }}
 {% endblock %}

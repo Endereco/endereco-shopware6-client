@@ -46,14 +46,14 @@ $message = "";
 try {
     if ('POST' !== $_SERVER['REQUEST_METHOD']) {
         header($http[200]);
-        throw new \Exception('We expect a POST request here.');
+        throw new Exception('We expect a POST request here.');
     }
 
     $agent_info  = trim($_SERVER['HTTP_X_AGENT']);
     $raw_json    = file_get_contents('php://input');
     if (empty($raw_json)) {
         header($http[400]);
-        throw new \Exception('Request body is empty. We expect a valid JSON.');
+        throw new Exception('Request body is empty. We expect a valid JSON.');
     }
 
     $api_key     = trim($_SERVER['HTTP_X_AUTH_KEY']);
@@ -61,7 +61,7 @@ try {
     $ch          = curl_init(trim($_SERVER['HTTP_X_REMOTE_API_URL']));
     if (!$ch) {
         header($http[500]);
-        throw new \Exception('Could not initiate a curl client.');
+        throw new Exception('Could not initiate a curl client.');
     }
 
     if ($_SERVER['HTTP_X_TRANSACTION_ID']) {
@@ -101,11 +101,10 @@ try {
     }
 
     curl_close($ch);
-} catch(\Exception $e) {
+} catch (Exception $e) {
     $message = $e->getMessage();
 }
 
 // Output the message.
 header("X-Robots-Tag: noindex, nofollow");
 echo $message;
-

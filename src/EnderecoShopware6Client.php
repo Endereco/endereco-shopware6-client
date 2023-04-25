@@ -11,7 +11,6 @@ use Endereco\Shopware6Client\Installer\PluginLifecycle;
 
 class EnderecoShopware6Client extends Plugin
 {
-
     /**
      * @throws Exception
      */

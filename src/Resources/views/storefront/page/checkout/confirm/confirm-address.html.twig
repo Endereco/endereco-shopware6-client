@@ -15,16 +15,47 @@
             {% set shippingNeedsCorrection = false %}
         {% endif %}
 
-        {% set options = {
-            billingNeedsCorrection: billingNeedsCorrection,
-            shippingNeedsCorrection: shippingNeedsCorrection
-        } %}
+        {% if billingNeedsCorrection %}
+            <form method="post"
+                  id="endHiddenBillingForm"
+                  action="{{ path('frontend.endereco.account.address.edit.save') }}"
+                  class="d-none"
+                  data-end-target-link-selector=".confirm-billing-address [data-address-editor]"
+                  data-form-ajax-submit="true"
+            >
+                {{ sw_csrf('frontend.endereco.account.address.edit.save') }}
 
-        <div
-            class="row js-confirm-overview-addresses"{% if billingNeedsCorrection or shippingNeedsCorrection %} data-endereco-checkout-address data-endereco-checkout-address-options="{{ options|json_encode }}"{% endif %}>
-            {{ block("page_checkout_confirm_address_billing") }}
-            {{ block("page_checkout_confirm_address_shipping") }}
-        </div>
+                {% sw_include '@EnderecoShopware6Client/storefront/component/address/hidden-address-form.html.twig' with {
+                    'prefix': 'address',
+                    'data': billingAddress,
+                } %}
+
+                <button type="submit">
+                </button>
+            </form>
+        {% endif %}
+
+        {% if shippingNeedsCorrection %}
+            <form method="post"
+                  id="endHiddenShippingForm"
+                  action="{{ path('frontend.endereco.account.address.edit.save') }}"
+                  class="d-none"
+                  data-end-target-link-selector=".confirm-shipping-address [data-address-editor]"
+                  data-form-ajax-submit="true"
+            >
+                {{ sw_csrf('frontend.endereco.account.address.edit.save') }}
+
+                {% sw_include '@EnderecoShopware6Client/storefront/component/address/hidden-address-form.html.twig' with {
+                    'prefix': 'address',
+                    'data': shippingAddress,
+                } %}
+
+                <button type="submit">
+                </button>
+            </form>
+        {% endif %}
+        {{ parent() }}
+
     {% else %}
         {{ parent() }}
     {% endif %}
