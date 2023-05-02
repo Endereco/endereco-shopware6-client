@@ -85,7 +85,7 @@
                 window.EnderecoIntegrator.mappings.gender.F = '{{ mrsSalutationId }}'
                 {% endif %}
 
-                {% set cssPath = asset('bundles/enderecoshopware6client/endereco.css') ~ '?var=' ~ page.endereco_config.enderecoVersion  %}
+                {% set cssPath = asset('bundles/enderecoshopware6client/endereco.min.css') ~ '?var=' ~ page.endereco_config.enderecoVersion  %}
 
                 window.EnderecoIntegrator.config.apiKey = '{{ page.endereco_config.enderecoApiKey }}';
                 window.EnderecoIntegrator.config.showDebugInfo = false;
