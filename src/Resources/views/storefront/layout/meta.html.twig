@@ -96,7 +96,15 @@
                 window.EnderecoIntegrator.config.ux.checkExisting = false;
                 window.EnderecoIntegrator.config.ux.resumeSubmit = !!('{{ page.endereco_config.enderecoContinueSubmit }}');
                 window.EnderecoIntegrator.config.ux.useStandardCss = !!('{{ page.endereco_config.enderecoUseDefaultCss }}');
-                window.EnderecoIntegrator.config.ux.cssFilePath = '{{ cssPath }}';
+
+                // Check if the setting specifies inline loading or file loading.
+                // TODO: @michal, get the setting from plugin settings, please.
+                if (true) {
+                    window.EnderecoIntegrator.config.ux.cssFilePath = '{{ cssPath }}';
+                } else {
+                    window.EnderecoIntegrator.config.ux.cssFilePath = '';
+                }
+
                 window.EnderecoIntegrator.config.ux.showEmailStatus = !!('{{ page.endereco_config.enderecoShowEmailStatus }}');
                 window.EnderecoIntegrator.config.ux.allowCloseModal = !!('{{ page.endereco_config.enderecoAllowCloseIcon }}');
                 window.EnderecoIntegrator.config.ux.confirmWithCheckbox = !!('{{ page.endereco_config.enderecoConfirmWithCheckbox }}');
