@@ -18,11 +18,13 @@
                 <argument type="service" id="service_container"/>
             </call>
         </service>
+
         <service id="Endereco\Shopware6Client\Service\EnderecoService" >
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="plugin.repository"/>
             <argument type="service" id="Endereco\Shopware6Client\Logger" />
         </service>
+
         <service id="Endereco\Shopware6Client\Service\AddDataToPage" >
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="country.repository"/>
