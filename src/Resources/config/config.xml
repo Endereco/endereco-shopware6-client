@@ -506,10 +506,12 @@
         </input-field>
 
         <input-field type="bool">
-            <name>enderecoUseDefaultCss</name>
-            <label>Use standard CSS</label>
-            <label lang="de-DE">Standard-CSS nutzen</label>
-            <defaultValue>true</defaultValue>
+            <name>enderecoLoadCssFromLink</name>
+            <label>Load CSS from link</label>
+            <label lang="de-DE">Laden Sie CSS aus dem Link</label>
+            <helpText>If this function is active, the endereco.min.js file will load CSS as separate link. Otherwise, it will be loaded as inline script</helpText>
+            <helpText lang="de-DE">Wenn diese Funktion aktiv ist, lädt die Datei endereco.min.js CSS als separaten Link. Andernfalls wird es als Inline-Skript geladen</helpText>
+            <defaultValue>false</defaultValue>
         </input-field>
 
         <input-field type="bool">

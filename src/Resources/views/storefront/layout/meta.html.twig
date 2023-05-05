@@ -95,11 +95,8 @@
                 window.EnderecoIntegrator.config.ux.smartFill = false;
                 window.EnderecoIntegrator.config.ux.checkExisting = false;
                 window.EnderecoIntegrator.config.ux.resumeSubmit = !!('{{ page.endereco_config.enderecoContinueSubmit }}');
-                window.EnderecoIntegrator.config.ux.useStandardCss = !!('{{ page.endereco_config.enderecoUseDefaultCss }}');
 
-                // Check if the setting specifies inline loading or file loading.
-                // TODO: @michal, get the setting from plugin settings, please.
-                if (true) {
+                if (!!('{{ page.endereco_config.enderecoLoadCssFromLink }}')) {
                     window.EnderecoIntegrator.config.ux.cssFilePath = '{{ cssPath }}';
                 } else {
                     window.EnderecoIntegrator.config.ux.cssFilePath = '';
