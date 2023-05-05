@@ -95,8 +95,9 @@
                 window.EnderecoIntegrator.config.ux.smartFill = false;
                 window.EnderecoIntegrator.config.ux.checkExisting = false;
                 window.EnderecoIntegrator.config.ux.resumeSubmit = !!('{{ page.endereco_config.enderecoContinueSubmit }}');
+                window.EnderecoIntegrator.config.ux.useStandardCss = ('{{ page.endereco_config.enderecoLoadCss }}' !== 'none');
 
-                if (!!('{{ page.endereco_config.enderecoLoadCssFromLink }}')) {
+                if ('{{ page.endereco_config.enderecoLoadCss }}' === 'link') {
                     window.EnderecoIntegrator.config.ux.cssFilePath = '{{ cssPath }}';
                 } else {
                     window.EnderecoIntegrator.config.ux.cssFilePath = '';

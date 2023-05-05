@@ -120,9 +120,9 @@ class AddDataToPage implements EventSubscriberInterface
         $configContainer->enderecoShowPhoneErrors =
             $this->systemConfigService
                 ->getBool('EnderecoShopware6Client.config.enderecoShowPhoneErrors', $salesChannelId);
-        $configContainer->enderecoLoadCssFromLink =
+        $configContainer->enderecoLoadCss =
             $this->systemConfigService
-                ->getBool('EnderecoShopware6Client.config.enderecoLoadCssFromLink', $salesChannelId);
+                ->getString('EnderecoShopware6Client.config.enderecoLoadCss', $salesChannelId);
         // Make controllerwhitelist
         $controllerWhitelist = ['Auth', 'AccountProfile', 'Address', 'Checkout', 'Register'];
         $controllerWhitelistAddition = explode(

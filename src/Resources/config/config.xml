@@ -505,13 +505,28 @@
             </helpText>
         </input-field>
 
-        <input-field type="bool">
-            <name>enderecoLoadCssFromLink</name>
-            <label>Load CSS from link</label>
-            <label lang="de-DE">Laden Sie CSS aus dem Link</label>
-            <helpText>If this function is active, the endereco.min.js file will load CSS as separate link. Otherwise, it will be loaded as inline script</helpText>
-            <helpText lang="de-DE">Wenn diese Funktion aktiv ist, lädt die Datei endereco.min.js CSS als separaten Link. Andernfalls wird es als Inline-Skript geladen</helpText>
-            <defaultValue>false</defaultValue>
+        <input-field type="single-select">
+            <name>enderecoLoadCss</name>
+            <options>
+                <option>
+                    <id>file</id>
+                    <name>Load default CSS inline</name>
+                    <name lang="de-DE">Standard-CSS inline laden</name>
+                </option>
+                <option>
+                    <id>link</id>
+                    <name>Load default CSS from link</name>
+                    <name lang="de-DE">Laden Sie Standard-CSS aus dem Link</name>
+                </option>
+                <option>
+                    <id>none</id>
+                    <name>Don't load default CSS</name>
+                    <name lang="de-DE">Laden Sie kein Standard-CSS</name>
+                </option>
+            </options>
+            <defaultValue>file</defaultValue>
+            <label>Default CSS loading</label>
+            <label lang="de-DE">Standard-CSS-Laden</label>
         </input-field>
 
         <input-field type="bool">
