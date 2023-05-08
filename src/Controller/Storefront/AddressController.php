@@ -33,6 +33,7 @@ class AddressController extends StorefrontController
 {
     private EntityRepository $addressRepository;
     private EventDispatcherInterface $eventDispatcher;
+
     public function __construct(
         EntityRepository $addressRepository,
         EventDispatcherInterface $eventDispatcher
@@ -57,7 +58,7 @@ class AddressController extends StorefrontController
     public function saveAddress(RequestDataBag $data, SalesChannelContext $context, CustomerEntity $customer): Response
     {
         /** @var RequestDataBag $address */
-        $address = $data->get('address');
+        $address = $data->get('billingAddress') ?? $data->get('shippingAddress');
 
         if (is_null($address) || !($addressId = $address->get('id'))) {
             throw new Exception('Missing address id');

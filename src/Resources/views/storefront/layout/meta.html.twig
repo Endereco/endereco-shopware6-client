@@ -188,6 +188,7 @@
                                         var streetSelector = MarkerElement.getAttribute('data-street-selector');
                                         var houseNumberSelector = MarkerElement.getAttribute('data-house-number-selector');
                                         var subdivisionCodeSelector = MarkerElement.getAttribute('data-subdivision-code-selector');
+                                        var addressType = MarkerElement.getAttribute('data-address-type') ?? 'general_address';
                                         var amsStatusSelector = MarkerElement.getAttribute(`data-${markerValue}-status-selector`);
                                         var amsTimestampSelector = MarkerElement.getAttribute(`data-${markerValue}-timestamp-selector`);
                                         var amsPredictionsSelector = MarkerElement.getAttribute(`data-${markerValue}-predictions-selector`);
@@ -206,7 +207,7 @@
                                                 addressPredictions: `[data-endereco-${markerValue}-form-id="${formId}"] ${amsPredictionsSelector}`
                                             }, {
                                                 name: `ams_${prefix}_${formId}`,
-                                                addressType: 'general_address',
+                                                addressType: addressType,
                                                 ajaxForm: isAjax
                                             }
                                         );
