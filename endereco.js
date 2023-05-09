@@ -44,7 +44,9 @@ EnderecoIntegrator.postfix = {
 EnderecoIntegrator.css = css[0][1];
 
 EnderecoIntegrator.resolvers.countryCodeSetValue = function (subscriber, value) {
-    if (!!jQuery) {
+    var functionsExist = (typeof jQuery !== 'undefined') && jQuery.fn.val && jQuery.fn.trigger;
+
+    if (functionsExist) {
         jQuery(subscriber.object).val(value).trigger('change');
     } else {
         subscriber.object.value = value;
@@ -52,7 +54,9 @@ EnderecoIntegrator.resolvers.countryCodeSetValue = function (subscriber, value) 
 }
 
 EnderecoIntegrator.resolvers.subdivisionCodeSetValue = function (subscriber, value) {
-    if (!!jQuery) {
+    var functionsExist = (typeof jQuery !== 'undefined') && jQuery.fn.val && jQuery.fn.trigger;
+
+    if (functionsExist) {
         jQuery(subscriber.object).val(value).trigger('change');
     } else {
         subscriber.object.value = value;
