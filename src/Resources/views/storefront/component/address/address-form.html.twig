@@ -83,7 +83,7 @@
                         id="{{ prefix }}AddressStreet"
                         placeholder="{{ "enderecoshopware6client.inputFields.enderedoStreetPlaceholder"|trans|striptags }}"
                         name="{{ prefix }}[enderecoStreet]"
-                        value="{{ data.get('extensions')['enderecoAddress'].street }}"
+                        value="{{ data.get('extensions')['enderecoAddress'].street ?? data.get('enderecoStreet') }}"
                         required="required">
              {% endblock %}
 
@@ -113,7 +113,7 @@
                         id="{{ prefix }}AddressHouseNumber"
                         placeholder="{{ "enderecoshopware6client.inputFields.enderedoHousenumberPlaceholder"|trans|striptags }}"
                         name="{{ prefix }}[enderecoHousenumber]"
-                        value="{{ data.get('extensions')['enderecoAddress'].houseNumber }}"
+                        value="{{ data.get('extensions')['enderecoAddress'].houseNumber ?? data.get('enderecoHousenumber') }}"
                         required="required">
              {% endblock %}
 
