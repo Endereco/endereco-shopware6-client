@@ -13,7 +13,7 @@
     ],
     "require": {
         "ext-curl": "*",
-        "ext-json": "*"
+        "ext-json": "*",
         "shopware/core": "^6.4",
         "shopware/storefront": "^6.4"
     },
