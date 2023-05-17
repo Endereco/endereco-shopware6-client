@@ -195,39 +195,65 @@ EnderecoIntegrator.onAjaxFormHandler.push(function (EAO) {
     })
 
 });
+const editAddressHandler = (e) => {
+    const targetFormLinkSelector = e.forms[0].getAttribute('data-end-target-link-selector');
+    if (!targetFormLinkSelector) {
+        return;
+    }
 
-EnderecoIntegrator.afterAMSActivation.push(function (EAO) {
-    EAO.onEditAddress.push((d) => {
-        const targetFormLinkSelector = d.forms[0].getAttribute('data-end-target-link-selector');
-        if (targetFormLinkSelector) {
-            const targetLink = document.querySelector(targetFormLinkSelector);
-            if (targetLink) {
-                targetLink.click();
-            }
+    const targetLink = document.querySelector(targetFormLinkSelector);
+    if (!targetLink) {
+        return;
+    }
+
+    targetLink.click();
+    const addressEditorPlugin = window.PluginManager.getPluginInstanceFromElement(targetLink, 'AddressEditor');
+    if (!addressEditorPlugin) {
+        return;
+    }
+
+    addressEditorPlugin.$emitter.subscribe('onOpen', ({detail: {pseudoModal}}) => {
+        const modalElement = pseudoModal._modal;
+        const addressEditButton = modalElement.querySelector('[data-target="#address-create-edit"]');
+        if (!addressEditButton) {
+            return;
         }
+        addressEditButton.click();
+    })
+}
 
+const addressCheckSelectedHandler = (e) => {
+    const form = e.forms[0];
+    if (!form) {
+        return;
+    }
+
+    const targetForm = form.getAttribute('data-end-target-link-selector');
+    const ajaxPlugin = window.PluginManager.getPluginInstanceFromElement(form, 'FormAjaxSubmit')
+    if (!targetForm || !ajaxPlugin) {
+        return;
+    }
+
+    ajaxPlugin.$emitter.subscribe('onAfterAjaxSubmit', ({detail: {response}}) => {
+        try {
+            const {addressSaved} = JSON.parse(response);
+            if (addressSaved) {
+                window.location.reload();
+            }
+        } catch (e) {
+            console.warn('[ENDERECO] Failed to save new address', e);
+        }
+    });
+
+    ajaxPlugin._fireRequest();
+}
+EnderecoIntegrator.afterAMSActivation.push(function (EAO) {
+    EAO.onEditAddress.push((e) => {
+        editAddressHandler(e);
     })
 
-    EAO.onAfterAddressCheckSelected.push((d) => {
-        const form = d.forms[0];
-        if (form) {
-            const targetForm = form.getAttribute('data-end-target-link-selector');
-            const ajaxPlugin = window.PluginManager.getPluginInstanceFromElement(form, 'FormAjaxSubmit')
-            if (targetForm && ajaxPlugin) {
-                ajaxPlugin.$emitter.subscribe('onAfterAjaxSubmit', ({detail: {response}}) => {
-                    try {
-                        const {addressSaved} = JSON.parse(response);
-                        if (addressSaved) {
-                            window.location.reload();
-                        }
-                    } catch (e) {
-                        console.warn('[ENDERECO] Failed to save new address', e);
-                    }
-                });
-
-                ajaxPlugin._fireRequest();
-            }
-        }
+    EAO.onAfterAddressCheckSelected.push((e) => {
+        addressCheckSelectedHandler(e)
     })
 });
 
@@ -246,8 +272,8 @@ window.EnderecoIntegrator.waitUntilReady().then(function () {
     //
 });
 
-var $waitForConfig = setInterval( function() {
-    if(typeof enderecoLoadAMSConfig === 'function'){
+var $waitForConfig = setInterval(function () {
+    if (typeof enderecoLoadAMSConfig === 'function') {
         enderecoLoadAMSConfig();
         clearInterval($waitForConfig);
     }
