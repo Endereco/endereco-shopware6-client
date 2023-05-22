@@ -13,7 +13,7 @@ services:
       timeout: 20s
       retries: 10
   shopware:
-    image: endereco/shopware:6.4.0
+    image: endereco/shopware_6.4.0_php_8.1:1.0.0
     environment:
       SHOP_URL: http://localhost
     volumes:

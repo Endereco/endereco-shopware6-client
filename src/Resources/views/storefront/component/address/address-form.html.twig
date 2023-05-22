@@ -4,6 +4,14 @@
     {{ parent() }}
 
     {% block component_address_form_endereco_marker %}
+        {% if prefix == 'billingAddress' %}
+            {% set addressType = 'billing_address' %}
+        {% elseif prefix == 'shippingAddress' %}
+            {% set addressType = 'shipping_address' %}
+        {% else %}
+            {% set addressType = 'general_address' %}
+        {% endif %}
+
         {% if page.endereco_config.pluginActive and ( not page.endereco_config.controllerOnlyWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
             <input
                 type="hidden"
@@ -25,6 +33,7 @@
                 data-ams-predictions-selector="[name='{{ prefix }}[amsPredictions]']"
                 data-street-selector="[name='{{ prefix }}[enderecoStreet]']"
                 data-house-number-selector="[name='{{ prefix }}[enderecoHousenumber]']"
+                data-address-type="{{ addressType }}"
             >
 
             <input
@@ -74,7 +83,7 @@
                         id="{{ prefix }}AddressStreet"
                         placeholder="{{ "enderecoshopware6client.inputFields.enderedoStreetPlaceholder"|trans|striptags }}"
                         name="{{ prefix }}[enderecoStreet]"
-                        value="{{ data.get('extensions')['enderecoAddress'].street }}"
+                        value="{{ data.get('extensions')['enderecoAddress'].street ?? data.get('enderecoStreet') }}"
                         required="required">
              {% endblock %}
 
@@ -104,7 +113,7 @@
                         id="{{ prefix }}AddressHouseNumber"
                         placeholder="{{ "enderecoshopware6client.inputFields.enderedoHousenumberPlaceholder"|trans|striptags }}"
                         name="{{ prefix }}[enderecoHousenumber]"
-                        value="{{ data.get('extensions')['enderecoAddress'].houseNumber }}"
+                        value="{{ data.get('extensions')['enderecoAddress'].houseNumber ?? data.get('enderecoHousenumber') }}"
                         required="required">
              {% endblock %}
 
