@@ -23,7 +23,11 @@
                   data-end-target-link-selector=".confirm-billing-address [data-address-editor]"
                   data-form-ajax-submit="true"
             >
-                {{ sw_csrf('frontend.endereco.account.address.edit.save') }}
+                {% if not feature('v6.5.0.0') %}
+                    {% sw_include '@EnderecoShopware6Client/storefront/misc/csrf-container.html.twig' with {
+                        'action': 'frontend.endereco.account.address.edit.save'
+                    } %}
+                {% endif %}
 
                 {% sw_include '@EnderecoShopware6Client/storefront/component/address/hidden-address-form.html.twig' with {
                     'prefix': 'billingAddress',
@@ -43,7 +47,11 @@
                   data-end-target-link-selector=".confirm-shipping-address [data-address-editor]"
                   data-form-ajax-submit="true"
             >
-                {{ sw_csrf('frontend.endereco.account.address.edit.save') }}
+                {% if not feature('v6.5.0.0') %}
+                    {% sw_include '@EnderecoShopware6Client/storefront/misc/csrf-container.html.twig' with {
+                        'action': 'frontend.endereco.account.address.edit.save'
+                    } %}
+                {% endif %}
 
                 {% sw_include '@EnderecoShopware6Client/storefront/component/address/hidden-address-form.html.twig' with {
                     'prefix': 'shippingAddress',
