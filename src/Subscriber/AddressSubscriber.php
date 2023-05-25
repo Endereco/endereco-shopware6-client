@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Endereco\Shopware6Client\Subscriber;
 
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoAddressExtensionEntity;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressDefinition;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Checkout\Customer\CustomerEvents;
 use Shopware\Core\Framework\Context;
@@ -20,6 +21,8 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
 {
     private array $checkedAddressIds = [];
     private array $splittedAddressIds = [];
+    private array $automaticallySelectedAddressIds = [];
+
 
     public static function getSubscribedEvents(): array
     {
@@ -49,8 +52,16 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
     public function clearAmsStatus(EntityWrittenEvent $event): void
     {
         foreach ($event->getWriteResults() as $writeResult) {
+            if ($writeResult->getEntityName() !== CustomerAddressDefinition::ENTITY_NAME) {
+                continue;
+            }
+            $addressId = $writeResult->getPrimaryKey();
+
+            if (in_array($addressId, $this->automaticallySelectedAddressIds)) {
+                continue;
+            }
             $this->enderecoAddressExtensionRepository->upsert([[
-                'addressId' => $writeResult->getPrimaryKey(),
+                'addressId' => $addressId,
                 'amsStatus' => EnderecoAddressExtensionEntity::AMS_STATUS_NOT_CHECKED
             ]], $event->getContext());
         }
@@ -190,13 +201,20 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
 
             $enderecoAddress = $entity->getExtension('enderecoAddress');
 
-            if (!$enderecoAddress instanceof EnderecoAddressExtensionEntity || $enderecoAddress->isAddressChecked()) {
+
+            if (!$enderecoAddress instanceof EnderecoAddressExtensionEntity) {
                 continue;
             }
 
-            $shouldCheckAddress =
-                ($checkAddressEnabled && !$enderecoAddress->isPayPalAddress())
-                || ($paypalCheckEnabled && $enderecoAddress->isPayPalAddress());
+            if ($enderecoAddress->hasMinorCorrection() && !$enderecoAddress->isSelectedAutomatically()) {
+                $this->useAutomaticAddressCorrection($entity, $enderecoAddress, $event->getContext());
+            }
+
+            $shouldCheckAddress = !$enderecoAddress->isAddressChecked()
+                && (
+                    ($checkAddressEnabled && !$enderecoAddress->isPayPalAddress())
+                    || ($paypalCheckEnabled && $enderecoAddress->isPayPalAddress())
+                );
 
             if (!$shouldCheckAddress) {
                 continue;
@@ -263,5 +281,51 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
                 );
             }
         }
+    }
+
+    private function useAutomaticAddressCorrection(
+        CustomerAddressEntity $address,
+        EnderecoAddressExtensionEntity $enderecoAddressExtension,
+        Context $context
+    ): void {
+
+        $predictions = $enderecoAddressExtension->getAmsPredictions()[0];
+        $countryIso = $predictions['countryCode'] ?? null;
+        $street = $predictions['streetName'] ?? null;
+        $houseNumber = $predictions['buildingNumber'] ?? null;
+        $city = $predictions['locality'] ?? null;
+        $zipcode = $predictions['postalCode'] ?? null;
+
+        if (
+            is_null($countryIso)
+            || is_null($street)
+            || is_null($houseNumber)
+            || is_null($city)
+            || is_null($zipcode)
+        ) {
+            return;
+        }
+        $addressId = $address->getId();
+        $this->automaticallySelectedAddressIds[] = $addressId;
+
+        $this->customerAddressRepository->update([[
+            'id' => $addressId,
+            'zipcode' => $zipcode,
+            'city' => $city,
+            'street' => $this->enderecoService->buildFullStreet($street, $houseNumber, $countryIso),
+            'extensions' => [
+                'enderecoAddress' => [
+                    'street' => $street,
+                    'houseNumber' => $houseNumber,
+                    'amsStatus' => implode(
+                        ',',
+                        array_merge(
+                            EnderecoAddressExtensionEntity::CORRECT_STATUS_CODES,
+                            [EnderecoAddressExtensionEntity::AMS_STATUS_SELECTED_AUTOMATICALLY],
+                        )
+                    )
+                ]
+            ]
+        ]], $context);
     }
 }
