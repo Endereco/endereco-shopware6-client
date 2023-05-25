@@ -2,6 +2,9 @@
 
 {% block page_checkout_confirm_address %}
     {% if page.endereco_config.pluginActive %}
+        {% set allFeatures = getAllFeatures() %}
+        {% set is65Active = "V6_5_0_0" in allFeatures|keys and allFeatures["V6_5_0_0"] == true %}
+
         {% set checkAddressEnabled = page.endereco_config.enderecoCheckAddressEnabled %}
         {% set checkPayPalAddressEnabled = page.endereco_config.enderecoCheckPayPalExpressAddress %}
         {% set billingNeedsCorrection = checkAddressEnabled and billingAddress.extensions.enderecoAddress.needsCorrection() %}
@@ -23,7 +26,7 @@
                   data-end-target-link-selector=".confirm-billing-address [data-address-editor]"
                   data-form-ajax-submit="true"
             >
-                {% if not feature('v6.5.0.0') %}
+                {% if not is65Active %}
                     {% sw_include '@EnderecoShopware6Client/storefront/misc/csrf-container.html.twig' with {
                         'action': 'frontend.endereco.account.address.edit.save'
                     } %}
@@ -47,7 +50,7 @@
                   data-end-target-link-selector=".confirm-shipping-address [data-address-editor]"
                   data-form-ajax-submit="true"
             >
-                {% if not feature('v6.5.0.0') %}
+                {% if not is65Active %}
                     {% sw_include '@EnderecoShopware6Client/storefront/misc/csrf-container.html.twig' with {
                         'action': 'frontend.endereco.account.address.edit.save'
                     } %}
