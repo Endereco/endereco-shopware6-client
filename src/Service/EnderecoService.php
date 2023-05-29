@@ -12,6 +12,7 @@ use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEnt
 use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\Country\CountryEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use GuzzleHttp\Exception\RequestException;
@@ -41,11 +42,11 @@ class EnderecoService
 
     public function __construct(
         SystemConfigService $systemConfigService,
-        EntityRepository    $pluginRepository,
-        EntityRepository    $customerRepository,
-        EntityRepository    $enderecoAddressExtensionRepository,
-        EntityRepository    $countryRepository,
-        LoggerInterface     $logger
+        EntityRepository $pluginRepository,
+        EntityRepository $customerRepository,
+        EntityRepository $enderecoAddressExtensionRepository,
+        EntityRepository $countryRepository,
+        LoggerInterface $logger
     ) {
         $this->httpClient = new Client(['timeout' => 3.0, 'connection_timeout' => 2.0]);
         $this->apiKey = $systemConfigService->getString('EnderecoShopware6Client.config.enderecoApiKey') ?? '';
@@ -233,6 +234,26 @@ class EnderecoService
         return [$fullStreet, ''];
     }
 
+    /**
+     * Automatically fetches the session ids from the request data bag and does the accountings for them.
+     */
+    public function doAccountingsForRequest(RequestDataBag $dataBag, Context $context): void
+    {
+        $sessionIds = array_values(
+            array_filter(
+                $dataBag->all(),
+                static fn($key) => str_contains($key, "ams_session_id"),
+                ARRAY_FILTER_USE_KEY
+            )
+        );
+
+        if (count($sessionIds) === 0) {
+            return;
+        }
+
+        $this->doAccountings($sessionIds, $context);
+    }
+
     public function doAccountings(array $sessionIds, Context $context): void
     {
         if (empty($sessionIds)) {
@@ -366,10 +387,10 @@ class EnderecoService
     }
 
     private function fetchEntityById(
-        string           $id,
+        string $id,
         EntityRepository $repository,
-        Context          $context,
-        array            $associations = []
+        Context $context,
+        array $associations = []
     ): ?Entity {
         $criteria = new Criteria([$id]);
         if (!empty($associations)) {
