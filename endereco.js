@@ -1,7 +1,7 @@
 import Promise from 'promise-polyfill';
 import merge from 'lodash.merge';
 import EnderecoIntegrator from './node_modules/@endereco/js-sdk/modules/integrator';
-import css from './endereco.scss'
+import css from  './endereco.scss'
 
 import 'polyfill-array-includes';
 
@@ -16,6 +16,10 @@ if ('NodeList' in window && !NodeList.prototype.forEach) {
 
 if (!window.Promise) {
     window.Promise = Promise;
+}
+
+if (css) {
+    EnderecoIntegrator.css = css[0][1];
 }
 
 EnderecoIntegrator.postfix = {
@@ -41,7 +45,6 @@ EnderecoIntegrator.postfix = {
     }
 };
 
-EnderecoIntegrator.css = css[0][1];
 
 EnderecoIntegrator.resolvers.countryCodeSetValue = function (subscriber, value) {
     var functionsExist = (typeof jQuery !== 'undefined') && jQuery.fn.val && jQuery.fn.trigger;

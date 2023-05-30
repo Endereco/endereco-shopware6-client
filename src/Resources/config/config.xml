@@ -505,11 +505,28 @@
             </helpText>
         </input-field>
 
-        <input-field type="bool">
-            <name>enderecoUseDefaultCss</name>
-            <label>Use standard CSS</label>
-            <label lang="de-DE">Standard-CSS nutzen</label>
-            <defaultValue>true</defaultValue>
+        <input-field type="single-select">
+            <name>enderecoLoadCss</name>
+            <options>
+                <option>
+                    <id>file</id>
+                    <name>Load default CSS inline</name>
+                    <name lang="de-DE">Standard-CSS inline laden</name>
+                </option>
+                <option>
+                    <id>link</id>
+                    <name>Load default CSS from link</name>
+                    <name lang="de-DE">Laden Sie Standard-CSS aus dem Link</name>
+                </option>
+                <option>
+                    <id>none</id>
+                    <name>Don't load default CSS</name>
+                    <name lang="de-DE">Laden Sie kein Standard-CSS</name>
+                </option>
+            </options>
+            <defaultValue>file</defaultValue>
+            <label>Default CSS loading</label>
+            <label lang="de-DE">Standard-CSS-Laden</label>
         </input-field>
 
         <input-field type="bool">
