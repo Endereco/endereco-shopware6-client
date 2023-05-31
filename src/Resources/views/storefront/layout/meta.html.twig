@@ -30,6 +30,32 @@
             window.EnderecoIntegrator.subdivisionMapping = JSON.parse('{{ page.endereco_config.subdivisionMapping|raw }}');
             window.EnderecoIntegrator.subdivisionMappingReverse = JSON.parse('{{ page.endereco_config.subdivisionMappingReverse|raw }}');
 
+            if (!window.EnderecoIntegrator.resolvers) {
+                window.EnderecoIntegrator.resolvers = {};
+            }
+
+            {% if mrSalutationId and mrsSalutationId %}
+                window.EnderecoIntegrator.resolvers.salutationWrite = function (value) {
+                    var mapping = {
+                        'F': '{{ mrsSalutationId }}',
+                        'M': '{{ mrSalutationId }}'
+                    };
+                    return new Promise(function (resolve) {
+                        resolve(mapping[value.toUpperCase()]);
+                    });
+                }
+
+                window.EnderecoIntegrator.resolvers.salutationRead = function (value) {
+                    var mapping = {
+                        '{{ mrsSalutationId }}': 'F',
+                        '{{ mrSalutationId }}': 'M'
+                    };
+                    return new Promise(function (resolve) {
+                        resolve(mapping[value.toUpperCase()]);
+                    });
+                }
+            {% endif %}
+
             function enderecoInitAMS(prefix, config, cb) {
                 if (undefined !== window.EnderecoIntegrator.initAMS) {
                     var EAO = window.EnderecoIntegrator.initAMS(prefix, config);
