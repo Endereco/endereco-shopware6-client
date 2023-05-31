@@ -108,23 +108,28 @@ EnderecoIntegrator.resolvers.subdivisionCodeRead = function (value) {
     });
 }
 
-EnderecoIntegrator.resolvers.salutationWrite = function (value) {
-    var mapping = {
-        'F': 'ms',
-        'M': 'mr'
-    };
-    return new Promise(function (resolve, reject) {
-        resolve(mapping[value]);
-    });
+if (!window.EnderecoIntegrator.resolvers.salutationWrite) {
+    EnderecoIntegrator.resolvers.salutationWrite = function (value) {
+        var mapping = {
+            'F': 'ms',
+            'M': 'mr'
+        };
+        return new Promise(function (resolve, reject) {
+            resolve(mapping[value]);
+        });
+    }
 }
-EnderecoIntegrator.resolvers.salutationRead = function (value) {
-    var mapping = {
-        'ms': 'F',
-        'mr': 'M'
-    };
-    return new Promise(function (resolve, reject) {
-        resolve(mapping[value]);
-    });
+
+if (!window.EnderecoIntegrator.resolvers.salutationRead) {
+    EnderecoIntegrator.resolvers.salutationRead = function (value) {
+        var mapping = {
+            'ms': 'F',
+            'mr': 'M'
+        };
+        return new Promise(function (resolve, reject) {
+            resolve(mapping[value]);
+        });
+    }
 }
 
 EnderecoIntegrator.onAjaxFormHandler.push(function (EAO) {
