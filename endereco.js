@@ -230,7 +230,7 @@ const editAddressHandler = (e) => {
     })
 }
 
-const addressCheckSelectedHandler = (e) => {
+const addressCheckSelectedHandler = (EAO, e) => {
     const form = e.forms[0];
     if (!form) {
         return;
@@ -244,15 +244,23 @@ const addressCheckSelectedHandler = (e) => {
 
     ajaxPlugin.$emitter.subscribe('onAfterAjaxSubmit', ({detail: {response}}) => {
         try {
+            window.ajaxSubmitRequestPending = false;
             const {addressSaved} = JSON.parse(response);
             if (addressSaved) {
-                window.location.reload();
+                EAO.waitForAllPopupsToClose().then(() => {
+                    window.setTimeout(() => {
+                        if (!window.ajaxSubmitRequestPending) {
+                            window.location.reload();
+                        }
+                    }, 100);
+                });
             }
         } catch (e) {
             console.warn('[ENDERECO] Failed to save new address', e);
         }
     });
 
+    window.ajaxSubmitRequestPending = true;
     ajaxPlugin._fireRequest();
 }
 EnderecoIntegrator.afterAMSActivation.push(function (EAO) {
@@ -261,7 +269,7 @@ EnderecoIntegrator.afterAMSActivation.push(function (EAO) {
     })
 
     EAO.onAfterAddressCheckSelected.push((e) => {
-        addressCheckSelectedHandler(e)
+        addressCheckSelectedHandler(EAO, e)
     })
 });
 
