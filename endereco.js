@@ -247,13 +247,21 @@ const addressCheckSelectedHandler = (EAO, e) => {
             window.ajaxSubmitRequestPending = false;
             const {addressSaved} = JSON.parse(response);
             if (addressSaved) {
-                EAO.waitForAllPopupsToClose().then(() => {
-                    window.setTimeout(() => {
-                        if (!window.ajaxSubmitRequestPending) {
-                            window.location.reload();
-                        }
-                    }, 100);
-                });
+                const reloadHandler = () => {
+                    EAO.waitForAllPopupsToClose().then(() => {
+                        window.setTimeout(() => {
+                            if (!window.ajaxSubmitRequestPending) {
+                                if(window.EnderecoIntegrator.popupQueue > 0) {
+                                    //we are still waiting for all popups to close
+                                   reloadHandler();
+                                   return;
+                                }
+                                window.location.reload();
+                            }
+                        }, 100);
+                    });
+                }
+                reloadHandler();
             }
         } catch (e) {
             console.warn('[ENDERECO] Failed to save new address', e);
@@ -271,6 +279,17 @@ EnderecoIntegrator.afterAMSActivation.push(function (EAO) {
     EAO.onAfterAddressCheckSelected.push((e) => {
         addressCheckSelectedHandler(EAO, e)
     })
+
+    EAO.waitForPopupAreaToBeFree = function() {
+        return new EAO.util.Promise(function(resolve) {
+            var waitForFreePlace = setInterval(function() {
+                if(!document.querySelector('[endereco-popup]')) {
+                    clearInterval(waitForFreePlace);
+                    resolve();
+                }
+            }, 1);
+        })
+    }
 });
 
 if (window.EnderecoIntegrator) {
@@ -294,3 +313,20 @@ var $waitForConfig = setInterval(function () {
         clearInterval($waitForConfig);
     }
 }, 1);
+
+
+window.swModalOpened = false;
+
+const swModalListener = () => {
+    const shopwareModal = document.querySelector('.modal-backdrop');
+    if (shopwareModal && !window.swModalOpened) {
+        window.swModalOpened = true;
+        window.EnderecoIntegrator.popupQueue++;
+    }
+    if(!shopwareModal && window.swModalOpened) {
+        window.swModalOpened = false;
+        window.EnderecoIntegrator.popupQueue--;
+    }
+};
+
+(new MutationObserver(swModalListener)).observe(document.querySelector('body'), {childList: true, subtree: true});
