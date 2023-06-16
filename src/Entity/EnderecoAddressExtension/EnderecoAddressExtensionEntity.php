@@ -12,6 +12,7 @@ class EnderecoAddressExtensionEntity extends Entity
     public const AMS_STATUS_NOT_CHECKED = 'not-checked';
     public const AMS_STATUS_MINOR_CORRECTION = 'address_minor_correction';
     public const AMS_STATUS_SELECTED_AUTOMATICALLY = 'address_selected_automatically';
+    public const AMS_STATUS_SELECTED_BY_CUSTOMER = 'address_selected_by_customer';
     public const CORRECT_STATUS_CODES = [
         'A1000',
         'address_correct',
@@ -134,5 +135,10 @@ class EnderecoAddressExtensionEntity extends Entity
     public function isSelectedAutomatically(): bool
     {
         return str_contains($this->amsStatus, self::AMS_STATUS_SELECTED_AUTOMATICALLY);
+    }
+
+    public function isSelectedByCustomer(): bool
+    {
+        return str_contains($this->amsStatus, self::AMS_STATUS_SELECTED_BY_CUSTOMER);
     }
 }
