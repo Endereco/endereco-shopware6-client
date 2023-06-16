@@ -22,7 +22,7 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
     private array $checkedAddressIds = [];
     private array $splittedAddressIds = [];
     private array $automaticallySelectedAddressIds = [];
-
+    private array $selectedByCustomerAddressIds = [];
 
     public static function getSubscribedEvents(): array
     {
@@ -57,7 +57,10 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
             }
             $addressId = $writeResult->getPrimaryKey();
 
-            if (in_array($addressId, $this->automaticallySelectedAddressIds)) {
+            if (
+                in_array($addressId, $this->automaticallySelectedAddressIds) ||
+                in_array($addressId, $this->selectedByCustomerAddressIds)
+            ) {
                 continue;
             }
             $this->enderecoAddressExtensionRepository->upsert([[
@@ -114,6 +117,18 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
                 $hasModification = true;
             }
         }
+
+        $addressId = $data->get('id');
+        $amsStatus = $data->get('amsStatus');
+        if (!empty($amsStatus) && !empty($addressId)) {
+            $hasModification = true;
+            $enderecoExtension['amsStatus'] = $amsStatus;
+
+            if (str_contains($amsStatus, EnderecoAddressExtensionEntity::AMS_STATUS_SELECTED_BY_CUSTOMER)) {
+                $this->selectedByCustomerAddressIds[] = $addressId;
+            }
+        }
+
 
         if ($this->isPaypalCheckoutRequest()) {
             $hasModification = true;
@@ -202,7 +217,10 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
             $enderecoAddress = $entity->getExtension('enderecoAddress');
 
 
-            if (!$enderecoAddress instanceof EnderecoAddressExtensionEntity) {
+            if (
+                !$enderecoAddress instanceof EnderecoAddressExtensionEntity
+                || $enderecoAddress->isSelectedByCustomer()
+            ) {
                 continue;
             }
 
