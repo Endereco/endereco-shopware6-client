@@ -2,18 +2,6 @@
 
 {% block layout_head_meta_tags %}
     {% if page.endereco_config.pluginActive and ( not page.endereco_config.controllerOnlyWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
-        {% set mrSalutationId = null %}
-        {% set mrsSalutationId = null %}
-        {% if page.salutations %}
-            {% for salutation in page.salutations -%}
-                {% if salutation.salutationKey is same as 'mr' %}
-                    {% set mrSalutationId = salutation.id %}
-                {% endif %}
-                {% if salutation.salutationKey is same as 'mrs' %}
-                    {% set mrsSalutationId = salutation.id %}
-                {% endif %}
-            {% endfor %}
-        {% endif %}
         <script>
             if (undefined === window.EnderecoIntegrator) {
                 window.EnderecoIntegrator = {};
@@ -30,31 +18,8 @@
             window.EnderecoIntegrator.subdivisionMapping = JSON.parse('{{ page.endereco_config.subdivisionMapping|raw }}');
             window.EnderecoIntegrator.subdivisionMappingReverse = JSON.parse('{{ page.endereco_config.subdivisionMappingReverse|raw }}');
 
-            if (!window.EnderecoIntegrator.resolvers) {
-                window.EnderecoIntegrator.resolvers = {};
-            }
-
-            {% if mrSalutationId and mrsSalutationId %}
-                window.EnderecoIntegrator.resolvers.salutationWrite = function (value) {
-                    var mapping = {
-                        'F': '{{ mrsSalutationId }}',
-                        'M': '{{ mrSalutationId }}'
-                    };
-                    return new Promise(function (resolve) {
-                        resolve(mapping[value.toUpperCase()]);
-                    });
-                }
-
-                window.EnderecoIntegrator.resolvers.salutationRead = function (value) {
-                    var mapping = {
-                        '{{ mrsSalutationId }}': 'F',
-                        '{{ mrSalutationId }}': 'M'
-                    };
-                    return new Promise(function (resolve) {
-                        resolve(mapping[value.toUpperCase()]);
-                    });
-                }
-            {% endif %}
+            window.EnderecoIntegrator.salutationMapping = JSON.parse('{{ page.endereco_config.salutationMappingReverse|raw }}');
+            window.EnderecoIntegrator.salutationMappingReverse = JSON.parse('{{ page.endereco_config.salutationMapping|raw }}');
 
             function enderecoInitAMS(prefix, config, cb) {
                 if (undefined !== window.EnderecoIntegrator.initAMS) {
@@ -103,13 +68,6 @@
                 } else {
                     window.EnderecoIntegrator.config.apiUrl = '{{ asset('bundles/enderecoshopware6client/io.php') }}';
                 }
-                {% if mrSalutationId %}
-                window.EnderecoIntegrator.mappings.gender.M = '{{ mrSalutationId }}'
-                {% endif %}
-
-                {% if mrsSalutationId %}
-                window.EnderecoIntegrator.mappings.gender.F = '{{ mrsSalutationId }}'
-                {% endif %}
 
                 {% set cssPath = asset('bundles/enderecoshopware6client/endereco.min.css') ~ '?var=' ~ page.endereco_config.enderecoVersion  %}
 

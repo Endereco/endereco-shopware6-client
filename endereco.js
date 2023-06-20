@@ -108,28 +108,26 @@ EnderecoIntegrator.resolvers.subdivisionCodeRead = function (value) {
     });
 }
 
-if (!window.EnderecoIntegrator.resolvers.salutationWrite) {
-    EnderecoIntegrator.resolvers.salutationWrite = function (value) {
-        var mapping = {
-            'F': 'ms',
-            'M': 'mr'
-        };
-        return new Promise(function (resolve, reject) {
-            resolve(mapping[value]);
-        });
-    }
+EnderecoIntegrator.resolvers.salutationWrite = function (value) {
+    return new Promise(function (resolve, reject) {
+        var key = window.EnderecoIntegrator.salutationMapping[value];
+        if (key !== undefined) {
+            resolve(window.EnderecoIntegrator.salutationMapping[value]);
+        } else {
+            resolve('');
+        }
+    });
 }
 
-if (!window.EnderecoIntegrator.resolvers.salutationRead) {
-    EnderecoIntegrator.resolvers.salutationRead = function (value) {
-        var mapping = {
-            'ms': 'F',
-            'mr': 'M'
-        };
-        return new Promise(function (resolve, reject) {
-            resolve(mapping[value]);
-        });
-    }
+EnderecoIntegrator.resolvers.salutationRead = function (value) {
+    return new Promise(function (resolve, reject) {
+        var key = window.EnderecoIntegrator.salutationMappingReverse[value];
+        if (key !== undefined) {
+            resolve(window.EnderecoIntegrator.salutationMappingReverse[value]);
+        } else {
+            resolve('x');
+        }
+    });
 }
 
 EnderecoIntegrator.onAjaxFormHandler.push(function (EAO) {

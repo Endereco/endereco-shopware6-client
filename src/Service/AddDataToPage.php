@@ -19,17 +19,21 @@ class AddDataToPage implements EventSubscriberInterface
 
     private EntityRepository $stateRepository;
 
+    private EntityRepository $salutationRepository;
+
     private EntityRepository $pluginRepository;
 
     public function __construct(
         SystemConfigService $systemConfigService,
         EntityRepository $countryRepository,
         EntityRepository $stateRepository,
+        EntityRepository $salutationRepository,
         EntityRepository $pluginRepository
     ) {
         $this->systemConfigService = $systemConfigService;
         $this->countryRepository = $countryRepository;
         $this->stateRepository = $stateRepository;
+        $this->salutationRepository = $salutationRepository;
         $this->pluginRepository = $pluginRepository;
     }
 
@@ -170,6 +174,30 @@ class AddDataToPage implements EventSubscriberInterface
         $configContainer->subdivisionCodeToNameMapping = str_replace("'", "\'", json_encode($statesCodeToNameMapping));
         $configContainer->subdivisionMapping = str_replace("'", "\'", json_encode($statesMapping));
         $configContainer->subdivisionMappingReverse = str_replace("'", "\'", json_encode($statesMappingReverse));
+
+        /**
+         * Create a salutation mapping. Endereco API expects these codes:
+         * @see https://github.com/Endereco/enderecoservice_api/blob/master/fields.md#tabelle-der-anrede-codes
+         * m - male, in shopware 6 it would be "mr"
+         * f - female, in shopware 6 it would be "mrs"
+         * d - diverse, in shopware 6 it would be "not_specified"
+         * x - unknown, we have this case, if nothing is selected in the select element. It's set in endereco.js
+         */
+        $salutations = $this->salutationRepository->search(new Criteria(), $context);
+        $relevanceMapping = [
+            'mr' => 'm',
+            'mrs' => 'f',
+            'not_specified' => 'x',
+            'diverse' => 'd'
+        ];
+        $salutationMapping = [];
+        foreach ($salutations as $salutation) {
+            if (array_key_exists($salutation->getSalutationKey(), $relevanceMapping)) {
+                $salutationMapping[$salutation->getId()] = $relevanceMapping[$salutation->getSalutationKey()];
+            }
+        }
+        $configContainer->salutationMapping = str_replace("'", "\'", json_encode($salutationMapping));
+        $configContainer->salutationMappingReverse = str_replace("'", "\'", json_encode(array_flip($salutationMapping)));
 
         $ioPathFile = $this->systemConfigService->get(
             'EnderecoShopware6Client.config.enderecoPathToIOPhp',
