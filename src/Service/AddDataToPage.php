@@ -180,8 +180,8 @@ class AddDataToPage implements EventSubscriberInterface
          * @see https://github.com/Endereco/enderecoservice_api/blob/master/fields.md#tabelle-der-anrede-codes
          * m - male, in shopware 6 it would be "mr"
          * f - female, in shopware 6 it would be "mrs"
-         * d - diverse, in shopware 6 it would be "not_specified"
-         * x - unknown, we have this case, if nothing is selected in the select element. It's set in endereco.js
+         * d - diverse, in shopware 6 it would be "diverse", that needs to be created separately
+         * x - unknown, in shopware 6 it would be "not_specified". It's also set in endereco.js
          */
         $salutations = $this->salutationRepository->search(new Criteria(), $context);
         $relevanceMapping = [
