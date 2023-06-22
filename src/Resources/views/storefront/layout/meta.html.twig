@@ -15,6 +15,7 @@
             window.EnderecoIntegrator.countryMappingReverse = JSON.parse('{{ page.endereco_config.countryMappingReverse|raw }}');
 
             window.EnderecoIntegrator.subdivisionCodeToNameMapping = JSON.parse('{{ page.endereco_config.subdivisionCodeToNameMapping|raw }}');
+            window.EnderecoIntegrator.subdivisionIdToCodeMapping = JSON.parse('{{ page.endereco_config.subdivisionIdToCodeMapping|raw }}');
             window.EnderecoIntegrator.subdivisionMapping = JSON.parse('{{ page.endereco_config.subdivisionMapping|raw }}');
             window.EnderecoIntegrator.subdivisionMappingReverse = JSON.parse('{{ page.endereco_config.subdivisionMappingReverse|raw }}');
 
@@ -204,6 +205,8 @@
                                                 ajaxForm: isAjax
                                             }
                                         );
+
+                                        setInitialSubdivisionalCode(EAO, formElement, subdivisionCodeSelector);
                                     }
                                     if ('phoneServices' === markerValue) {
                                         var countryCodeSelector = MarkerElement.getAttribute('data-country-code-selector');
@@ -270,6 +273,25 @@
                     }
                 }, 1);
                 window.EnderecoIntegrator.configScannerStarted = true;
+            }
+
+            function setInitialSubdivisionalCode(EAO, formElement, subdivisionCodeSelector) {
+                const subdivisionalCodeSelect = formElement.querySelector(subdivisionCodeSelector);
+                if (!subdivisionalCodeSelect) {
+                    return;
+                }
+
+                const subdivisionIdMapping = window.EnderecoIntegrator.subdivisionIdToCodeMapping;
+                const subdivisionSelectId = subdivisionalCodeSelect.getAttribute('data-initial-country-state-id');
+                if (!subdivisionSelectId || !subdivisionIdMapping) {
+                    return;
+                }
+
+                const subdivisionCodeMapping = subdivisionIdMapping[subdivisionSelectId];
+
+                if (subdivisionCodeMapping) {
+                    EAO.subdivisionCode = subdivisionCodeMapping;
+                }
             }
         </script>
     {% endif %}
