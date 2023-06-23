@@ -1,9 +1,14 @@
 import Promise from 'promise-polyfill';
 import merge from 'lodash.merge';
 import EnderecoIntegrator from './node_modules/@endereco/js-sdk/modules/integrator';
-import css from  './endereco.scss'
+import css from './endereco.scss'
 
 import 'polyfill-array-includes';
+
+
+let swModalOpened = false;
+let waitForShopwareModal = false;
+let shippingCorrectionInitializeInterval = null;
 
 if ('NodeList' in window && !NodeList.prototype.forEach) {
     NodeList.prototype.forEach = function (callback, thisArg) {
@@ -270,6 +275,36 @@ const addressCheckSelectedHandler = (EAO, e) => {
     ajaxPlugin._fireRequest();
 }
 EnderecoIntegrator.afterAMSActivation.push(function (EAO) {
+    EAO.onAfterModalRendered.push((e) => {
+        document.querySelectorAll('[endereco-edit-address]').forEach(function (DOMElement) {
+            DOMElement.addEventListener('click', function (e) {
+                waitForShopwareModal = true;
+                window.setTimeout(function () {
+                    waitForShopwareModal = false;
+                }, 1500);
+            })
+        });
+
+
+        const initiallyDisabledShippingAms = document.querySelector('form[data-initialy-disabled-shipping-correction]');
+        if (initiallyDisabledShippingAms) {
+            if (shippingCorrectionInitializeInterval) {
+                return;
+            }
+
+            shippingCorrectionInitializeInterval = window.setInterval(() => {
+                const enderecoPopup = document.querySelector('[endereco-popup]');
+                if (!enderecoPopup && !swModalOpened && !waitForShopwareModal) {
+                    initiallyDisabledShippingAms.querySelectorAll('[data-has-object=yes]').forEach((element) => {
+                        element.setAttribute('data-has-object', 'no');
+                    });
+                    clearInterval(shippingCorrectionInitializeInterval);
+                }
+
+            }, 100);
+        }
+    })
+
     EAO.onEditAddress.push((e) => {
         editAddressHandler(e);
     })
@@ -312,17 +347,14 @@ var $waitForConfig = setInterval(function () {
     }
 }, 1);
 
-
-window.swModalOpened = false;
-
 const swModalListener = () => {
     const shopwareModal = document.querySelector('.modal-backdrop');
-    if (shopwareModal && !window.swModalOpened) {
-        window.swModalOpened = true;
+    if (shopwareModal && !swModalOpened) {
+        swModalOpened = true;
         window.EnderecoIntegrator.popupQueue++;
     }
-    if(!shopwareModal && window.swModalOpened) {
-        window.swModalOpened = false;
+    if (!shopwareModal && swModalOpened) {
+        swModalOpened = false;
         window.EnderecoIntegrator.popupQueue--;
     }
 };

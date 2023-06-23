@@ -7,8 +7,15 @@
 
         {% set checkAddressEnabled = page.endereco_config.enderecoCheckAddressEnabled %}
         {% set checkPayPalAddressEnabled = page.endereco_config.enderecoCheckPayPalExpressAddress %}
-        {% set billingNeedsCorrection = checkAddressEnabled and billingAddress.extensions.enderecoAddress.needsCorrection() %}
-        {% set shippingNeedsCorrection = checkAddressEnabled and (billingAddress.id is not same as shippingAddress.id) ? shippingAddress.extensions.enderecoAddress.needsCorrection() : false %}
+        {% set billingNeedsCorrection =
+            checkAddressEnabled
+            and billingAddress.extensions.enderecoAddress.needsCorrection()
+            and not billingAddress.extensions.enderecoAddress.isSelectedByCustomer() %}
+
+        {% set shippingNeedsCorrection =
+            checkAddressEnabled
+            and (billingAddress.id is not same as shippingAddress.id) ? shippingAddress.extensions.enderecoAddress.needsCorrection() : false
+            and not shippingAddress.extensions.enderecoAddress.isSelectedByCustomer() %}
 
         {% if not checkPayPalAddressEnabled and billingAddress.extensions.enderecoAddress.isPayPalAddress %}
             {% set billingNeedsCorrection = false %}
@@ -47,6 +54,7 @@
                   id="endHiddenShippingForm"
                   action="{{ path('frontend.endereco.account.address.edit.save') }}"
                   class="d-none"
+                  {% if billingNeedsCorrection %}data-initialy-disabled-shipping-correction{% endif %}
                   data-end-target-link-selector=".confirm-shipping-address [data-address-editor]"
                   data-form-ajax-submit="true"
             >
@@ -58,6 +66,7 @@
 
                 {% sw_include '@EnderecoShopware6Client/storefront/component/address/hidden-address-form.html.twig' with {
                     'prefix': 'shippingAddress',
+                    'initialyDisabled': billingNeedsCorrection,
                     'data': shippingAddress,
                 } %}
 

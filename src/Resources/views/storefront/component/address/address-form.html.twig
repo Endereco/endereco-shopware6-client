@@ -3,6 +3,10 @@
 {% block component_address_form_address_fields %}
     {{ parent() }}
 
+    {% if not initialyDisabled %}
+        {% set initialyDisabled = false %}
+    {% endif %}
+
     {% block component_address_form_endereco_marker %}
         {% if prefix == 'billingAddress' %}
             {% set addressType = 'billing_address' %}
@@ -20,7 +24,7 @@
                 data-container-type="form"
                 data-form-handle-ajax-submit="true"
                 data-used-prefix="{{ prefix }}"
-                data-has-object="no"
+                data-has-object="{{ initialyDisabled ? 'yes' : 'no' }}"
                 data-name=""
                 data-type=""
                 data-country-code-selector="[name='{{ prefix }}[countryId]']"
@@ -43,7 +47,7 @@
                 data-container-selector="form"
                 data-container-type="form"
                 data-used-prefix="{{ prefix }}"
-                data-has-object="no"
+                data-has-object="{{ initialyDisabled ? 'yes': 'no' }}"
                 data-name=""
                 data-type=""
                 data-country-code-selector="[name='{{ prefix }}[countryId]']"
@@ -57,7 +61,7 @@
                 data-container-selector="form"
                 data-container-type="form"
                 data-used-prefix="{{ prefix }}"
-                data-has-object="no"
+                data-has-object="{{ initialyDisabled ? 'yes' : 'no' }}"
                 data-first-name-selector="[name='{{ prefix }}[firstName]']"
                 data-last-name-selector="[name='{{ prefix }}[lastName]']"
                 data-salutation-selector="[name='{{ prefix }}[salutationId]']"
