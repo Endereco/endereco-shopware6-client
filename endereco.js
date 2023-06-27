@@ -277,6 +277,9 @@ EnderecoIntegrator.afterAMSActivation.push(function (EAO) {
     EAO.onAfterAddressCheckSelected.push((e) => {
         addressCheckSelectedHandler(EAO, e)
     })
+    EAO.onConfirmAddress.push((e) => {
+        addressCheckSelectedHandler(EAO, e);
+    })
 
     EAO.waitForPopupAreaToBeFree = function() {
         return new EAO.util.Promise(function(resolve) {
