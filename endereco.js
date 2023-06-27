@@ -218,6 +218,9 @@ const editAddressHandler = (e) => {
         return;
     }
 
+    window.EnderecoIntegrator.editingIntent = true;
+    window.EnderecoIntegrator.thirdPartyModals = 1;
+
     addressEditorPlugin.$emitter.subscribe('onOpen', ({detail: {pseudoModal}}) => {
         const modalElement = pseudoModal._modal;
         const addressEditButton = modalElement.querySelector('[data-target="#address-create-edit"]');
@@ -225,6 +228,14 @@ const editAddressHandler = (e) => {
             return;
         }
         addressEditButton.click();
+
+        var itnrvl = setInterval( function() {
+            if (!document.querySelector('.address-editor-modal')) {
+                window.EnderecoIntegrator.editingIntent = false;
+                window.EnderecoIntegrator.thirdPartyModals = 0;
+                clearInterval(itnrvl);
+            }
+        }, 50);
     })
 }
 
@@ -281,15 +292,33 @@ EnderecoIntegrator.afterAMSActivation.push(function (EAO) {
         addressCheckSelectedHandler(EAO, e);
     })
 
-    EAO.waitForPopupAreaToBeFree = function() {
-        return new EAO.util.Promise(function(resolve) {
-            var waitForFreePlace = setInterval(function() {
-                if(!document.querySelector('[endereco-popup]')) {
-                    clearInterval(waitForFreePlace);
-                    resolve();
-                }
-            }, 1);
-        })
+    /**
+     * If its one of the existing customer check modals, competing with shopware modals,
+     * then rewrite their waitForPopupAreaToBeFree logic
+     */
+    if (!document.querySelector('.address-editor-modal')) {
+        EAO.waitForPopupAreaToBeFree = function() {
+            return new EAO.util.Promise(function(resolve, reject) {
+                var waitForFreePlace = setInterval(function() {
+                    var isAreaFree = !document.querySelector('[endereco-popup]');
+
+                    // No modals from shopware should be open.
+                    isAreaFree = isAreaFree && (window.EnderecoIntegrator.thirdPartyModals < 1);
+
+                    // Some global filters, in case in the future we have third party plugins, who want to override this logic.
+                    if (!!window.EnderecoIntegrator.$globalFilters && !!window.EnderecoIntegrator.$globalFilters.isModalAreaFree) {
+                        window.EnderecoIntegrator.$globalFilters.isModalAreaFree.forEach( function(callback) {
+                            isAreaFree = callback(isAreaFree, EAO);
+                        });
+                    }
+
+                    if(isAreaFree) {
+                        clearInterval(waitForFreePlace);
+                        resolve();
+                    }
+                }, 100);
+            })
+        }
     }
 });
 
