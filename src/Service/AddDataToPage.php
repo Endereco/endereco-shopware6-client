@@ -165,17 +165,13 @@ class AddDataToPage implements EventSubscriberInterface
         $statesMapping = [];
         $statesMappingReverse = [];
         $statesCodeToNameMapping = [];
-        $statesIdToCode = [];
-
         foreach ($states as $state) {
             $statesMapping[strtoupper($state->getShortCode())] = $state->getId();
             $statesMappingReverse[$state->getId()] = strtoupper($state->getShortCode());
             $statesCodeToNameMapping[strtoupper($state->getShortCode())] = $state->getName();
-            $statesIdToCode[$state->getId()] = strtoupper($state->getShortCode());
         }
 
         $configContainer->subdivisionCodeToNameMapping = str_replace("'", "\'", json_encode($statesCodeToNameMapping));
-        $configContainer->subdivisionIdToCodeMapping = json_encode($statesIdToCode);
         $configContainer->subdivisionMapping = str_replace("'", "\'", json_encode($statesMapping));
         $configContainer->subdivisionMappingReverse = str_replace("'", "\'", json_encode($statesMappingReverse));
 
