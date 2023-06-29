@@ -288,6 +288,9 @@ EnderecoIntegrator.afterAMSActivation.push(function (EAO) {
     EAO.onAfterAddressCheckSelected.push((e) => {
         addressCheckSelectedHandler(EAO, e)
     })
+    EAO.onConfirmAddress.push((e) => {
+        addressCheckSelectedHandler(EAO, e);
+    })
 
     /**
      * If its one of the existing customer check modals, competing with shopware modals,
