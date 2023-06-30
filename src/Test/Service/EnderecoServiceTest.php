@@ -27,6 +27,7 @@ class EnderecoServiceTest extends TestCase
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
+            $this->createMock(EntityRepository::class),
             $this->createMock(LoggerInterface::class)
         );
         $this->assertEquals($expected, $enderecoService->buildFullStreet($street, $houseNumber, $countryIso));

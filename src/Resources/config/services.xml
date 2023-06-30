@@ -33,6 +33,7 @@
             <argument type="service" id="customer.repository"/>
             <argument type="service" id="endereco_address_ext.repository"/>
             <argument type="service" id="country.repository"/>
+            <argument type="service" id="country_state.repository"/>
             <argument type="service" id="Endereco\Shopware6Client\Logger" />
         </service>
 
@@ -57,6 +58,7 @@
             <argument type="service" id="customer_address.repository"/>
             <argument type="service" id="endereco_address_ext.repository"/>
             <argument type="service" id="country.repository"/>
+            <argument type="service" id="country_state.repository"/>
             <argument type="service" id="request_stack"/>
 
         </service>
@@ -68,6 +70,7 @@
             <argument type="service" id="customer_address.repository"/>
             <argument type="service" id="endereco_address_ext.repository"/>
             <argument type="service" id="country.repository"/>
+            <argument type="service" id="country_state.repository"/>
             <argument type="service" id="request_stack"/>
         </service>
     </services>

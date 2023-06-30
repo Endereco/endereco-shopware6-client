@@ -13,6 +13,7 @@ use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
+use Shopware\Core\System\Country\Aggregate\CountryState\CountryStateEntity;
 use Shopware\Core\System\Country\CountryEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use GuzzleHttp\Exception\RequestException;
@@ -38,6 +39,8 @@ class EnderecoService
 
     private EntityRepository $countryRepository;
 
+    private EntityRepository $countryStateRepository;
+
     private LoggerInterface $logger;
 
     public function __construct(
@@ -46,6 +49,7 @@ class EnderecoService
         EntityRepository $customerRepository,
         EntityRepository $enderecoAddressExtensionRepository,
         EntityRepository $countryRepository,
+        EntityRepository $countryStateRepository,
         LoggerInterface $logger
     ) {
         $this->httpClient = new Client(['timeout' => 3.0, 'connection_timeout' => 2.0]);
@@ -55,6 +59,7 @@ class EnderecoService
         $this->customerRepository = $customerRepository;
         $this->enderecoAddressExtensionRepository = $enderecoAddressExtensionRepository;
         $this->countryRepository = $countryRepository;
+        $this->countryStateRepository = $countryStateRepository;
         $this->logger = $logger;
     }
 
@@ -119,23 +124,35 @@ class EnderecoService
             $context,
             ['language.locale']
         );
-        $country = $this->fetchEntityById($address->getCountryId(), $this->countryRepository, $context);
+        $country = $this->fetchEntityById($address->getCountryId(), $this->countryRepository, $context, ['states']);
         if (!$country instanceof CountryEntity || !$customer instanceof CustomerEntity) {
             return;
         }
         $locale = $customer->getLanguage()->getLocale();
         $countryCode = strtoupper($country->getIso());
         $localeCode = explode('-', $locale->getCode())[0];
-        $payload = $this->preparePayload(
-            'addressCheck',
-            [
-                'country' => $countryCode,
-                'language' => $localeCode,
-                'postCode' => $address->getZipcode(),
-                'cityName' => $address->getCity(),
-                'streetFull' => $address->getStreet()
-            ]
-        );
+
+        $payload = [
+            'country' => $countryCode,
+            'language' => $localeCode,
+            'postCode' => $address->getZipcode(),
+            'cityName' => $address->getCity(),
+            'streetFull' => $address->getStreet()
+        ];
+
+        if (!is_null($address->getCountryStateId())) {
+            $countryState = $this->fetchEntityById(
+                $address->getCountryStateId(),
+                $this->countryStateRepository,
+                $context
+            );
+            if ($countryState instanceof CountryStateEntity) {
+                $payload['subdivisionCode'] = strtoupper($countryState->getShortCode());
+            }
+        } elseif (!is_null($country->getStates()) && $country->getStates()->count() > 1) {
+            //countryStateId is null, but country has states -- allow to send prediction for subdivision code
+            $payload['subdivisionCode'] = '';
+        }
 
         try {
             $tid = $this->generateTid();
@@ -146,7 +163,7 @@ class EnderecoService
                         $this->getEnderecoAgentInfo($context),
                         $tid
                     ),
-                    'body' => json_encode($payload)
+                    'body' => json_encode($this->preparePayload('addressCheck', $payload))
                 )
             );
 

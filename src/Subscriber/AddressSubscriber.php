@@ -11,6 +11,8 @@ use Shopware\Core\Checkout\Customer\CustomerEvents;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityLoadedEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityWrittenEvent;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Event\DataMappingEvent;
 use Shopware\Core\Framework\Validation\BuildValidationEvent;
 use Shopware\Core\Framework\Validation\DataBag\DataBag;
@@ -313,6 +315,7 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
         $houseNumber = $predictions['buildingNumber'] ?? null;
         $city = $predictions['locality'] ?? null;
         $zipcode = $predictions['postalCode'] ?? null;
+        $countryStateShortCode = $predictions['subdivisionCode'] ?? null;
 
         if (
             is_null($countryIso)
@@ -326,7 +329,7 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
         $addressId = $address->getId();
         $this->automaticallySelectedAddressIds[] = $addressId;
 
-        $this->customerAddressRepository->update([[
+        $updatePayload = [
             'id' => $addressId,
             'zipcode' => $zipcode,
             'city' => $city,
@@ -344,6 +347,19 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
                     )
                 ]
             ]
-        ]], $context);
+        ];
+
+        if (!is_null($countryStateShortCode)) {
+            $countryStateId = $this->countryStateRepository
+                ->searchIds(
+                    (new Criteria())->addFilter(new EqualsFilter('shortCode', $countryStateShortCode)),
+                    $context
+                )->firstId();
+            if (!is_null($countryStateId)) {
+                $updatePayload['countryStateId'] = $countryStateId;
+            }
+        }
+
+        $this->customerAddressRepository->update([$updatePayload], $context);
     }
 }

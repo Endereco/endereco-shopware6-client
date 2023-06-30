@@ -36,6 +36,7 @@ class AddressSubscriberTest extends TestCase
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
+            $this->createMock(EntityRepository::class),
             $this->createMock(RequestStack::class)
         );
 
@@ -55,6 +56,7 @@ class AddressSubscriberTest extends TestCase
         $addressSubscriber = new AddressSubscriber(
             $this->getSystemConfigService(),
             $this->createMock(EnderecoService::class),
+            $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
@@ -90,6 +92,7 @@ class AddressSubscriberTest extends TestCase
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
             $countryRepositoryMock,
+            $this->createMock(EntityRepository::class),
             $this->createMock(RequestStack::class)
         );
 
@@ -123,6 +126,7 @@ class AddressSubscriberTest extends TestCase
         $addressSubscriber = new AddressSubscriber(
             $systemConfigServiceMock,
             $enderecoServiceMock,
+            $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
@@ -164,6 +168,7 @@ class AddressSubscriberTest extends TestCase
         $addressSubscriber = new AddressSubscriber(
             $this->getSystemConfigService(),
             $enderecoServiceMock,
+            $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),
             $this->createMock(EntityRepository::class),

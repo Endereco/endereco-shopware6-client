@@ -23,22 +23,26 @@ abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
     protected EntityRepository $customerAddressRepository;
     protected EntityRepository $enderecoAddressExtensionRepository;
     protected EntityRepository $countryRepository;
+
+    protected EntityRepository $countryStateRepository;
     protected RequestStack $requestStack;
     private array $countryMemCache = [];
 
     public function __construct(
         SystemConfigService $systemConfigService,
-        EnderecoService     $enderecoService,
-        EntityRepository    $customerAddressRepository,
-        EntityRepository    $enderecoAddressExtensionRepository,
-        EntityRepository    $countryRepository,
-        RequestStack        $requestStack
+        EnderecoService $enderecoService,
+        EntityRepository $customerAddressRepository,
+        EntityRepository $enderecoAddressExtensionRepository,
+        EntityRepository $countryRepository,
+        EntityRepository $countryStateRepository,
+        RequestStack $requestStack
     ) {
         $this->enderecoService = $enderecoService;
         $this->systemConfigService = $systemConfigService;
         $this->customerAddressRepository = $customerAddressRepository;
         $this->enderecoAddressExtensionRepository = $enderecoAddressExtensionRepository;
         $this->countryRepository = $countryRepository;
+        $this->countryStateRepository = $countryStateRepository;
         $this->requestStack = $requestStack;
     }
 
@@ -67,7 +71,7 @@ abstract class AbstractEnderecoSubscriber implements EventSubscriberInterface
 
     private function isEnderecoAddressValid(
         EnderecoAddressExtensionEntity $enderecoAddress,
-        CustomerAddressEntity          $address
+        CustomerAddressEntity $address
     ): bool {
         $enderecoFullStreet = $this->enderecoService->buildFullStreet(
             $enderecoAddress->getStreet(),
