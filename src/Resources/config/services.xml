@@ -20,6 +20,7 @@
         </service>
 
         <service id="Endereco\Shopware6Client\Controller\Storefront\AddressController" public="true">
+            <argument type="service" id="Endereco\Shopware6Client\Service\EnderecoService" />
             <argument type="service" id="customer_address.repository" />
             <argument type="service" id="event_dispatcher"/>
             <call method="setContainer">
@@ -30,21 +31,24 @@
         <service id="Endereco\Shopware6Client\Service\EnderecoService" public="true">
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="plugin.repository"/>
-            <argument type="service" id="customer.repository"/>
-            <argument type="service" id="endereco_address_ext.repository"/>
             <argument type="service" id="country.repository"/>
             <argument type="service" id="country_state.repository"/>
+            <argument type="service" id="sales_channel_domain.repository"/>
+            <argument type="service" id="customer_address.repository"/>
+            <argument type="service" id="request_stack"/>
             <argument type="service" id="Endereco\Shopware6Client\Logger" />
         </service>
 
         <service id="Endereco\Shopware6Client\Service\AddDataToPage" >
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="Endereco\Shopware6Client\Service\EnderecoService" />
             <argument type="service" id="country.repository"/>
             <argument type="service" id="country_state.repository"/>
             <argument type="service" id="salutation.repository"/>
             <argument type="service" id="plugin.repository"/>
             <tag name="kernel.event_subscriber" />
         </service>
+
         <service id="Endereco\Shopware6Client\Logger" class="Monolog\Logger">
             <factory service="Shopware\Core\Framework\Log\LoggerFactory" method="createRotating"/>
 
@@ -52,18 +56,6 @@
         </service>
 
         <service id="Endereco\Shopware6Client\Subscriber\AddressSubscriber">
-            <tag name="kernel.event_subscriber"/>
-            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
-            <argument type="service" id="Endereco\Shopware6Client\Service\EnderecoService" />
-            <argument type="service" id="customer_address.repository"/>
-            <argument type="service" id="endereco_address_ext.repository"/>
-            <argument type="service" id="country.repository"/>
-            <argument type="service" id="country_state.repository"/>
-            <argument type="service" id="request_stack"/>
-
-        </service>
-
-        <service id="Endereco\Shopware6Client\Subscriber\CheckoutSubscriber">
             <tag name="kernel.event_subscriber"/>
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="Endereco\Shopware6Client\Service\EnderecoService" />

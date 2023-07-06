@@ -92,7 +92,7 @@ try {
     $errorCode = curl_errno($ch);
 
     if (0 === $errorCode) {
-        if ($http[$httpCode]) {
+        if (isset($http[$httpCode])) {
             header('Content-Type: application/json');
             header($http[$httpCode]);
         }
