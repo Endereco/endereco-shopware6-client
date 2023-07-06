@@ -280,7 +280,9 @@ const addressCheckSelectedHandler = (EAO, e) => {
     window.ajaxSubmitRequestPending = true;
     ajaxPlugin._fireRequest();
 }
+
 EnderecoIntegrator.afterAMSActivation.push(function (EAO) {
+
     EAO.onEditAddress.push((e) => {
         editAddressHandler(e);
     })
@@ -288,6 +290,7 @@ EnderecoIntegrator.afterAMSActivation.push(function (EAO) {
     EAO.onAfterAddressCheckSelected.push((e) => {
         addressCheckSelectedHandler(EAO, e)
     })
+
     EAO.onConfirmAddress.push((e) => {
         addressCheckSelectedHandler(EAO, e);
     })

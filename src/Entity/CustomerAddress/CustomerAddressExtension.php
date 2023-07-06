@@ -14,6 +14,11 @@ class CustomerAddressExtension extends EntityExtension
 {
     public const ENDERECO_EXTENSION = 'enderecoAddress';
 
+    /**
+     * Extend the fields of the CustomerAddressDefinition with the EnderecoAddressExtensionDefinition.
+     *
+     * @param FieldCollection $collection The collection of fields to extend.
+     */
     public function extendFields(FieldCollection $collection): void
     {
         $collection->add(
@@ -27,6 +32,11 @@ class CustomerAddressExtension extends EntityExtension
         );
     }
 
+    /**
+     * Get the class name of the definition that is extended by this extension.
+     *
+     * @return string The class name of the extended definition.
+     */
     public function getDefinitionClass(): string
     {
         return CustomerAddressDefinition::class;
