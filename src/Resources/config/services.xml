@@ -59,6 +59,7 @@
             <tag name="kernel.event_subscriber"/>
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="Endereco\Shopware6Client\Service\EnderecoService" />
+            <argument type="service" id="customer.repository"/>
             <argument type="service" id="customer_address.repository"/>
             <argument type="service" id="endereco_address_ext.repository"/>
             <argument type="service" id="country.repository"/>

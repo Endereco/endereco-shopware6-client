@@ -15,6 +15,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Framework\Api\Context\SalesChannelApiSource;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\System\Country\CountryEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use GuzzleHttp\Exception\RequestException;
 use Shopware\Core\Framework\Context;
@@ -24,6 +25,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Throwable;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 class EnderecoService
 {
@@ -41,9 +43,11 @@ class EnderecoService
 
     private LoggerInterface $logger;
 
-    private SessionInterface $session;
-
     private SystemConfigService $systemConfigService;
+
+    private ?SessionInterface $session;
+
+    protected RequestStack $requestStack;
 
     public function __construct(
         SystemConfigService $systemConfigService,
@@ -62,8 +66,18 @@ class EnderecoService
         $this->countryStateRepository = $countryStateRepository;
         $this->salesChannelDomainRepository = $salesChannelDomainRepository;
         $this->customerAddressRepository = $customerAddressRepository;
+        $this->requestStack = $requestStack;
+
+        $legacyMethodExists = method_exists(RequestStack::class, 'getMasterRequest');
+        if ($legacyMethodExists && !is_null($requestStack->getMasterRequest())) {
+            $this->session = $requestStack->getMasterRequest()->getSession();
+        } elseif (!is_null($requestStack->getMainRequest())) {
+            $this->session = $requestStack->getMainRequest()->getSession();
+        } else {
+            $this->session = null;
+        }
+
         $this->logger = $logger;
-        $this->session = $requestStack->getSession();
     }
 
     /**
@@ -236,15 +250,25 @@ class EnderecoService
      */
     public function closeStoredSessions(Context $context, string $salesChannelId)
     {
+
+        if (!$this->session instanceof SessionInterface) {
+            return;
+        }
+
         // Check if there are any stored sessions in 'enderecoAccountableSessions'
-        if ($this->session->has('enderecoAccountableSessions')) {
-            // Retrieve the session IDs
+        if ($this->session->get('enderecoAccountableSessions')) {
+
+            /** @var string[] $existingSessionIds */
             $existingSessionIds = $this->session->get('enderecoAccountableSessions');
 
             // If the retrieved session IDs array is not empty, proceed to close the sessions
             if (!empty($existingSessionIds)) {
                 // Call the service method to close the sessions
                 $this->sendDoAccountings($existingSessionIds, $context, $salesChannelId);
+
+                if (!$this->session instanceof SessionInterface) {
+                    return;
+                }
 
                 // Reset the 'enderecoAccountableSessions' array in the session
                 $this->session->set('enderecoAccountableSessions', []);
@@ -268,9 +292,14 @@ class EnderecoService
      */
     public function addAccountableSessionIdsToStorage(array $sessionIds): void
     {
+        if (!$this->session instanceof SessionInterface) {
+            return;
+        }
+
         // Fetch any existing sessions stored under 'enderecoAccountableSessions'
         $existingSessions = [];
-        if ($this->session->has('enderecoAccountableSessions')) {
+
+        if ($this->session->get('enderecoAccountableSessions')) {
             $existingSessions = $this->session->get('enderecoAccountableSessions');
         }
 
@@ -582,16 +611,15 @@ class EnderecoService
      */
     public function syncStreet(array &$addressData, Context $context, string $salesChannelId): void
     {
-        /**
-         * In this block we ensure that the full street, the street name and building number are all set.
-         *
-         * If the street splitter is active, then we would not receive the full street, which is needed. So we
-         * have to generate it manually.
-         *
-         * On the other side, if the street splitter is inactive, then we will receive only the full street.
-         * But by definition we always have to save the splitted street name and building number.
-         */
-        if ($this->isStreetSplittingFeatureEnabled($salesChannelId)) {
+        $isFullStreetEmpty = empty($addressData['street']);
+        $isStreetNameEmpty = empty($addressData['extensions']['enderecoAddress']['street']);
+
+        // In the following we handle three expected scenatio:
+        // 1. The full street is empty, but name nad housenumber not -> fill up full street
+        // 2. The full street is known and the street name is not -> fill up street name and house number
+        // 3. Both are filled, then we prioritize based on whether street splitter is active or not
+        // 4. If both are empty not filling is required. This should not happen normally.
+        if ($isFullStreetEmpty && !$isStreetNameEmpty) {
             // Fetch important parts to build a full street.
             $streetName = $addressData['extensions']['enderecoAddress']['street'];
             $buildingNumber = $addressData['extensions']['enderecoAddress']['houseNumber'];
@@ -608,8 +636,8 @@ class EnderecoService
 
             // Add the full street to the output data
             $addressData['street'] = $fullStreet;
-        } else {
-            // If street splitting is not enabled, get the full street and split it
+        } elseif (!$isFullStreetEmpty && $isStreetNameEmpty) {
+            // Get the full street and split it
             $fullStreet = $addressData['street'];
 
             // If country is unknown, use Germany as default
@@ -629,6 +657,46 @@ class EnderecoService
 
             $addressData['extensions']['enderecoAddress']['street'] = $streetName;
             $addressData['extensions']['enderecoAddress']['houseNumber'] = $buildingNumber;
+        } elseif (!$isFullStreetEmpty && !$isStreetNameEmpty) {
+            if ($this->isStreetSplittingFeatureEnabled($salesChannelId)) {
+                // Fetch important parts to build a full street.
+                $streetName = $addressData['extensions']['enderecoAddress']['street'];
+                $buildingNumber = $addressData['extensions']['enderecoAddress']['houseNumber'];
+
+                // If country is unknown, use Germany as default
+                $countryCode = $this->getCountryCodeById($addressData['countryId'], $context, 'DE');
+
+                // Construct full street.
+                $fullStreet = $this->buildFullStreet(
+                    $streetName,
+                    $buildingNumber,
+                    $countryCode
+                );
+
+                // Add the full street to the output data
+                $addressData['street'] = $fullStreet;
+            } else {
+                // Get the full street and split it
+                $fullStreet = $addressData['street'];
+
+                // If country is unknown, use Germany as default
+                $countryCode = $this->getCountryCodeById(
+                    $addressData['countryId'],
+                    $context,
+                    'DE'
+                );
+
+                // Split the full street into its constituent parts
+                list($streetName, $buildingNumber) = $this->splitStreet(
+                    $fullStreet,
+                    $countryCode,
+                    $context,
+                    $salesChannelId
+                );
+
+                $addressData['extensions']['enderecoAddress']['street'] = $streetName;
+                $addressData['extensions']['enderecoAddress']['houseNumber'] = $buildingNumber;
+            }
         }
     }
 
@@ -878,8 +946,11 @@ class EnderecoService
      */
     public function isCountryWithSubdivisionsById(string $countryId, Context $context): bool
     {
-        // Fetch the country using the provided ID
-        $country = $this->countryRepository->search(new Criteria([$countryId]), $context)->first();
+        $criteria = new Criteria([$countryId]);
+        $criteria->addAssociation('states');
+
+        /** @var CountryEntity $country */
+        $country = $this->countryRepository->search($criteria, $context)->first();
 
         // Check if the country was found and if it has more than one state
         // If so, return true, indicating that the country has subdivisions
