@@ -14,6 +14,7 @@ use Shopware\Core\Framework\Validation\BuildValidationEvent;
 use Shopware\Core\Framework\Validation\DataBag\DataBag;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Optional;
 
 class AddressSubscriber extends AbstractEnderecoSubscriber
 {
@@ -63,9 +64,43 @@ class AddressSubscriber extends AbstractEnderecoSubscriber
         $this->overrideStreetWithSplittedData($billingAddress, $context);
         $this->overrideStreetWithSplittedData($shippingAddress, $context);
 
-        $definition = $event->getDefinition();
-        $definition->add('enderecoStreet', new NotBlank());
-        $definition->add('enderecoHousenumber', new NotBlank());
+        // Check if the street splitting feature is enabled for the sales channel
+        if ($this->isStreetSplittingFieldsValidationNeeded($data)) {
+            // Fetch the form definition
+            $definition = $event->getDefinition();
+
+            // If street splitting is enabled, add NotBlank validation rule
+            // to 'enderecoStreet' and 'enderecoHousenumber'
+            $definition->add('enderecoStreet', new NotBlank());
+            $definition->add('enderecoHousenumber', new NotBlank());
+
+            // And set the 'street' field as optional since it is replaced in the frontend form
+            $definition->set('street', new Optional());
+        }
+    }
+
+    /**
+     * Checks if street splitting fields validation is needed based on the contents of the DataBag.
+     *
+     * The function checks if the given DataBag contains a 'billingAddress' or a 'shippingAddress'.
+     * If 'billingAddress' is present, it will use it. If not, it checks for 'shippingAddress' and uses it.
+     * Lastly, it checks if 'enderecoStreet' is present in the chosen address and returns this information as a boolean.
+     *
+     * @param DataBag $address The data bag object containing address information.
+     *
+     * @return bool Returns true if 'enderecoStreet' exists in the chosen address, false otherwise.
+     */
+    private function isStreetSplittingFieldsValidationNeeded(DataBag $address): bool
+    {
+        if ($address->has('billingAddress')) {
+            $address =  $address->get('billingAddress');
+        } elseif ($address->has('shippingAddress')) {
+            $address =  $address->get('billingAddress');
+        }
+
+        $validationCustomRulesNeeded = $address->has('enderecoStreet');
+
+        return $validationCustomRulesNeeded;
     }
 
     public function onMappingCreate(DataMappingEvent $event): void
