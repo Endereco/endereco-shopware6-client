@@ -8,13 +8,16 @@ use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoAddressExte
 use Endereco\Shopware6Client\Model\FailedAddressCheckResult;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Checkout\Customer\CustomerEvents;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityLoadedEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityWrittenEvent;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\DataMappingEvent;
 use Shopware\Core\Framework\Validation\BuildValidationEvent;
+use Shopware\Core\Framework\Validation\DataBag\DataBag;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -25,6 +28,7 @@ class AddressSubscriber implements EventSubscriberInterface
 {
     protected SystemConfigService $systemConfigService;
     protected EnderecoService $enderecoService;
+    protected EntityRepository $customerRepository;
     protected EntityRepository $customerAddressRepository;
     protected EntityRepository $enderecoAddressExtensionRepository;
     protected EntityRepository $countryRepository;
@@ -37,6 +41,7 @@ class AddressSubscriber implements EventSubscriberInterface
     public function __construct(
         SystemConfigService $systemConfigService,
         EnderecoService $enderecoService,
+        EntityRepository $customerRepository,
         EntityRepository $customerAddressRepository,
         EntityRepository $enderecoAddressExtensionRepository,
         EntityRepository $countryRepository,
@@ -45,6 +50,7 @@ class AddressSubscriber implements EventSubscriberInterface
     ) {
         $this->enderecoService = $enderecoService;
         $this->systemConfigService = $systemConfigService;
+        $this->customerRepository = $customerRepository;
         $this->customerAddressRepository = $customerAddressRepository;
         $this->enderecoAddressExtensionRepository = $enderecoAddressExtensionRepository;
         $this->countryRepository = $countryRepository;
@@ -135,6 +141,11 @@ class AddressSubscriber implements EventSubscriberInterface
                 continue;
             }
 
+            $addressEntity = $entity;
+
+            // Ensure the address extension exists and the street is split
+            $this->ensureAddressExtensionExists($addressEntity, $context);
+
             // IF the address has been processed already, we can be sure the database has all the information
             // So we just sync the entity with this information.
             $processedEntityIds = array_keys($this->addressEntityCache);
@@ -143,11 +154,8 @@ class AddressSubscriber implements EventSubscriberInterface
                 continue;
             }
 
-            $addressEntity = $entity;
-
-            // Ensure the address extension exists and the street is split
-            $this->ensureAddressExtensionExists($addressEntity, $context);
             $this->ensureTheStreetIsSplit($addressEntity, $context, $salesChannelId);
+            $this->ensurePayPalExpressFlagIsSet($addressEntity, $context);
 
             // Determine if existing customer address check or PayPal checkout address check is required
             $existingCustomerCheckIsRelevant =
@@ -166,6 +174,43 @@ class AddressSubscriber implements EventSubscriberInterface
 
         // Close all stored sessions after checking all addresses
         $this->enderecoService->closeStoredSessions($context, $salesChannelId);
+    }
+
+    /**
+     * Ensures that the 'isPaypalAddress' flag is set in the 'EnderecoAddressExtension' of a customer's address.
+     *
+     * The function first retrieves the customer based on the provided CustomerAddressEntity. Then, it checks if
+     * 'payPalExpressPayerId' exists in the customer's custom fields. If so, 'isPaypalAddress' is set to true.
+     *
+     * The function then gets or creates the 'EnderecoAddressExtension' for the provided address,
+     * and sets the 'isPaypalAddress' value in it.
+     *
+     * @param CustomerAddressEntity $addressEntity The customer's address entity.
+     * @param Context $context The context for the search and upsert operations.
+     *
+     * @return void
+     */
+    private function ensurePayPalExpressFlagIsSet(CustomerAddressEntity $addressEntity, Context $context): void
+    {
+        $customerId = $addressEntity->getCustomerId();
+
+        /** @var CustomerEntity $customer */
+        $customer = $this->customerRepository->search(new Criteria([$customerId]), $context)->first();
+
+        /** @var  array<mixed>|null $customerCustomFields */
+        $customerCustomFields = $customer->getCustomFields();
+        $isPaypalAddress = isset($customerCustomFields['payPalExpressPayerId']);
+
+        /** @var EnderecoAddressExtensionEntity $enderecoAddressExtension */
+        $enderecoAddressExtension = $addressEntity->getExtension('enderecoAddress');
+
+        // If it doesn't exist, create a new one with default values
+        $this->enderecoAddressExtensionRepository->upsert([[
+            'addressId' => $addressEntity->getId(),
+            'isPayPalAddress' => $isPaypalAddress,
+        ]], $context);
+
+        $enderecoAddressExtension->setIsPayPalAddress($isPaypalAddress);
     }
 
     /**
@@ -204,10 +249,13 @@ class AddressSubscriber implements EventSubscriberInterface
         $addressEntity->setZipcode($processedEntity->get('zipcode'));
         $addressEntity->setCity($processedEntity->get('city'));
         $addressEntity->setStreet($processedEntity->get('street'));
-        $addressEntity->setCountryStateId($processedEntity->get('countryStateId'));
+        if (!is_null($processedEntity->get('countryStateId'))) {
+            $addressEntity->setCountryStateId($processedEntity->get('countryStateId'));
+        }
 
         $toAddressExtension->setStreet($processedAddressExtension->get('street'));
         $toAddressExtension->setHouseNumber($processedAddressExtension->get('houseNumber'));
+        $toAddressExtension->setIsPayPalAddress($processedAddressExtension->get('isPayPalAddress'));
         $toAddressExtension->setAmsStatus($processedAddressExtension->get('amsStatus'));
         $toAddressExtension->setAmsPredictions($processedAddressExtension->get('amsPredictions'));
         $toAddressExtension->setAmsTimestamp($processedAddressExtension->get('amsTimestamp'));
@@ -312,8 +360,10 @@ class AddressSubscriber implements EventSubscriberInterface
             return;
         }
 
+        $formData = $event->getData();
+
         // Check if the street splitting feature is enabled for the sales channel
-        if ($this->enderecoService->isStreetSplittingFeatureEnabled($salesChannelId)) {
+        if ($this->isStreetSplittingFieldsValidationNeeded($formData)) {
             // Fetch the form definition
             $definition = $event->getDefinition();
 
@@ -325,6 +375,30 @@ class AddressSubscriber implements EventSubscriberInterface
             // And set the 'street' field as optional since it is replaced in the frontend form
             $definition->set('street', new Optional());
         }
+    }
+
+    /**
+     * Checks if street splitting fields validation is needed based on the contents of the DataBag.
+     *
+     * The function checks if the given DataBag contains a 'billingAddress' or a 'shippingAddress'.
+     * If 'billingAddress' is present, it will use it. If not, it checks for 'shippingAddress' and uses it.
+     * Lastly, it checks if 'enderecoStreet' is present in the chosen address and returns this information as a boolean.
+     *
+     * @param DataBag $address The data bag object containing address information.
+     *
+     * @return bool Returns true if 'enderecoStreet' exists in the chosen address, false otherwise.
+     */
+    private function isStreetSplittingFieldsValidationNeeded(DataBag $address): bool
+    {
+        if ($address->has('billingAddress')) {
+            $address =  $address->get('billingAddress');
+        } elseif ($address->has('shippingAddress')) {
+            $address =  $address->get('billingAddress');
+        }
+
+        $validationCustomRulesNeeded = $address->has('enderecoStreet');
+
+        return $validationCustomRulesNeeded;
     }
 
     /**
@@ -350,15 +424,21 @@ class AddressSubscriber implements EventSubscriberInterface
         $input = $event->getInput();
         $output = $event->getOutput();
 
+        if (is_null($input->get('amsPredictions'))) {
+            $predictions = [];
+        } else {
+            $predictions = json_decode($input->get('amsPredictions'), true);
+        }
+
         // Add relevant endereco data.
         $output['extensions'] = [
             'enderecoAddress' => [
                 'street' => $input->get('enderecoStreet', ''),
                 'houseNumber' => $input->get('enderecoHousenumber', ''),
                 'amsStatus' => $input->get('amsStatus') ?? EnderecoAddressExtensionEntity::AMS_STATUS_NOT_CHECKED,
-                'amsTimestamp' => (int) $input->get('amsTimestamp'),
-                'amsPredictions' => json_decode($input->get('amsPredictions'), true) ?? [],
-                'isPayPalAddress' => $this->isPaypalCheckoutRequest()
+                'amsTimestamp' => (int) $input->get('amsTimestamp', 0),
+                'amsPredictions' => $predictions,
+                'isPayPalAddress' => false // We will calculate it later.
             ]
         ];
 
@@ -392,37 +472,12 @@ class AddressSubscriber implements EventSubscriberInterface
             // Look for accountable session id's in $_POST
             $accountableSessionIds = $this->enderecoService->findAccountableSessionIds($_POST);
 
+
             // Save them to session variable, if any found.
             if (!empty($accountableSessionIds)) {
                 $this->enderecoService->addAccountableSessionIdsToStorage($accountableSessionIds);
             }
         }
-    }
-
-    /**
-     * Checks if the current request is a PayPal Checkout request.
-     *
-     * This method retrieves the current request from the request stack and checks if the path info
-     * contains '/store-api/paypal'. If so, the method returns true, indicating that the request is
-     * a PayPal Checkout request. If the current request cannot be fetched or the path info
-     * does not contain '/store-api/paypal', the method returns false.
-     *
-     * This method is useful for determining if specific logic needs to be run for PayPal Checkout requests.
-     *
-     * @return bool Returns true if the current request is a PayPal Checkout request, false otherwise.
-     */
-    private function isPaypalCheckoutRequest(): bool
-    {
-        // Fetch the current request
-        $currentRequest = $this->requestStack->getCurrentRequest();
-
-        // If there is no current request, return false
-        if (!$currentRequest) {
-            return false;
-        }
-
-        // Check if the path info of the current request contains '/store-api/paypal' and return the result
-        return str_contains($currentRequest->getPathInfo(), '/store-api/paypal');
     }
 
     /**
