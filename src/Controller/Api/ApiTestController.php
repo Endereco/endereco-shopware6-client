@@ -47,8 +47,8 @@ class ApiTestController extends AbstractController
      */
     public function checkAPICredentials(Request $request, Context $context): JsonResponse
     {
-        $apiKey = $request->get('EnderecoShopware6Client.config.enderecoApiKey', '');
-        $endpointUrl = $request->get('EnderecoShopware6Client.config.enderecoRemoteUrl', '');
+        $apiKey = (string) $request->request->get('EnderecoShopware6Client.config.enderecoApiKey', '');
+        $endpointUrl = (string) $request->request->get('EnderecoShopware6Client.config.enderecoRemoteUrl', '');
 
         // Check if the API key and endpoint URL are not empty
         if (empty(trim($apiKey)) || empty(trim($endpointUrl))) {

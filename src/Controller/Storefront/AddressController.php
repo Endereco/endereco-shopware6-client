@@ -90,10 +90,10 @@ class AddressController extends StorefrontController
         }
 
         /** @var array<string, string> $billingAddress */
-        $billingAddress = $request->get('billingAddress', []);
+        $billingAddress = $request->request->get('billingAddress', null) ?? [];
 
         /** @var array<string, string> $shippingAddressAddress */
-        $shippingAddressAddress = $request->get('shippingAddress', []);
+        $shippingAddressAddress = $request->request->get('shippingAddress', null) ?? [];
 
         if (!empty($billingAddress)) {
             $address = $billingAddress;
