@@ -156,11 +156,13 @@ class AddressSubscriber implements EventSubscriberInterface
 
             $this->ensureTheStreetIsSplit($addressEntity, $context, $salesChannelId);
             $this->ensurePayPalExpressFlagIsSet($addressEntity, $context);
+            $this->ensureAmazonPayFlagIsSet($addressEntity, $context);
 
             // Determine if existing customer address check or PayPal checkout address check is required
             $existingCustomerCheckIsRelevant =
                 $this->enderecoService->isExistingCustomerAddressCheckFeatureEnabled($salesChannelId)
-                && !$this->enderecoService->isAddressFromRemote($addressEntity);
+                && !$this->enderecoService->isAddressFromRemote($addressEntity)
+                && !$this->enderecoService->isAddressRecent($addressEntity);
 
             $paypalExpressCheckoutCheckIsRelevant =
                 $this->enderecoService->isPayPalCheckoutAddressCheckFeatureEnabled($salesChannelId)
@@ -211,6 +213,43 @@ class AddressSubscriber implements EventSubscriberInterface
         ]], $context);
 
         $enderecoAddressExtension->setIsPayPalAddress($isPaypalAddress);
+    }
+
+    /**
+     * Ensures that the 'isAmazonPayAddress' flag is set in the 'EnderecoAddressExtension' of a customer's address.
+     *
+     * The function first retrieves the customer based on the provided CustomerAddressEntity. Then, it checks if
+     * 'swag_amazon_pay_account_id' exists in the customer's custom fields. If so, 'isAmazonPayAddress' is set to true.
+     *
+     * The function then gets or creates the 'EnderecoAddressExtension' for the provided address,
+     * and sets the 'isAmazonPayAddress' value in it.
+     *
+     * @param CustomerAddressEntity $addressEntity The customer's address entity.
+     * @param Context $context The context for the search and upsert operations.
+     *
+     * @return void
+     */
+    private function ensureAmazonPayFlagIsSet(CustomerAddressEntity $addressEntity, Context $context): void
+    {
+        $customerId = $addressEntity->getCustomerId();
+
+        /** @var CustomerEntity $customer */
+        $customer = $this->customerRepository->search(new Criteria([$customerId]), $context)->first();
+
+        /** @var  array<mixed>|null $customerCustomFields */
+        $customerCustomFields = $customer->getCustomFields();
+        $isAmazonPayAddress = isset($customerCustomFields['swag_amazon_pay_account_id']);
+
+        /** @var EnderecoAddressExtensionEntity $enderecoAddressExtension */
+        $enderecoAddressExtension = $addressEntity->getExtension('enderecoAddress');
+
+        // If it doesn't exist, create a new one with default values
+        $this->enderecoAddressExtensionRepository->upsert([[
+            'addressId' => $addressEntity->getId(),
+            'isAmazonPayAddress' => $isAmazonPayAddress,
+        ]], $context);
+
+        $enderecoAddressExtension->setIsAmazonPayAddress($isAmazonPayAddress);
     }
 
     /**

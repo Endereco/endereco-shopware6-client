@@ -78,6 +78,9 @@ class EnderecoAddressExtensionDefinition extends EntityDefinition
             // A flag that defines whether the address originates from PayPal, through PayPal express checkout.
             (new BoolField('is_paypal_address', 'isPayPalAddress')),
 
+            // A flag that defines whether the address originates from AmazonPay.
+            (new BoolField('is_amazon_pay_address', 'isAmazonPayAddress')),
+
             // A field that contains the street name of the address (without the building number).
             (new StringField('street', 'street')),
 

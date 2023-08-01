@@ -823,12 +823,8 @@ class EnderecoService
      *
      * This method accepts a CustomerAddressEntity and retrieves the corresponding
      * EnderecoAddressExtensionEntity for the address. It then checks if the address
-     * originated from a remote source such as PayPal (or potentially other sources
-     * like Amazon, Facebook etc.).
-     *
-     * Currently, the method only checks for addresses from PayPal (indicated by
-     * the 'isPayPalAddress' property of the EnderecoAddressExtensionEntity) but
-     * can be extended to check for addresses from other remote sources in future.
+     * originated from a remote source such as PayPal, Amazon Pay (or potentially other sources
+     * like Facebook etc.).
      *
      * The method returns true if the address originated from a remote source,
      * and false otherwise.
@@ -843,12 +839,33 @@ class EnderecoService
         $addressExtension = $addressEntity->getExtension('enderecoAddress');
 
         $isFromPayPal = $addressExtension->isPayPalAddress();
+        $isFromAmazonPay = $addressExtension->isAmazonPayAddress();
 
-        // The address is considered from remote if it originated from PayPal or other remote sources.
-        // Current implementation only considers PayPal, but this can be extended to other sources in future.
-        $isFromRemote = $isFromPayPal; // || $isFromAmazon || $isFromFaceBook etc.
+        // The address is considered from remote if it originated from PayPal, Amazon Pay or other remote sources.
+        // Current implementation considers PayPal and Amazon Pay, but this can be extended to other sources in future.
+        $isFromRemote = $isFromPayPal || $isFromAmazonPay; // || $isFromAmazon || $isFromFaceBook etc.
 
         return $isFromRemote;
+    }
+
+    /**
+     * Checks if a given address was created within the last 30 minutes.
+     *
+     * @param CustomerAddressEntity $addressEntity The address entity to check.
+     *
+     * @return bool Returns true if the address was created within the last 30 minutes, false otherwise.
+     */
+    public function isAddressRecent(CustomerAddressEntity $addressEntity): bool
+    {
+        // Get the creation time of the address
+        $creationTime = $addressEntity->getCreatedAt();
+
+        // Get the current time minus 30 minutes
+        $fiveMinutesAgo = (new \DateTime())->modify('-30 minutes');
+
+        // If the creation time of the address is greater than (or equal to) the time 30 minutes ago, return true
+        // Otherwise, return false
+        return $creationTime >= $fiveMinutesAgo;
     }
 
     /**
@@ -873,6 +890,30 @@ class EnderecoService
         $isFromPayPal = $addressExtension->isPayPalAddress();
 
         return $isFromPayPal;
+    }
+
+    /**
+     * Checks whether the given address is originated from Amazon Pay.
+     *
+     * This method accepts a CustomerAddressEntity and retrieves the corresponding
+     * EnderecoAddressExtensionEntity for the address. It then checks if the address
+     * originated from Amazon Pay, indicated by the 'isAmazonPayAddress' property of the
+     * EnderecoAddressExtensionEntity.
+     *
+     * The method returns true if the address originated from Amazon Pay, and false otherwise.
+     *
+     * @param CustomerAddressEntity $addressEntity The address entity for which to check the source.
+     *
+     * @return bool Returns true if the address is from Amazon Pay, false otherwise.
+     */
+    public function isAddressFromAmazonPay(CustomerAddressEntity $addressEntity): bool
+    {
+        /** @var EnderecoAddressExtensionEntity $addressExtension */
+        $addressExtension = $addressEntity->getExtension('enderecoAddress');
+
+        $isFromAmazonPay = $addressExtension->isAmazonPayAddress();
+
+        return $isFromAmazonPay;
     }
 
     /**
@@ -1013,6 +1054,9 @@ class EnderecoService
             $salesChannelId
         );
 
+        $streetName = $fullStreet;
+        $houseNumber = '';
+
         try {
             // Generate request headers from context and sales channel settings.
             $headers = $this->generateRequestHeaders(
@@ -1044,8 +1088,8 @@ class EnderecoService
             // Decode the response from the API.
             $result = json_decode($response->getBody()->getContents())->result;
 
-            // Return the separated street name and house number.
-            return [$result->streetName, $result->houseNumber];
+            $streetName = $result->streetName ?? '';
+            $houseNumber = $result->houseNumber ?? '';
         } catch (RequestException $e) {
             // Handle and log specific HTTP request errors.
             if ($e->hasResponse()) {
@@ -1060,7 +1104,7 @@ class EnderecoService
         }
 
         // Return the original full street name and an empty string as the house number in case of failure.
-        return [$fullStreet, ''];
+        return [$streetName, $houseNumber];
     }
 
     /**

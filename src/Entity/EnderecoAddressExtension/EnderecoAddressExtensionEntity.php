@@ -47,6 +47,9 @@ class EnderecoAddressExtensionEntity extends Entity
     /** @var bool Indicates if the address is a PayPal address. */
     protected bool $isPayPalAddress = false;
 
+    /** @var bool Indicates if the address is an Amazon Pay address. */
+    protected bool $isAmazonPayAddress = false;
+
     /** @var string The street part of the address. */
     protected string $street = '';
 
@@ -157,6 +160,26 @@ class EnderecoAddressExtensionEntity extends Entity
     }
 
     /**
+     * Check if the address is an Amazon Pay address.
+     *
+     * @return bool True if the address is an Amazon Pay address, false otherwise.
+     */
+    public function isAmazonPayAddress(): bool
+    {
+        return $this->isAmazonPayAddress;
+    }
+
+    /**
+     * Set the flag indicating whether the address is a Amazon Pay address.
+     *
+     * @param bool $isAmazonPayAddress True if the address is an Amazon Pay address, false otherwise.
+     */
+    public function setIsAmazonPayAddress(bool $isAmazonPayAddress): void
+    {
+        $this->isAmazonPayAddress = $isAmazonPayAddress;
+    }
+
+    /**
      * Get the street part of the address.
      *
      * @return string The street part of the address.
@@ -183,7 +206,7 @@ class EnderecoAddressExtensionEntity extends Entity
      */
     public function getHouseNumber(): string
     {
-        return $this->houseNumber;
+        return $this->houseNumber ?? '';
     }
 
     /**
