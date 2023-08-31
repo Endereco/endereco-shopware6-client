@@ -2,93 +2,97 @@
 
 {% block component_address_form_address_fields %}
     {{ parent() }}
-    {% if page.endereco_config.pluginActive and ( not page.endereco_config.controllerOnlyWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
-        <input
-                type="hidden"
-                name="endereco_data_marker" value="ams"
-                data-container-selector = "form"
-                data-form-handle-ajax-submit = "true"
-                data-container-type = "form"
-                data-used-prefix = "{{ prefix }}"
-                data-has-object = "no"
-                data-name = ""
-                data-type = ""
-                data-country-code-selector = "{{ prefix }}[countryId]"
-                data-subdivision-code-selector = "{{ prefix }}[countryStateId]"
-                data-postal-code-selector = "{{ prefix }}[zipcode]"
-                data-locality-selector = "{{ prefix }}[city]"
-                data-street-full-selector = "{{ prefix }}[street]"
-                data-phone-selector = "{{ prefix }}[phoneNumber]"
-                data-street-selector = "{{ prefix }}[enderecoStreet]"
-                data-house-number-selector = "{{ prefix }}[enderecoHousenumber]"
-        >
-    {% endif %}
+    {% block component_address_form_address_fields_endereco_data_marker %}
+        {% if page.endereco_config.pluginActive and ( not page.endereco_config.controllerOnlyWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
+            <input
+                    type="hidden"
+                    name="endereco_data_marker" value="ams"
+                    data-container-selector = "form"
+                    data-form-handle-ajax-submit = "true"
+                    data-container-type = "form"
+                    data-used-prefix = "{{ prefix }}"
+                    data-has-object = "no"
+                    data-name = ""
+                    data-type = ""
+                    data-country-code-selector = "{{ prefix }}[countryId]"
+                    data-subdivision-code-selector = "{{ prefix }}[countryStateId]"
+                    data-postal-code-selector = "{{ prefix }}[zipcode]"
+                    data-locality-selector = "{{ prefix }}[city]"
+                    data-street-full-selector = "{{ prefix }}[street]"
+                    data-phone-selector = "{{ prefix }}[phoneNumber]"
+                    data-street-selector = "{{ prefix }}[enderecoStreet]"
+                    data-house-number-selector = "{{ prefix }}[enderecoHousenumber]"
+            >
+        {% endif %}
+    {% endblock %}
 {% endblock %}
 
 
  {% block component_address_form_street %}
-     {% if page.endereco_config.pluginActive and page.endereco_config.enderecoSplitStreet %}
-         <div class="form-group col-8 col-md-4">
-             {% if formViolations.getViolations("/enderecoStreet") is not empty %}
-                 {% set violationPath = "/enderecoStreet" %}
-             {% elseif formViolations.getViolations("/#{prefix}/enderecoStreet") is not empty %}
-                 {% set violationPath = "/#{prefix}/enderecoStreet" %}
-             {% endif %}
-
-             {% block component_address_form_endereco_street_label %}
-                 <label class="form-label"
-                        for="{{ prefix }}AddressStreet">
-                     {{ "enderecoshopware6client.inputFields.enderedoStreetLabel"|trans|sw_sanitize }}{{ "general.required"|trans|sw_sanitize }}
-                 </label>
-             {% endblock %}
-
-             {% block component_address_form_endereco_street_input %}
-                 <input type="text"
-                        class="form-control{% if violationPath %} is-invalid{% endif %}"
-                        id="{{ prefix }}AddressStreet"
-                        placeholder="{{ "enderecoshopware6client.inputFields.enderedoStreetPlaceholder"|trans|striptags }}"
-                        name="{{ prefix }}[enderecoStreet]"
-                        value="{{ data.get('extensions')['enderecoAddress'].street }}"
-                        required="required">
-             {% endblock %}
-
-             {% block component_address_form_endereco_street_input_error %}
-                 {% if violationPath %}
-                     {% sw_include '@Storefront/storefront/utilities/form-violation.html.twig' %}
+     {% block component_address_form_street_endereco_street_splitter %}
+         {% if page.endereco_config.pluginActive and page.endereco_config.enderecoSplitStreet %}
+             <div class="form-group col-8 col-md-4">
+                 {% if formViolations.getViolations("/enderecoStreet") is not empty %}
+                     {% set violationPath = "/enderecoStreet" %}
+                 {% elseif formViolations.getViolations("/#{prefix}/enderecoStreet") is not empty %}
+                     {% set violationPath = "/#{prefix}/enderecoStreet" %}
                  {% endif %}
-             {% endblock %}
-         </div>
-         <div class="form-group col-4 col-md-2">
-             {% if formViolations.getViolations("/enderecoHousenumber") is not empty %}
-                 {% set violationPath = "/enderecoHousenumber" %}
-             {% elseif formViolations.getViolations("/#{prefix}/enderecoHousenumber") is not empty %}
-                 {% set violationPath = "/#{prefix}/enderecoHousenumber" %}
-             {% endif %}
 
-             {% block component_address_form_endereco_housenumber_label %}
-                 <label class="form-label"
-                        for="{{ prefix }}AddressStreet">
-                     {{ "enderecoshopware6client.inputFields.enderedoHousenumberLabel"|trans|sw_sanitize }}{{ "general.required"|trans|sw_sanitize }}
-                 </label>
-             {% endblock %}
+                 {% block component_address_form_endereco_street_label %}
+                     <label class="form-label"
+                            for="{{ prefix }}AddressStreet">
+                         {{ "enderecoshopware6client.inputFields.enderedoStreetLabel"|trans|sw_sanitize }}{{ "general.required"|trans|sw_sanitize }}
+                     </label>
+                 {% endblock %}
 
-             {% block component_address_form_endereco_housenumber_input %}
-                 <input type="text"
-                        class="form-control{% if violationPath %} is-invalid{% endif %}"
-                        id="{{ prefix }}AddressHouseNumber"
-                        placeholder="{{ "enderecoshopware6client.inputFields.enderedoHousenumberPlaceholder"|trans|striptags }}"
-                        name="{{ prefix }}[enderecoHousenumber]"
-                        value="{{ data.get('extensions')['enderecoAddress'].houseNumber }}"
-                        required="required">
-             {% endblock %}
+                 {% block component_address_form_endereco_street_input %}
+                     <input type="text"
+                            class="form-control{% if violationPath %} is-invalid{% endif %}"
+                            id="{{ prefix }}AddressStreet"
+                            placeholder="{{ "enderecoshopware6client.inputFields.enderedoStreetPlaceholder"|trans|striptags }}"
+                            name="{{ prefix }}[enderecoStreet]"
+                            value="{{ data.get('extensions')['enderecoAddress'].street }}"
+                            required="required">
+                 {% endblock %}
 
-             {% block component_address_form_endereco_housenumber_input_error %}
-                 {% if violationPath %}
-                     {% sw_include '@Storefront/storefront/utilities/form-violation.html.twig' %}
+                 {% block component_address_form_endereco_street_input_error %}
+                     {% if violationPath %}
+                         {% sw_include '@Storefront/storefront/utilities/form-violation.html.twig' %}
+                     {% endif %}
+                 {% endblock %}
+             </div>
+             <div class="form-group col-4 col-md-2">
+                 {% if formViolations.getViolations("/enderecoHousenumber") is not empty %}
+                     {% set violationPath = "/enderecoHousenumber" %}
+                 {% elseif formViolations.getViolations("/#{prefix}/enderecoHousenumber") is not empty %}
+                     {% set violationPath = "/#{prefix}/enderecoHousenumber" %}
                  {% endif %}
-             {% endblock %}
-         </div>
-     {% else %}
-         {{ parent() }}
-     {% endif %}
+
+                 {% block component_address_form_endereco_housenumber_label %}
+                     <label class="form-label"
+                            for="{{ prefix }}AddressStreet">
+                         {{ "enderecoshopware6client.inputFields.enderedoHousenumberLabel"|trans|sw_sanitize }}{{ "general.required"|trans|sw_sanitize }}
+                     </label>
+                 {% endblock %}
+
+                 {% block component_address_form_endereco_housenumber_input %}
+                     <input type="text"
+                            class="form-control{% if violationPath %} is-invalid{% endif %}"
+                            id="{{ prefix }}AddressHouseNumber"
+                            placeholder="{{ "enderecoshopware6client.inputFields.enderedoHousenumberPlaceholder"|trans|striptags }}"
+                            name="{{ prefix }}[enderecoHousenumber]"
+                            value="{{ data.get('extensions')['enderecoAddress'].houseNumber }}"
+                            required="required">
+                 {% endblock %}
+
+                 {% block component_address_form_endereco_housenumber_input_error %}
+                     {% if violationPath %}
+                         {% sw_include '@Storefront/storefront/utilities/form-violation.html.twig' %}
+                     {% endif %}
+                 {% endblock %}
+             </div>
+         {% else %}
+             {{ parent() }}
+         {% endif %}
+     {% endblock%}
  {% endblock %}
