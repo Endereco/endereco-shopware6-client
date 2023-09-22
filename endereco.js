@@ -1,7 +1,7 @@
 import Promise from 'promise-polyfill';
 import merge from 'lodash.merge';
 import EnderecoIntegrator from './node_modules/@endereco/js-sdk/modules/integrator';
-import css from './endereco.scss'
+import css from  './endereco.scss'
 
 import 'polyfill-array-includes';
 
@@ -16,6 +16,10 @@ if ('NodeList' in window && !NodeList.prototype.forEach) {
 
 if (!window.Promise) {
     window.Promise = Promise;
+}
+
+if (css) {
+    EnderecoIntegrator.css = css[0][1];
 }
 
 EnderecoIntegrator.postfix = {
@@ -41,7 +45,6 @@ EnderecoIntegrator.postfix = {
     }
 };
 
-EnderecoIntegrator.css = css[0][1];
 
 EnderecoIntegrator.resolvers.countryCodeSetValue = function (subscriber, value) {
     var functionsExist = (typeof jQuery !== 'undefined') && jQuery.fn.val && jQuery.fn.trigger;
@@ -106,30 +109,33 @@ EnderecoIntegrator.resolvers.subdivisionCodeRead = function (value) {
 }
 
 EnderecoIntegrator.resolvers.salutationWrite = function (value) {
-    var mapping = {
-        'F': 'ms',
-        'M': 'mr'
-    };
     return new Promise(function (resolve, reject) {
-        resolve(mapping[value]);
+        var key = window.EnderecoIntegrator.salutationMapping[value];
+        if (key !== undefined) {
+            resolve(window.EnderecoIntegrator.salutationMapping[value]);
+        } else {
+            resolve('');
+        }
     });
 }
+
 EnderecoIntegrator.resolvers.salutationRead = function (value) {
-    var mapping = {
-        'ms': 'F',
-        'mr': 'M'
-    };
     return new Promise(function (resolve, reject) {
-        resolve(mapping[value]);
+        var key = window.EnderecoIntegrator.salutationMappingReverse[value];
+        if (key !== undefined) {
+            resolve(window.EnderecoIntegrator.salutationMappingReverse[value]);
+        } else {
+            resolve('x');
+        }
     });
 }
 
-EnderecoIntegrator.onAjaxFormHandler.push( function(EAO) {
-    EAO.forms.forEach( function(form) {
+EnderecoIntegrator.onAjaxFormHandler.push(function (EAO) {
+    EAO.forms.forEach(function (form) {
         var submitButtons = form.querySelectorAll('[type="submit"]');
-        submitButtons.forEach( function(buttonElement) {
+        submitButtons.forEach(function (buttonElement) {
 
-            buttonElement.addEventListener('click', function(e) {
+            buttonElement.addEventListener('click', function (e) {
 
                 /**
                  * Essentially this event listener tries to recreate submit listener,
@@ -152,12 +158,12 @@ EnderecoIntegrator.onAjaxFormHandler.push( function(EAO) {
                  * after the address correction has been selected.
                  */
                 if (window.EnderecoIntegrator && !window.EnderecoIntegrator.submitResume) {
-                    window.EnderecoIntegrator.submitResume = function() {
+                    window.EnderecoIntegrator.submitResume = function () {
 
                         window.EnderecoIntegrator.submitResume = undefined;
 
                         if (EAO.config.ux.resumeSubmit) {
-                            if(buttonElement.dispatchEvent(
+                            if (buttonElement.dispatchEvent(
                                 new EAO.util.CustomEvent(
                                     'click',
                                     {
@@ -175,16 +181,16 @@ EnderecoIntegrator.onAjaxFormHandler.push( function(EAO) {
                 if (EAO.util.shouldBeChecked()) {
                     window.EnderecoIntegrator.hasSubmit = true;
 
-                    setTimeout(function() {
+                    setTimeout(function () {
                         EAO.util.checkAddress()
-                            .catch(function() {
-                                EAO.waitForAllPopupsToClose().then(function() {
+                            .catch(function () {
+                                EAO.waitForAllPopupsToClose().then(function () {
                                     if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
                                         window.EnderecoIntegrator.submitResume();
                                     }
                                 }).catch()
-                            }).finally( function() {
-                                window.EnderecoIntegrator.hasSubmit = false;
+                            }).finally(function () {
+                            window.EnderecoIntegrator.hasSubmit = false;
                         });
                     }, 300);
 
@@ -195,9 +201,136 @@ EnderecoIntegrator.onAjaxFormHandler.push( function(EAO) {
     })
 
 });
+const editAddressHandler = (e) => {
+    const targetFormLinkSelector = e.forms[0].getAttribute('data-end-target-link-selector');
+    if (!targetFormLinkSelector) {
+        return;
+    }
 
-EnderecoIntegrator.afterAMSActivation.push( function(EAO) {
+    const targetLink = document.querySelector(targetFormLinkSelector);
+    if (!targetLink) {
+        return;
+    }
 
+    targetLink.click();
+    const addressEditorPlugin = window.PluginManager.getPluginInstanceFromElement(targetLink, 'AddressEditor');
+    if (!addressEditorPlugin) {
+        return;
+    }
+
+    window.EnderecoIntegrator.editingIntent = true;
+    window.EnderecoIntegrator.thirdPartyModals = 1;
+
+    addressEditorPlugin.$emitter.subscribe('onOpen', ({detail: {pseudoModal}}) => {
+        const modalElement = pseudoModal._modal;
+        let addressEditButton;
+        if (modalElement.querySelector('[data-bs-target="#billing-address-create-edit"]')) {
+            addressEditButton = modalElement.querySelector('[data-bs-target="#billing-address-create-edit"]');
+        } else if (modalElement.querySelector('[data-bs-target="#shipping-address-create-edit"]')) {
+            addressEditButton = modalElement.querySelector('[data-bs-target="#shipping-address-create-edit"]');
+        } else {
+            addressEditButton = modalElement.querySelector('[data-target="#address-create-edit"]');
+        }
+
+        if (!addressEditButton) {
+            return;
+        }
+        addressEditButton.click();
+
+        var itnrvl = setInterval( function() {
+            if (!document.querySelector('.address-editor-modal')) {
+                window.EnderecoIntegrator.editingIntent = false;
+                window.EnderecoIntegrator.thirdPartyModals = 0;
+                clearInterval(itnrvl);
+            }
+        }, 50);
+    })
+}
+
+const addressCheckSelectedHandler = (EAO, e) => {
+    const form = e.forms[0];
+    if (!form) {
+        return;
+    }
+
+    const targetForm = form.getAttribute('data-end-target-link-selector');
+    const ajaxPlugin = window.PluginManager.getPluginInstanceFromElement(form, 'FormAjaxSubmit')
+    if (!targetForm || !ajaxPlugin) {
+        return;
+    }
+
+    ajaxPlugin.$emitter.subscribe('onAfterAjaxSubmit', ({detail: {response}}) => {
+        try {
+            window.ajaxSubmitRequestPending = false;
+            const {addressSaved} = JSON.parse(response);
+            if (addressSaved) {
+                const reloadHandler = () => {
+                    EAO.waitForAllPopupsToClose().then(() => {
+                        window.setTimeout(() => {
+                            if (!window.ajaxSubmitRequestPending) {
+                                if(window.EnderecoIntegrator.popupQueue > 0) {
+                                    //we are still waiting for all popups to close
+                                   reloadHandler();
+                                   return;
+                                }
+                                window.location.reload();
+                            }
+                        }, 100);
+                    });
+                }
+                reloadHandler();
+            }
+        } catch (e) {
+            console.warn('[ENDERECO] Failed to save new address', e);
+        }
+    });
+
+    window.ajaxSubmitRequestPending = true;
+    ajaxPlugin._fireRequest();
+}
+
+EnderecoIntegrator.afterAMSActivation.push(function (EAO) {
+
+    EAO.onEditAddress.push((e) => {
+        editAddressHandler(e);
+    })
+
+    EAO.onAfterAddressCheckSelected.push((e) => {
+        addressCheckSelectedHandler(EAO, e)
+    })
+
+    EAO.onConfirmAddress.push((e) => {
+        addressCheckSelectedHandler(EAO, e);
+    })
+
+    /**
+     * If its one of the existing customer check modals, competing with shopware modals,
+     * then rewrite their waitForPopupAreaToBeFree logic
+     */
+    if (!document.querySelector('.address-editor-modal')) {
+        EAO.waitForPopupAreaToBeFree = function() {
+            return new EAO.util.Promise(function(resolve, reject) {
+                var waitForFreePlace = setInterval(function() {
+                    var isAreaFree = !document.querySelector('[endereco-popup]');
+
+                    // No modals from shopware should be open.
+                    isAreaFree = isAreaFree && (window.EnderecoIntegrator.thirdPartyModals < 1);
+
+                    // Some global filters, in case in the future we have third party plugins, who want to override this logic.
+                    if (!!window.EnderecoIntegrator.$globalFilters && !!window.EnderecoIntegrator.$globalFilters.isModalAreaFree) {
+                        window.EnderecoIntegrator.$globalFilters.isModalAreaFree.forEach( function(callback) {
+                            isAreaFree = callback(isAreaFree, EAO);
+                        });
+                    }
+
+                    if(isAreaFree) {
+                        clearInterval(waitForFreePlace);
+                        resolve();
+                    }
+                }, 100);
+            })
+        }
+    }
 });
 
 if (window.EnderecoIntegrator) {
@@ -215,9 +348,26 @@ window.EnderecoIntegrator.waitUntilReady().then(function () {
     //
 });
 
-var $waitForConfig = setInterval( function() {
-    if(typeof enderecoLoadAMSConfig === 'function'){
+var $waitForConfig = setInterval(function () {
+    if (typeof enderecoLoadAMSConfig === 'function') {
         enderecoLoadAMSConfig();
         clearInterval($waitForConfig);
     }
 }, 1);
+
+
+window.swModalOpened = false;
+
+const swModalListener = () => {
+    const shopwareModal = document.querySelector('.modal-backdrop');
+    if (shopwareModal && !window.swModalOpened) {
+        window.swModalOpened = true;
+        window.EnderecoIntegrator.popupQueue++;
+    }
+    if(!shopwareModal && window.swModalOpened) {
+        window.swModalOpened = false;
+        window.EnderecoIntegrator.popupQueue--;
+    }
+};
+
+(new MutationObserver(swModalListener)).observe(document.querySelector('body'), {childList: true, subtree: true});

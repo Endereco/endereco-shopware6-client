@@ -2,7 +2,8 @@
 
 namespace Endereco\Shopware6Client\Controller\Api;
 
-use Psr\Log\LoggerInterface;
+use Endereco\Shopware6Client\Service\EnderecoService;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -11,77 +12,52 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use GuzzleHttp\Client;
 
 /**
- * This one is for SW Version < 6.4.11.0
- * @RouteScope(scopes={"api"})
+ * ApiTestController handles API requests for testing API credentials.
  *
- * This one is for SW Version >= 6.4.11.0
- * @Route(defaults={"_routeScope"={"api"}})
+ * @author Ilja Weber
+ * @package Endereco\Shopware6Client\Controller\Api
+ *
+ * @RouteScope(scopes={"api"}) // For SW Version < 6.4.11.0
+ * @Route(defaults={"_routeScope"={"api"}}) // For SW Version >= 6.4.11.0
  */
 class ApiTestController extends AbstractController
 {
-    /** @var LoggerInterface */
-    private $logger;
+    /**
+     * @var EnderecoService
+     */
+    private EnderecoService $enderecoService;
 
-    public function __construct(LoggerInterface $logger)
+    /**
+     * ApiTestController constructor.
+     *
+     * @param EnderecoService $enderecoService
+     */
+    public function __construct(EnderecoService $enderecoService)
     {
-        $this->logger = $logger;
+        $this->enderecoService = $enderecoService;
     }
 
-    public function checkAPICredentials(Request $request): JsonResponse
+    /**
+     * Check API credentials by making a request using provided credentials.
+     *
+     * @param Request $request The incoming HTTP request.
+     * @param Context $context Context data of the sales channel/user.
+     *
+     * @return JsonResponse Returns a JsonResponse with a 'success' key indicating whether the credentials are valid.
+     */
+    public function checkAPICredentials(Request $request, Context $context): JsonResponse
     {
-        $apiKey = $request->get('EnderecoShopware6Client.config.enderecoApiKey', '');
-        $endpointUrl = $request->get('EnderecoShopware6Client.config.enderecoRemoteUrl', '');
+        $apiKey = (string) $request->request->get('EnderecoShopware6Client.config.enderecoApiKey', '');
+        $endpointUrl = (string) $request->request->get('EnderecoShopware6Client.config.enderecoRemoteUrl', '');
+
+        // Check if the API key and endpoint URL are not empty
         if (empty(trim($apiKey)) || empty(trim($endpointUrl))) {
             return new JsonResponse(['success' => false]);
         }
 
-        $success = false;
+        // Call the checkApiCredentials method of the EnderecoService
+        $result = $this->enderecoService->checkApiCredentials($endpointUrl, $apiKey, $context);
 
-        // Check the connection.
-        $readinessCheckRequest = array(
-            'jsonrpc' => '2.0',
-            'id' => 1,
-            'method' => 'readinessCheck',
-        );
-        $dataString = json_encode($readinessCheckRequest);
-
-        if (empty(trim($apiKey))) {
-            return new JsonResponse(['success' => $success]);
-        }
-
-        if (empty(trim($endpointUrl))) {
-            return new JsonResponse(['success' => $success]);
-        }
-
-        // I dont want to refactor this into services at this point. In 1.4.0 this logic
-        // moved to EnderecoService.
-        $enderecoAgentInfo = 'Endereco Shopware6 Client v1.3.3';
-        $guzzleClient = new Client(['timeout' => 3.0, 'connection_timeout' => 2.0]);
-        try {
-            $response = $guzzleClient->post(
-                $endpointUrl,
-                array(
-                    'headers' => [
-                        'Content-Type' => 'application/json',
-                        'X-Auth-Key' => $apiKey,
-                        'X-Transaction-Id' => 'not_required',
-                        'X-Transaction-Referer' => $_SERVER['HTTP_REFERER'],
-                        'X-Agent' => $enderecoAgentInfo,
-                    ],
-                    'body' => $dataString
-                )
-            );
-            $status = json_decode($response->getBody(), true);
-            if ('ready' === $status['result']['status']) {
-                $success = true;
-            } else {
-                $this->logger->warning("Credentials test failed", ['responseFromEndereco' => json_encode($status)]);
-            }
-        } catch (\Exception $e) {
-            $success = false;
-            $this->logger->warning("Credentials test failed", ['error' => $e->getMessage()]);
-        }
-
-        return new JsonResponse(['success' => $success]);
+        return new JsonResponse(['success' => $result]);
     }
 }

@@ -1,0 +1,73 @@
+{% sw_extends '@Storefront/storefront/page/checkout/confirm/confirm-address.html.twig' %}
+
+{% block page_checkout_confirm_address %}
+    {% if page.endereco_config.pluginActive %}
+        {% set allFeatures = getAllFeatures() %}
+        {% set is65Active = "V6_5_0_0" in allFeatures|keys and allFeatures["V6_5_0_0"] == true %}
+
+        {% set checkAddressEnabled = page.endereco_config.enderecoCheckAddressEnabled %}
+        {% set checkPayPalAddressEnabled = page.endereco_config.enderecoCheckPayPalExpressAddress %}
+        {% set billingNeedsCorrection = checkAddressEnabled and billingAddress.extensions.enderecoAddress.needsCorrection() %}
+        {% set shippingNeedsCorrection = checkAddressEnabled and (billingAddress.id is not same as shippingAddress.id) ? shippingAddress.extensions.enderecoAddress.needsCorrection() : false %}
+
+        {% if not checkPayPalAddressEnabled and billingAddress.extensions.enderecoAddress.isPayPalAddress %}
+            {% set billingNeedsCorrection = false %}
+        {% endif %}
+
+        {% if not checkPayPalAddressEnabled and shippingAddress.extensions.enderecoAddress.isPayPalAddress %}
+            {% set shippingNeedsCorrection = false %}
+        {% endif %}
+
+        {% if billingNeedsCorrection %}
+            <form method="post"
+                  id="endHiddenBillingForm"
+                  action="{{ path('frontend.endereco.account.address.edit.save') }}"
+                  class="d-none"
+                  data-end-target-link-selector=".confirm-billing-address [data-address-editor]"
+                  data-form-ajax-submit="true"
+            >
+                {% if not is65Active %}
+                    {% sw_include '@EnderecoShopware6Client/storefront/misc/csrf-container.html.twig' with {
+                        'action': 'frontend.endereco.account.address.edit.save'
+                    } %}
+                {% endif %}
+
+                {% sw_include '@EnderecoShopware6Client/storefront/component/address/hidden-address-form.html.twig' with {
+                    'prefix': 'billingAddress',
+                    'data': billingAddress,
+                } %}
+
+                <button type="submit">
+                </button>
+            </form>
+        {% endif %}
+
+        {% if shippingNeedsCorrection %}
+            <form method="post"
+                  id="endHiddenShippingForm"
+                  action="{{ path('frontend.endereco.account.address.edit.save') }}"
+                  class="d-none"
+                  data-end-target-link-selector=".confirm-shipping-address [data-address-editor]"
+                  data-form-ajax-submit="true"
+            >
+                {% if not is65Active %}
+                    {% sw_include '@EnderecoShopware6Client/storefront/misc/csrf-container.html.twig' with {
+                        'action': 'frontend.endereco.account.address.edit.save'
+                    } %}
+                {% endif %}
+
+                {% sw_include '@EnderecoShopware6Client/storefront/component/address/hidden-address-form.html.twig' with {
+                    'prefix': 'shippingAddress',
+                    'data': shippingAddress,
+                } %}
+
+                <button type="submit">
+                </button>
+            </form>
+        {% endif %}
+        {{ parent() }}
+
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+{% endblock %}

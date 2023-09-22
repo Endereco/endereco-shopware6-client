@@ -1,0 +1,23 @@
+{% sw_extends '@EnderecoShoppware6Client/storefront/component/address/address-form.html.twig' %}
+
+{% block component_address_form_country %}
+    <input type="hidden" id="{{ prefix }}AddressCountry"
+           name="{{ prefix }}[countryId]" value="{{ data.get('countryId') }}">
+
+    <input type="hidden" id="{{ prefix }}AddressCountryState"
+           name="{{ prefix }}[countryStateId]" value="{{ data.get('countryStateId') }}">
+
+{% endblock %}
+
+
+{% block component_address_form_address_fields %}
+    {{ block('component_address_form_street') }}
+
+    {{ block('component_address_form_zipcode_city') }}
+
+    {{ block('component_address_form_country') }}
+
+    {{ block('component_address_form_phone_number') }}
+
+    {{ block('component_address_form_endereco_marker') }}
+{% endblock %}
