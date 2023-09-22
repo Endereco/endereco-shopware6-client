@@ -223,7 +223,15 @@ const editAddressHandler = (e) => {
 
     addressEditorPlugin.$emitter.subscribe('onOpen', ({detail: {pseudoModal}}) => {
         const modalElement = pseudoModal._modal;
-        const addressEditButton = modalElement.querySelector('[data-target="#address-create-edit"]');
+        let addressEditButton;
+        if (modalElement.querySelector('[data-bs-target="#billing-address-create-edit"]')) {
+            addressEditButton = modalElement.querySelector('[data-bs-target="#billing-address-create-edit"]');
+        } else if (modalElement.querySelector('[data-bs-target="#shipping-address-create-edit"]')) {
+            addressEditButton = modalElement.querySelector('[data-bs-target="#shipping-address-create-edit"]');
+        } else {
+            addressEditButton = modalElement.querySelector('[data-target="#address-create-edit"]');
+        }
+
         if (!addressEditButton) {
             return;
         }

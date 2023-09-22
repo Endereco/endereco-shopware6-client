@@ -216,6 +216,10 @@ class EnderecoService
             ->addFilter(new EqualsFilter('salesChannelId', $salesChannelId))
             ->addAssociation('language.locale');
 
+        if (!empty($context->getLanguageId())) {
+            $criteria->addFilter(new EqualsFilter('languageId', $context->getLanguageId()));
+        }
+
         $salesChannelDomain = $this->salesChannelDomainRepository->search($criteria, $context)->first();
 
         if (!$salesChannelDomain) {

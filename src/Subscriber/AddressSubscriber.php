@@ -170,6 +170,7 @@ class AddressSubscriber implements EventSubscriberInterface
 
             // If either check is required, ensure the address status is set
             if ($existingCustomerCheckIsRelevant || $paypalExpressCheckoutCheckIsRelevant) {
+
                 $this->ensureAddressStatusIsSet($addressEntity, $context, $salesChannelId);
             }
         }
@@ -325,6 +326,7 @@ class AddressSubscriber implements EventSubscriberInterface
         $addressExtension = $addressEntity->getExtension('enderecoAddress');
 
         if ($this->isNewStatusNeededForAddressExtension($addressExtension)) {
+
             $addressCheckResult = $this->enderecoService->checkAddress($addressEntity, $context, $salesChannelId);
 
             // We dont throw exceptions, we just gracefully stop here. Maybe the API will be available later again.

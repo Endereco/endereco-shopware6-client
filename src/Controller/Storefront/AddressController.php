@@ -90,10 +90,10 @@ class AddressController extends StorefrontController
         }
 
         /** @var array<string, string> $billingAddress */
-        $billingAddress = $request->request->get('billingAddress', null) ?? [];
+        $billingAddress = $request->get('billingAddress', null) ?? [];
 
         /** @var array<string, string> $shippingAddressAddress */
-        $shippingAddressAddress = $request->request->get('shippingAddress', null) ?? [];
+        $shippingAddressAddress = $request->get('shippingAddress', null) ?? [];
 
         if (!empty($billingAddress)) {
             $address = $billingAddress;
@@ -102,7 +102,6 @@ class AddressController extends StorefrontController
         } else {
             throw new Exception('Address is missing in the request data.');
         }
-
         /** @var string $addressId */
         $addressId = $address['id'];
         if (!$this->isAddressInTheDatabase($addressId, $context, $customer)) {
