@@ -74,6 +74,26 @@ class AddDataToPage implements EventSubscriberInterface
                 ->get('EnderecoShopware6Client.config.enderecoActiveInThisChannel', $salesChannelId)
             && !empty($configContainer->enderecoApiKey);
 
+        // Enrich with advanced settings.
+        $this->addAdvancedSettingsData($configContainer, $context, $salesChannelId);
+
+        $currentController = (string) $event->getRequest()->attributes->get('_controller');
+
+        if ($currentController !== '' && $configContainer->controllerOnlyWhitelist) {
+            $found = false;
+
+            foreach ($configContainer->controllerWhitelist as $whitelist) {
+                if (\str_contains($currentController, "Controller\\${whitelist}Controller::")) {
+                    $found = true;
+                    break;
+                }
+            }
+
+            if (!$found) {
+                return;
+            }
+        }
+
         // Enrich with email check settings.
         $this->addEmailCheckData($configContainer, $context, $salesChannelId);
 
@@ -85,9 +105,6 @@ class AddDataToPage implements EventSubscriberInterface
 
         // Enrich phone check settings.
         $this->addPhoneCheckData($configContainer, $context, $salesChannelId);
-
-        // Enricht with advanced settings.
-        $this->addAdvancedSettingsData($configContainer, $context, $salesChannelId);
 
         $event->getPage()->assign(['endereco_config' => $configContainer]);
     }
