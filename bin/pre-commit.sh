@@ -17,6 +17,7 @@ if [[ -n "$PHP_FILES" ]]
 then
     for FILE in ${PHP_FILES}
     do
+        echo "Check php syntax in $FILE"
         php -l -d display_errors=0 "$FILE" 1> /dev/null
     done
 

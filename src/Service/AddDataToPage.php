@@ -47,50 +47,79 @@ class AddDataToPage implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * Adds Endereco configuration to the page.
+     *
+     * This method retrieves various settings and data required for the Endereco service
+     * and assigns them to the page. It ensures that only the necessary data is loaded
+     * based on the active settings and the current controller.
+     *
+     * @param GenericPageLoadedEvent $event The event instance containing page and context information.
+     * @return void
+     */
     public function addEnderecoConfigToPage(GenericPageLoadedEvent $event): void
     {
-        // Get context and sales channel id, that are needed to access the right data or settings.
+        // Retrieve the context and sales channel ID, which are required to access the correct data or settings.
         $context = $event->getContext();
         $salesChannelId = $this->enderecoService->fetchSalesChannelId($context);
 
-        // Sanity check. If there is no sales channel id, we don't need to add data to frontend.
+        // Perform a sanity check. If there is no sales channel ID, there is no need to add data to the frontend.
         if (is_null($salesChannelId)) {
             return;
         }
 
-        // This struct will be enriched with diverse data that are needed in the frontend.
+        // Initialize a structure that will be enriched with various data required in the frontend.
         $configContainer = new stdClass();
 
-        // Get agent name
-        $configContainer->enderecoAgentInfo = $this->enderecoService->getAgentInfo($context);
-        $configContainer->enderecoVersion = $this->enderecoService->getPluginVersion($context);
-
-        // Enrich with api settings.
-        $this->addApiData($configContainer, $context, $salesChannelId);
-
-        // Set whether it should be active in this channel.
-        $configContainer->pluginActive =
-            $this->systemConfigService
-                ->get('EnderecoShopware6Client.config.enderecoActiveInThisChannel', $salesChannelId)
-            && !empty($configContainer->enderecoApiKey);
-
-        // Enrich with email check settings.
-        $this->addEmailCheckData($configContainer, $context, $salesChannelId);
-
-        // Enrich with name check setting.
-        $this->addNameCheckData($configContainer, $context, $salesChannelId);
-
-        // Add address check settings.
-        $this->addAddressCheckData($configContainer, $context, $salesChannelId);
-
-        // Enrich phone check settings.
-        $this->addPhoneCheckData($configContainer, $context, $salesChannelId);
-
-        // Enricht with advanced settings.
+        // Enrich the structure with advanced settings.
         $this->addAdvancedSettingsData($configContainer, $context, $salesChannelId);
 
+        // Enrich the structure with API settings.
+        $this->addApiData($configContainer, $context, $salesChannelId);
+
+        // Determine whether the rest of the settings should be loaded. If the plugin is inactive or inactive for the
+        // current controller, there is no need to load all the settings from the database.
+        $currentController = (string) $event->getRequest()->attributes->get('_controller');
+
+        $loadEnderecoSettings = true;
+        $isCurrentControllerKnown = !empty($currentController);
+        $isControllerWhitelistActive = $configContainer->controllerOnlyWhitelist;
+        $isPluginActive = $configContainer->pluginActive;
+
+        if ($isCurrentControllerKnown && $isControllerWhitelistActive) {
+            $loadEnderecoSettings = false;
+            foreach ($configContainer->controllerWhitelist as $whitelist) {
+                if (\str_contains($currentController, "Controller\\${whitelist}Controller::")) {
+                    $loadEnderecoSettings = true;
+                    break;
+                }
+            }
+        }
+
+        $loadEnderecoSettings = $loadEnderecoSettings && $isPluginActive;
+
+        if ($loadEnderecoSettings) {
+            // Retrieve and assign agent information and plugin version.
+            $configContainer->enderecoAgentInfo = $this->enderecoService->getAgentInfo($context);
+            $configContainer->enderecoVersion = $this->enderecoService->getPluginVersion($context);
+
+            // Enrich the structure with email check settings.
+            $this->addEmailCheckData($configContainer, $context, $salesChannelId);
+
+            // Enrich the structure with name check settings.
+            $this->addNameCheckData($configContainer, $context, $salesChannelId);
+
+            // Add address check settings to the structure.
+            $this->addAddressCheckData($configContainer, $context, $salesChannelId);
+
+            // Enrich the structure with phone check settings.
+            $this->addPhoneCheckData($configContainer, $context, $salesChannelId);
+        }
+
+        // Assign the configuration to the page.
         $event->getPage()->assign(['endereco_config' => $configContainer]);
     }
+
 
     /**
      * Enriches the given configContainer object with API settings fetched from the system config.
@@ -122,6 +151,11 @@ class AddDataToPage implements EventSubscriberInterface
         $configContainer->enderecoRemoteUrl =
             $this->systemConfigService
                 ->get('EnderecoShopware6Client.config.enderecoRemoteUrl', $salesChannelId);
+
+        $configContainer->pluginActive =
+            $this->systemConfigService
+                ->get('EnderecoShopware6Client.config.enderecoActiveInThisChannel', $salesChannelId)
+            && !empty($configContainer->enderecoApiKey);
     }
 
     /**
@@ -320,6 +354,7 @@ class AddDataToPage implements EventSubscriberInterface
         if ($controllerWhitelistAddition) {
             $controllerWhitelist = array_merge($controllerWhitelist, $controllerWhitelistAddition);
         }
+        $controllerWhitelist = array_filter($controllerWhitelist); // Filter out empty elements.
         $configContainer->controllerWhitelist = $controllerWhitelist;
         $configContainer->controllerOnlyWhitelist =
             $this->systemConfigService

@@ -15,17 +15,12 @@ class Migration1678865788MakeStreetAndHousenumberNotNull extends MigrationStep
         return 1678865788;
     }
 
-    /**
-     * @throws Exception
-     */
     public function update(Connection $connection): void
     {
-        $sql = <<<SQL
-            ALTER TABLE `endereco_address_ext` 
-            MODIFY `street` VARCHAR(255) NOT NULL DEFAULT '', 
-            MODIFY `house_number` VARCHAR(255) NOT NULL DEFAULT '';
-        SQL;
-        $connection->executeStatement($sql);
+        // This section was removed because setting the house number and street fields to "NOT NULL" was causing errors
+        // when attempting to update the plugin. Additionally, when a street split was not possible and an empty
+        // house number needed to be saved, Doctrine would convert an empty string to "NULL", attempting to save a null
+        // value, and consequently causing a MySQL exception.
     }
 
     public function updateDestructive(Connection $connection): void
