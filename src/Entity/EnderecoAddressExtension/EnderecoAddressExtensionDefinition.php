@@ -8,6 +8,7 @@ use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressDef
 use Shopware\Core\Framework\DataAbstractionLayer\EntityDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\BoolField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\FkField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\AllowEmptyString;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\PrimaryKey;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\IntField;
@@ -82,10 +83,10 @@ class EnderecoAddressExtensionDefinition extends EntityDefinition
             (new BoolField('is_amazon_pay_address', 'isAmazonPayAddress')),
 
             // A field that contains the street name of the address (without the building number).
-            (new StringField('street', 'street')),
+            (new StringField('street', 'street'))->addFlags(new AllowEmptyString()),
 
             // A field that contains the building number and potentially the building number additions.
-            (new StringField('house_number', 'houseNumber')),
+            (new StringField('house_number', 'houseNumber'))->addFlags(new AllowEmptyString()),
 
             // One to one association field with the customer address.
             new OneToOneAssociationField('address', 'address_id', 'id', CustomerAddressDefinition::class, false)
