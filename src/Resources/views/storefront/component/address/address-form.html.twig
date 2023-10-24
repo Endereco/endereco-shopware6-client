@@ -2,7 +2,6 @@
 
 {% block component_address_form_address_fields %}
     {{ parent() }}
-
     {% block component_address_form_endereco_marker %}
         {% if prefix == 'billingAddress' %}
             {% set addressType = 'billing_address' %}
@@ -92,12 +91,20 @@
              {% endblock %}
 
              {% block component_address_form_endereco_street_input %}
+                 {% if data is not null and data is instanceof('Shopware\\Core\\Framework\\Validation\\DataBag\\RequestDataBag') %}
+                     {% set streetName = data.get('enderecoStreet') %}
+                 {% elseif data.extensions is defined and data.extensions.enderecoAddress is defined and data.extensions.enderecoAddress.street is defined %}
+                     {% set streetName = data.get('extensions')['enderecoAddress'].street %}
+                 {% else %}
+                     {% set streetName = '' %}
+                 {% endif %}
+
                  <input type="text"
                         class="form-control{% if violationPath %} is-invalid{% endif %}"
                         id="{{ prefix }}AddressStreet"
                         placeholder="{{ "enderecoshopware6client.inputFields.enderedoStreetPlaceholder"|trans|striptags }}"
                         name="{{ prefix }}[enderecoStreet]"
-                        value="{{ data.get('extensions')['enderecoAddress'].street ?? data.get('enderecoStreet') }}"
+                        value="{{ streetName }}"
                         required="required">
              {% endblock %}
 
@@ -122,12 +129,21 @@
              {% endblock %}
 
              {% block component_address_form_endereco_housenumber_input %}
+
+                 {% if data is not null and data is instanceof('Shopware\\Core\\Framework\\Validation\\DataBag\\RequestDataBag') %}
+                     {% set houseNumber = data.get('enderecoHousenumber') %}
+                 {% elseif data.extensions is defined and data.extensions.enderecoAddress is defined and data.extensions.enderecoAddress.houseNumber is defined %}
+                     {% set houseNumber = data.get('extensions')['enderecoAddress'].houseNumber %}
+                 {% else %}
+                     {% set houseNumber = '' %}
+                 {% endif %}
+
                  <input type="text"
                         class="form-control{% if violationPath %} is-invalid{% endif %}"
                         id="{{ prefix }}AddressHouseNumber"
                         placeholder="{{ "enderecoshopware6client.inputFields.enderedoHousenumberPlaceholder"|trans|striptags }}"
                         name="{{ prefix }}[enderecoHousenumber]"
-                        value="{{ data.get('extensions')['enderecoAddress'].houseNumber ?? data.get('enderecoHousenumber') }}"
+                        value="{{ houseNumber }}"
                         required="required">
              {% endblock %}
 
