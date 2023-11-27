@@ -141,7 +141,7 @@
                     }
                 };
                 window.EnderecoIntegrator.activeServices = {
-                    ams: true,
+                    ams: {{ page.endereco_config.enderecoAMSActive ? 'true':'false' }},
                     emailService: {{ page.endereco_config.enderecoEmailCheckActive ? 'true':'false' }},
                     personService: {{ page.endereco_config.enderecoNameCheckActive ? 'true':'false' }},
                     phs: {{ page.endereco_config.enderecoPhsActive ? 'true':'false' }}

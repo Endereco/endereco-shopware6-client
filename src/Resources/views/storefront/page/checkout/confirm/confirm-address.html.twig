@@ -5,18 +5,9 @@
         {% set allFeatures = getAllFeatures() %}
         {% set is65Active = "V6_5_0_0" in allFeatures|keys and allFeatures["V6_5_0_0"] == true %}
 
-        {% set checkAddressEnabled = page.endereco_config.enderecoCheckAddressEnabled %}
-        {% set checkPayPalAddressEnabled = page.endereco_config.enderecoCheckPayPalExpressAddress %}
-        {% set billingNeedsCorrection = checkAddressEnabled and billingAddress.extensions.enderecoAddress.needsCorrection() %}
-        {% set shippingNeedsCorrection = checkAddressEnabled and (billingAddress.id is not same as shippingAddress.id) ? shippingAddress.extensions.enderecoAddress.needsCorrection() : false %}
-
-        {% if not checkPayPalAddressEnabled and billingAddress.extensions.enderecoAddress.isPayPalAddress %}
-            {% set billingNeedsCorrection = false %}
-        {% endif %}
-
-        {% if not checkPayPalAddressEnabled and shippingAddress.extensions.enderecoAddress.isPayPalAddress %}
-            {% set shippingNeedsCorrection = false %}
-        {% endif %}
+        {% set displayCorrectionModalInCheckout = page.endereco_config.enderecoDisplayCorrectionModalInCheckout %}
+        {% set billingNeedsCorrection = displayCorrectionModalInCheckout and billingAddress.extensions.enderecoAddress.needsCorrection() %}
+        {% set shippingNeedsCorrection = displayCorrectionModalInCheckout and (billingAddress.id is not same as shippingAddress.id) ? shippingAddress.extensions.enderecoAddress.needsCorrection() : false %}
 
         {% if billingNeedsCorrection %}
             <form method="post"
