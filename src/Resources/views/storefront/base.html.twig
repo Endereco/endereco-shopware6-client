@@ -2,12 +2,13 @@
 
 {% block base_body_script %}
     {{ parent() }}
-
-    {% if page.endereco_config.pluginActive and (not page.endereco_config.controllerOnlyWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
-        <script
-                defer
-                async
-                src="{{ asset('bundles/enderecoshopware6client/endereco.min.js') }}?var={{ page.endereco_config.enderecoVersion }}"
-        ></script>
-    {% endif %}
+    {% block base_body_script_endereco_script %}
+        {% if page.endereco_config.pluginActive and (not page.endereco_config.controllerOnlyWhitelist or controllerName in page.endereco_config.controllerWhitelist ) %}
+            <script
+                    defer
+                    async
+                    src="{{ asset('bundles/enderecoshopware6client/endereco.min.js') }}?var={{ page.endereco_config.enderecoVersion }}"
+            ></script>
+        {% endif %}
+    {% endblock %}
 {% endblock %}
