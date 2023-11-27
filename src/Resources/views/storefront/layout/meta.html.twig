@@ -186,19 +186,21 @@
                                         var amsTimestampSelector = MarkerElement.getAttribute(`data-${markerValue}-timestamp-selector`);
                                         var amsPredictionsSelector = MarkerElement.getAttribute(`data-${markerValue}-predictions-selector`);
                                         var isAjax = 'true' === MarkerElement.getAttribute('data-form-handle-ajax-submit');
+                                        var selectorsCollection = {
+                                            countryCode: `[data-endereco-${markerValue}-form-id="${formId}"] ${countryCodeSelector}`,
+                                            subdivisionCode: `[data-endereco-${markerValue}-form-id="${formId}"] ${subdivisionCodeSelector}`,
+                                            postalCode: `[data-endereco-${markerValue}-form-id="${formId}"] ${postalCodeSelector}`,
+                                            locality: `[data-endereco-${markerValue}-form-id="${formId}"] ${localitySelector}`,
+                                            streetFull: `[data-endereco-${markerValue}-form-id="${formId}"] ${streetFullSelector}`,
+                                            streetName: `[data-endereco-${markerValue}-form-id="${formId}"] ${streetSelector}`,
+                                            buildingNumber: `[data-endereco-${markerValue}-form-id="${formId}"] ${houseNumberSelector}`,
+                                            addressStatus: `[data-endereco-${markerValue}-form-id="${formId}"] ${amsStatusSelector}`,
+                                            addressTimestamp: `[data-endereco-${markerValue}-form-id="${formId}"] ${amsTimestampSelector}`,
+                                            addressPredictions: `[data-endereco-${markerValue}-form-id="${formId}"] ${amsPredictionsSelector}`
+                                        };
                                         var EAO = window.EnderecoIntegrator.initAMS(
+                                            selectorsCollection,
                                             {
-                                                countryCode: `[data-endereco-${markerValue}-form-id="${formId}"] ${countryCodeSelector}`,
-                                                subdivisionCode: `[data-endereco-${markerValue}-form-id="${formId}"] ${subdivisionCodeSelector}`,
-                                                postalCode: `[data-endereco-${markerValue}-form-id="${formId}"] ${postalCodeSelector}`,
-                                                locality: `[data-endereco-${markerValue}-form-id="${formId}"] ${localitySelector}`,
-                                                streetFull: `[data-endereco-${markerValue}-form-id="${formId}"] ${streetFullSelector}`,
-                                                streetName: `[data-endereco-${markerValue}-form-id="${formId}"] ${streetSelector}`,
-                                                buildingNumber: `[data-endereco-${markerValue}-form-id="${formId}"] ${houseNumberSelector}`,
-                                                addressStatus: `[data-endereco-${markerValue}-form-id="${formId}"] ${amsStatusSelector}`,
-                                                addressTimestamp: `[data-endereco-${markerValue}-form-id="${formId}"] ${amsTimestampSelector}`,
-                                                addressPredictions: `[data-endereco-${markerValue}-form-id="${formId}"] ${amsPredictionsSelector}`
-                                            }, {
                                                 name: `ams_${prefix}_${formId}`,
                                                 addressType: addressType,
                                                 ajaxForm: isAjax
@@ -206,8 +208,8 @@
                                         );
 
                                         setInitialSubdivisionalCode(EAO, formElement, subdivisionCodeSelector);
-                                    }
-                                    if ('phoneServices' === markerValue) {
+                                        setBlurListener(EAO, selectorsCollection);
+                                    } else if ('phoneServices' === markerValue) {
                                         var countryCodeSelector = MarkerElement.getAttribute('data-country-code-selector');
                                         var phoneSelector = MarkerElement.getAttribute('data-phone-selector');
                                         var numberType = MarkerElement.getAttribute('data-number-type') ?? window.EnderecoIntegrator.config.defaultPhoneType;
@@ -220,16 +222,14 @@
                                                 numberType,
                                             }
                                         );
-                                    }
-                                    if ('emailServices' === markerValue) {
+                                    } else if ('emailServices' === markerValue) {
                                         var emailSelector = MarkerElement.getAttribute('data-email-selector');
                                         enderecoInitES({
                                             'email': `[data-endereco-${markerValue}-form-id="${formId}"] ${emailSelector}`,
                                         }, {
                                             name: `${markerValue}_${prefix}_${formId}`,
                                         });
-                                    }
-                                    if ('personServices' === markerValue) {
+                                    } else if ('personServices' === markerValue) {
                                         var firstNameSelector = MarkerElement.getAttribute('data-first-name-selector');
                                         var lastNameSelector = MarkerElement.getAttribute('data-last-name-selector');
                                         var salutationSelector = MarkerElement.getAttribute('data-salutation-selector');
@@ -291,6 +291,35 @@
 
                     if (subdivisionCodeMapping) {
                         EAO.subdivisionCode = subdivisionCodeMapping;
+                    }
+                }
+            }
+
+            /**
+             * Sets up a custom blur event listener on specified elements.
+             *
+             * This function iterates over a collection of elements, identified by their selectors,
+             * and attaches a custom event listener for the 'endereco-blur' event. When the 'endereco-blur'
+             * event is triggered on any of these elements, two custom events ('focus' and 'blur') are dispatched
+             * on the target element. This can be useful for triggering custom logic on focus and blur events.
+             *
+             * @param {Object} EAO - The object containing utility functions, including CustomEvent.
+             * @param {Object} elements - An object containing key-value pairs where the key is a unique identifier
+             *                            and the value is a CSS selector for the DOM element.
+             */
+            function setBlurListener(EAO, elements) {
+                for (const key in elements) {
+                    if (Object.prototype.hasOwnProperty.call(elements, key)) {
+                        const selector = elements[key];
+                        const element = document.querySelector(selector);
+
+                        if (element) {
+                            element.addEventListener('endereco-blur', function(e) {
+                                // Dispatch 'focus' and 'blur' events on the target element
+                                e.target.dispatchEvent(new EAO.util.CustomEvent('focus', { bubbles: true, cancelable: true }));
+                                e.target.dispatchEvent(new EAO.util.CustomEvent('blur', { bubbles: true, cancelable: true }));
+                            });
+                        }
                     }
                 }
             }
