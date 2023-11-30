@@ -254,10 +254,9 @@ class EnderecoAddressExtensionEntity extends Entity
      *
      * @return bool True if the address needs correction, false otherwise.
      */
-    public function needsCorrection(): bool
+    public function needsCorrectionInFrontend(): bool
     {
         return
-            $this->amsStatus === self::AMS_STATUS_NOT_CHECKED ||
             str_contains($this->amsStatus, 'address_multiple_variants') ||
             str_contains($this->amsStatus, 'address_needs_correction') ||
             str_contains($this->amsStatus, 'address_not_found');

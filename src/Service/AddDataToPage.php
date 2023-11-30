@@ -425,13 +425,6 @@ class AddDataToPage implements EventSubscriberInterface
             $this->systemConfigService
                 ->get('EnderecoShopware6Client.config.enderecoCheckPayPalExpressAddress', $salesChannelId);
 
-        // This variable decides, if we need to display a modal in the checkout.
-        $configContainer->enderecoDisplayCorrectionModalInCheckout =
-            $configContainer->enderecoAMSActive && (
-                $configContainer->enderecoCheckAddressEnabled ||
-                $configContainer->enderecoCheckPayPalExpressAddress
-            );
-
         /** @var EntitySearchResult $countries */
         $countries = $this->countryRepository->search(new Criteria(), $context);
         $mapping = [];

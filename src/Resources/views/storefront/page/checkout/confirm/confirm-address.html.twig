@@ -5,9 +5,8 @@
         {% set allFeatures = getAllFeatures() %}
         {% set is65Active = "V6_5_0_0" in allFeatures|keys and allFeatures["V6_5_0_0"] == true %}
 
-        {% set displayCorrectionModalInCheckout = page.endereco_config.enderecoDisplayCorrectionModalInCheckout %}
-        {% set billingNeedsCorrection = displayCorrectionModalInCheckout and billingAddress.extensions.enderecoAddress.needsCorrection() %}
-        {% set shippingNeedsCorrection = displayCorrectionModalInCheckout and (billingAddress.id is not same as shippingAddress.id) ? shippingAddress.extensions.enderecoAddress.needsCorrection() : false %}
+        {% set billingNeedsCorrection = billingAddress.extensions.enderecoAddress.needsCorrectionInFrontend() %}
+        {% set shippingNeedsCorrection = (billingAddress.id is not same as shippingAddress.id) ? shippingAddress.extensions.enderecoAddress.needsCorrectionInFrontend() : false %}
 
         {% if billingNeedsCorrection %}
             <form method="post"
