@@ -6,9 +6,7 @@
 
     <input type="hidden" id="{{ prefix }}AddressCountryState"
            name="{{ prefix }}[countryStateId]" value="{{ data.get('countryStateId') }}">
-
 {% endblock %}
-
 
 {% block component_address_form_address_fields %}
     {{ block('component_address_form_street') }}

@@ -74,8 +74,7 @@
     {% endblock %}
 {% endblock %}
 
-
- {% block component_address_form_street %}
+{% block component_address_form_street %}
      {% block component_address_form_street_endereco_street_splitter %}
          {% if page.endereco_config.pluginActive and page.endereco_config.enderecoSplitStreet %}
              <div class="form-group col-8 col-md-4">
@@ -155,8 +154,10 @@
                      {% endif %}
                  {% endblock %}
              </div>
-         {% else %}
-             {{ parent() }}
          {% endif %}
      {% endblock %}
+
+     {% if not page.endereco_config.pluginActive or not page.endereco_config.enderecoSplitStreet %}
+         {{ parent() }}
+     {% endif %}
  {% endblock %}
