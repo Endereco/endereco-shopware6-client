@@ -73,6 +73,7 @@ class AddressController extends StorefrontController
      */
     public function saveAddress(Request $request, SalesChannelContext $context): JsonResponse
     {
+
         /** @var CustomerEntity|null $customer */
         $customer = $context->getCustomer();
 
@@ -89,11 +90,18 @@ class AddressController extends StorefrontController
             throw new Exception('Something is wrong with the sales channel');
         }
 
+        /** @var Symfony\Component\HttpFoundation\InputBag $requestInputBag */
+        $requestInputBag = $request->request;
+
         /** @var array<string, string> $billingAddress */
-        $billingAddress = $request->get('billingAddress', null) ?? [];
+        $billingAddress = $requestInputBag->has('billingAddress')
+            ? $requestInputBag->all('billingAddress')
+            : [];
 
         /** @var array<string, string> $shippingAddressAddress */
-        $shippingAddressAddress = $request->get('shippingAddress', null) ?? [];
+        $shippingAddressAddress =$requestInputBag->has('shippingAddress')
+            ? $requestInputBag->get('shippingAddress')
+            : [];
 
         if (!empty($billingAddress)) {
             $address = $billingAddress;
@@ -102,6 +110,7 @@ class AddressController extends StorefrontController
         } else {
             throw new Exception('Address is missing in the request data.');
         }
+
         /** @var string $addressId */
         $addressId = $address['id'];
         if (!$this->isAddressInTheDatabase($addressId, $context, $customer)) {
@@ -131,6 +140,11 @@ class AddressController extends StorefrontController
                 ]
             ]
         ];
+
+        // Quickfix for missing country state id.
+        if (empty($updatePayload['countryStateId'])) {
+            unset($updatePayload['countryStateId']);
+        }
 
         // Make sure that custom "street name" and "house number" are filled or the default "street" is filled.
         $this->enderecoService->syncStreet($updatePayload, $mainContext, $salesChannelId);
