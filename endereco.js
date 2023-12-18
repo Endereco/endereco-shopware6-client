@@ -130,77 +130,110 @@ EnderecoIntegrator.resolvers.salutationRead = function (value) {
     });
 }
 
+// Main function attached to EnderecoIntegrator for handling Ajax form events
 EnderecoIntegrator.onAjaxFormHandler.push(function (EAO) {
-    EAO.forms.forEach(function (form) {
-        var submitButtons = form.querySelectorAll('[type="submit"]');
-        submitButtons.forEach(function (buttonElement) {
+    let addressCheckTimeout; // Timeout for delaying the address check
 
-            buttonElement.addEventListener('click', function (e) {
+    // Attaching event listeners to each form
+    EAO.forms.forEach(form => {
+        attachEventListenersToForm(form);
+    });
 
-                /**
-                 * Essentially this event listener tries to recreate submit listener,
-                 * so if in the setting there is no submit listener, then this logic
-                 * should not be used, too.
-                 */
-                if (!EAO.config.trigger.onsubmit) {
-                    return true;
-                }
+    // Function to attach event listeners to the form's elements
+    function attachEventListenersToForm(form) {
+        // Attach to submit buttons
+        form.querySelectorAll('[type="submit"]').forEach(button => {
+            button.addEventListener('click', handleEvent);
+        });
 
-                if (EAO.util.shouldBeChecked() || EAO._awaits > 0) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                } else {
-                    return true;
-                }
+        // Attach to input elements
+        form.querySelectorAll('input').forEach(input => {
+            input.addEventListener('keydown', handleEvent);
+        });
+    }
 
-                /**
-                 * This block defines a code that is executed, if submit has to be continued
-                 * after the address correction has been selected.
-                 */
+    // Handles click and keydown events
+    function handleEvent(e) {
+        const isClickedOnButton = e.type === 'click';
+        const isEnterKeyPressed = e.type === 'keydown' && e.key === 'Enter';
+
+        // Return early if the event isn't a relevant one
+        if (!isClickedOnButton && !isEnterKeyPressed) {
+            return true;
+        }
+
+        // Check if onsubmit trigger is disabled
+        if (!EAO.config.trigger.onsubmit) {
+            return true;
+        }
+
+        // Prevent default action and initiate address check if required
+        if (EAO.util.shouldBeChecked() || EAO._addressIsBeingChecked) {
+            e.preventDefault();
+            if (!EAO._addressIsBeingChecked && !(isEnterKeyPressed && EAO.hasOpenDropdowns())) {
+                e.stopPropagation();
+                initiateAddressCheck(e);
+            }
+        } else {
+            return true;
+        }
+    }
+
+    // Initiates the address checking process
+    function initiateAddressCheck(e) {
+        // Clear existing timeout
+        if (addressCheckTimeout) {
+            clearTimeout(addressCheckTimeout);
+        }
+
+        // Delay execution to debounce rapid requests
+        addressCheckTimeout = setTimeout(() => {
+            if (EAO.util.shouldBeChecked() && !EAO._addressIsBeingChecked) {
+                // Setup for resuming submission if not already set
                 if (window.EnderecoIntegrator && !window.EnderecoIntegrator.submitResume) {
-                    window.EnderecoIntegrator.submitResume = function () {
-
-                        window.EnderecoIntegrator.submitResume = undefined;
-
-                        if (EAO.config.ux.resumeSubmit) {
-                            if (buttonElement.dispatchEvent(
-                                new EAO.util.CustomEvent(
-                                    'click',
-                                    {
-                                        'bubbles': true,
-                                        'cancelable': true
-                                    }
-                                )
-                            )) {
-                                buttonElement.click();
-                            }
-                        }
-                    }
+                    setupSubmitResume(e);
                 }
 
-                if (EAO.util.shouldBeChecked()) {
-                    window.EnderecoIntegrator.hasSubmit = true;
+                // Mark that a submission is in progress and perform the address check
+                window.EnderecoIntegrator.hasSubmit = true;
+                EAO.util.checkAddress()
+                    .catch(error => console.error("Address check failed:", error))
+                    .finally(() => window.EnderecoIntegrator.hasSubmit = false);
+            }
+        }, 300);
+    }
 
-                    setTimeout(function () {
-                        EAO.util.checkAddress()
-                            .catch(function () {
-                                EAO.waitForAllPopupsToClose().then(function () {
-                                    if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
-                                        window.EnderecoIntegrator.submitResume();
-                                    }
-                                }).catch()
-                            }).finally(function () {
-                            window.EnderecoIntegrator.hasSubmit = false;
-                        });
-                    }, 300);
+    // Sets up the mechanism to resume form submission
+    function setupSubmitResume(e) {
+        let buttonElement;
 
-                    return false;
-                }
-            })
-        })
-    })
+        if (e.target.tagName.toLowerCase() === 'input' && e.key === 'Enter') {
+            let form = e.target.form;
+            buttonElement = form.querySelector('[type="submit"]');
+        } else {
+            buttonElement = e.target;
+        }
 
+        window.EnderecoIntegrator.submitResume = () => {
+            window.EnderecoIntegrator.submitResume = undefined;
+            if (EAO.config.ux.resumeSubmit) {
+                simulateButtonClick(buttonElement);
+            }
+        };
+    }
+
+    // Simulates a button click
+    function simulateButtonClick(buttonElement) {
+        setTimeout( function() {
+            // Creating and dispatching a custom 'click' event
+            if (buttonElement.dispatchEvent(new EAO.util.CustomEvent('click', { bubbles: true, cancelable: true }))) {
+                buttonElement.click();
+            }
+        }, 1000);
+    }
 });
+
+
 const editAddressHandler = (e) => {
     const targetFormLinkSelector = e.forms[0].getAttribute('data-end-target-link-selector');
     if (!targetFormLinkSelector) {

@@ -90,7 +90,7 @@ class AddressController extends StorefrontController
             throw new Exception('Something is wrong with the sales channel');
         }
 
-        /** @var Symfony\Component\HttpFoundation\InputBag $requestInputBag */
+        /** @var \Symfony\Component\HttpFoundation\InputBag $requestInputBag */
         $requestInputBag = $request->request;
 
         /** @var array<string, string> $billingAddress */
@@ -99,7 +99,7 @@ class AddressController extends StorefrontController
             : [];
 
         /** @var array<string, string> $shippingAddressAddress */
-        $shippingAddressAddress =$requestInputBag->has('shippingAddress')
+        $shippingAddressAddress = $requestInputBag->has('shippingAddress')
             ? $requestInputBag->get('shippingAddress')
             : [];
 

@@ -186,6 +186,9 @@
                                             var amsStatusSelector = MarkerElement.getAttribute(`data-${markerValue}-status-selector`);
                                             var amsTimestampSelector = MarkerElement.getAttribute(`data-${markerValue}-timestamp-selector`);
                                             var amsPredictionsSelector = MarkerElement.getAttribute(`data-${markerValue}-predictions-selector`);
+
+                                            const objectName = `ams_${prefix}_${formId}`;
+
                                             var isAjax = 'true' === MarkerElement.getAttribute('data-form-handle-ajax-submit');
                                             var selectorsCollection = {
                                                 countryCode: `[data-endereco-${markerValue}-form-id="${formId}"] ${countryCodeSelector}`,
@@ -197,18 +200,22 @@
                                                 buildingNumber: `[data-endereco-${markerValue}-form-id="${formId}"] ${houseNumberSelector}`,
                                                 addressStatus: `[data-endereco-${markerValue}-form-id="${formId}"] ${amsStatusSelector}`,
                                                 addressTimestamp: `[data-endereco-${markerValue}-form-id="${formId}"] ${amsTimestampSelector}`,
-                                                addressPredictions: `[data-endereco-${markerValue}-form-id="${formId}"] ${amsPredictionsSelector}`
+                                                addressPredictions: `[data-endereco-${markerValue}-form-id="${formId}"] ${amsPredictionsSelector}`,
                                             };
                                             var EAO = window.EnderecoIntegrator.initAMS(
                                                 selectorsCollection,
                                                 {
-                                                    name: `ams_${prefix}_${formId}`,
+                                                    name: objectName,
                                                     addressType: addressType,
-                                                    ajaxForm: isAjax
+                                                    ajaxForm: isAjax,
+                                                    beforeActivation: function(EAO) {
+                                                        EAO.subdivisionCode = getInitialSubdivisionCode(
+                                                            selectorsCollection.subdivisionCode,
+                                                            window.EnderecoIntegrator.subdivisionMappingReverse
+                                                        );
+                                                    }
                                                 }
                                             );
-
-                                            setInitialSubdivisionalCode(EAO, formElement, subdivisionCodeSelector);
                                             setBlurListener(EAO, selectorsCollection);
                                         } else if ('phoneServices' === markerValue) {
                                             var countryCodeSelector = MarkerElement.getAttribute('data-country-code-selector');
@@ -275,25 +282,49 @@
                     window.EnderecoIntegrator.configScannerStarted = true;
                 }
 
-                function setInitialSubdivisionalCode(EAO, formElement, subdivisionCodeSelector) {
-                    const subdivisionalCodeSelect = formElement.querySelector(subdivisionCodeSelector);
-                    if (!subdivisionalCodeSelect) {
-                        return;
+                /**
+                 * Retrieves the initial subdivision code based on a provided selector and mapping object.
+                 *
+                 * @param {string} subdivisionCodeSelector - A CSS selector string to select the DOM element.
+                 * @param {Object} mappingObject - An object that maps subdivision select IDs to subdivision codes.
+                 * @returns {string} The mapped subdivision code corresponding to the selected element's ID. Returns an empty string if any validation fails or if the mapping is not found.
+                 *
+                 * @example
+                 * // Suppose there is an element in the DOM like: <div id="subdivision" data-initial-country-state-id="12345"></div>
+                 * // And a mapping object like: { "12345": "SubdivisionCode1" }
+                 * const subdivisionCode = getInitialSubdivisionCode('#subdivision', { "12345": "SubdivisionCode1" });
+                 * console.log(subdivisionCode); // Outputs: "SubdivisionCode1"
+                 */
+                function getInitialSubdivisionCode(subdivisionCodeSelector, mappingObject) {
+                    // Validate the selector
+                    if (!subdivisionCodeSelector || typeof subdivisionCodeSelector !== 'string') {
+                        return '';
                     }
 
-                    const subdivisionSelectId = subdivisionalCodeSelect.getAttribute('data-initial-country-state-id');
-                    const subdivisionIdMapping = window.EnderecoIntegrator.subdivisionMappingReverse;
-                    if (!subdivisionSelectId || !subdivisionIdMapping) {
-                        return;
+                    // Validate the mapping object
+                    if (!mappingObject || typeof mappingObject !== 'object') {
+                        return '';
                     }
 
-                    if (subdivisionalCodeSelect.querySelectorAll('option').length <= 1) {
-                        const subdivisionCodeMapping = subdivisionIdMapping[subdivisionSelectId];
-
-                        if (subdivisionCodeMapping) {
-                            EAO.subdivisionCode = subdivisionCodeMapping;
-                        }
+                    // Select the element
+                    const subdivisionElement = document.querySelector(subdivisionCodeSelector);
+                    if (!subdivisionElement) {
+                        return '';
                     }
+
+                    // Retrieve the data attribute
+                    const subdivisionSelectId = subdivisionElement.getAttribute('data-initial-country-state-id');
+                    if (!subdivisionSelectId) {
+                        return '';
+                    }
+
+                    // Check for the specific key in the mapping object
+                    if (!(subdivisionSelectId in mappingObject)) {
+                        return '';
+                    }
+
+                    // Return the mapped subdivision code
+                    return mappingObject[subdivisionSelectId];
                 }
 
                 /**
@@ -312,6 +343,9 @@
                     for (const key in elements) {
                         if (Object.prototype.hasOwnProperty.call(elements, key)) {
                             const selector = elements[key];
+                            if (!selector) {
+                                continue;
+                            }
                             const element = document.querySelector(selector);
 
                             if (element) {
@@ -319,6 +353,7 @@
                                     // Dispatch 'focus' and 'blur' events on the target element
                                     e.target.dispatchEvent(new EAO.util.CustomEvent('focus', { bubbles: true, cancelable: true }));
                                     e.target.dispatchEvent(new EAO.util.CustomEvent('blur', { bubbles: true, cancelable: true }));
+                                    e.target.dispatchEvent(new EAO.util.CustomEvent('focus', { bubbles: true, cancelable: true }));
                                 });
                             }
                         }
