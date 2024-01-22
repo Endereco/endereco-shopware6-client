@@ -350,10 +350,10 @@
 
                             if (element) {
                                 element.addEventListener('endereco-blur', function(e) {
-                                    // Dispatch 'focus' and 'blur' events on the target element
+                                    // Dispatch 'focus', 'change' and 'blur' events on the target element
                                     e.target.dispatchEvent(new EAO.util.CustomEvent('focus', { bubbles: true, cancelable: true }));
+                                    e.target.dispatchEvent(new EAO.util.CustomEvent('change', { bubbles: true, cancelable: true }));
                                     e.target.dispatchEvent(new EAO.util.CustomEvent('blur', { bubbles: true, cancelable: true }));
-                                    e.target.dispatchEvent(new EAO.util.CustomEvent('focus', { bubbles: true, cancelable: true }));
                                 });
                             }
                         }

@@ -26,6 +26,9 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Throwable;
 use Symfony\Component\HttpFoundation\Session\Session;
+use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
+use Shopware\Core\System\Country\Aggregate\CountryState\CountryStateEntity;
+use Shopware\Core\Framework\Plugin\PluginEntity as Plugin;
 
 class EnderecoService
 {
@@ -69,7 +72,9 @@ class EnderecoService
         $this->requestStack = $requestStack;
 
         $legacyMethodExists = method_exists(RequestStack::class, 'getMasterRequest');
+        // @phpstan-ignore-next-line
         if ($legacyMethodExists && !is_null($requestStack->getMasterRequest())) {
+            // @phpstan-ignore-next-line
             $this->session = $requestStack->getMasterRequest()->getSession();
         } elseif (!is_null($requestStack->getMainRequest())) {
             $this->session = $requestStack->getMainRequest()->getSession();
@@ -220,6 +225,7 @@ class EnderecoService
             $criteria->addFilter(new EqualsFilter('languageId', $context->getLanguageId()));
         }
 
+        /** @var SalesChannelDomainEntity|null $salesChannelDomain */
         $salesChannelDomain = $this->salesChannelDomainRepository->search($criteria, $context)->first();
 
         if (!$salesChannelDomain) {
@@ -227,11 +233,17 @@ class EnderecoService
         }
 
         // Get the locale code from the sales channel
-        $localeCode = substr(
-            $salesChannelDomain->getLanguage()->getLocale()->getCode(),
-            0,
-            2
-        );
+        $language = $salesChannelDomain->getLanguage();
+        if ($language === null) {
+            throw new \RuntimeException('Language entity is not available.');
+        }
+
+        $locale = $language->getLocale();
+        if ($locale === null) {
+            throw new \RuntimeException('Locale entity is not available.');
+        }
+
+        $localeCode = substr($locale->getCode(), 0, 2);
 
         return $localeCode;
     }
@@ -961,13 +973,13 @@ class EnderecoService
      */
     public function getCountryCodeById(string $countryId, Context $context, string $defaultCountryCode = 'DE')
     {
-        // Fetch the country using the provided ID
+        /** @var CountryEntity|null $country */
         $country = $this->countryRepository->search(new Criteria([$countryId]), $context)->first();
 
         // Check if the country was found
         if ($country !== null) {
             // If country is found, get the ISO code
-            $countryCode = $country->getIso();
+            $countryCode = $country->getIso() ?? $defaultCountryCode;
         } else {
             // If no country is found, default to the provided default country code
             $countryCode = $defaultCountryCode;
@@ -1021,13 +1033,17 @@ class EnderecoService
      */
     protected function getSubdivisionCodeById(string $subdivisionId, Context $context): string
     {
-        // Fetch the subdivision (state) using the provided ID
+        /** @var CountryStateEntity|null $state */
         $state = $this->countryStateRepository->search(new Criteria([$subdivisionId]), $context)->first();
 
         // If a subdivision is found, get its ISO code and convert it to uppercase
         // If no subdivision is found, default to an empty string
-        $stateCode = $state !== null ? strtoupper($state->getShortCode()) : '';
-
+        if ($state !== null) {
+            $stateCode = strtoupper($state->getShortCode());
+        } else {
+            $stateCode = '';
+        }
+        
         return $stateCode;
     }
 
@@ -1265,7 +1281,15 @@ class EnderecoService
     {
         $criteria = (new Criteria())
             ->addFilter(new EqualsFilter('name', 'EnderecoShopware6Client'));
-        $versionTag = $this->pluginRepository->search($criteria, $context)->first()->getVersion();
+        
+        /** @var Plugin|null $plugin */
+        $plugin = $this->pluginRepository->search($criteria, $context)->first();
+
+        if ($plugin !== null) {
+            $versionTag = $plugin->getVersion();
+        } else {
+            $versionTag = 'unknown';
+        }
 
         return $versionTag;
     }

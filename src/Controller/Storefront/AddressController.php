@@ -25,6 +25,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 use function count;
 
@@ -78,7 +79,7 @@ class AddressController extends StorefrontController
         $customer = $context->getCustomer();
 
         if (is_null($customer)) {
-            throw new CustomerNotLoggedInException();
+            throw CustomerNotLoggedInException::customerNotLoggedIn();
         }
 
         /** @var Context $mainContext */

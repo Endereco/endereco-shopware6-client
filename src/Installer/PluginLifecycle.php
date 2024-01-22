@@ -21,18 +21,20 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class PluginLifecycle
 {
     /**
-     * @var ContainerInterface $container The container interface object
+     * @var ContainerInterface|null $container The container interface object
      */
-    private ContainerInterface $container;
+    private ContainerInterface|null $container;
 
     /**
      * PluginLifecycle constructor.
      *
-     * @param ContainerInterface $container The container interface object
+     * @param ContainerInterface|null $container The container interface object
      */
-    public function __construct(ContainerInterface $container)
+    public function __construct(ContainerInterface|null $container)
     {
-        $this->container = $container;
+        if ($container !== null) {
+            $this->container = $container;
+        }
     }
 
     /**
@@ -110,11 +112,15 @@ class PluginLifecycle
     /**
      * Get the database connection.
      *
-     * @throws RuntimeException If the connection service is not initialized
+     * @throws RuntimeException If the connection service is not initialized or there is no container.
      * @return Connection
      */
     private function getConnection(): Connection
     {
+        if ($this->container === null) {
+            throw new RuntimeException('There is no container');
+        }
+
         /** @var Connection $connection */
         $connection = $this->container->get(Connection::class);
 

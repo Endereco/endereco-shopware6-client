@@ -2,6 +2,7 @@
 node_modules/
 vendor/
 dist/
+shopware/
 package-lock.json
 composer.lock
 EnderecoShopware6Client*.zip
