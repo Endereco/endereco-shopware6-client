@@ -23,14 +23,14 @@ class PluginLifecycle
     /**
      * @var ContainerInterface|null $container The container interface object
      */
-    private ContainerInterface|null $container;
+    private $container;
 
     /**
      * PluginLifecycle constructor.
      *
      * @param ContainerInterface|null $container The container interface object
      */
-    public function __construct(ContainerInterface|null $container)
+    public function __construct(?ContainerInterface $container)
     {
         if ($container !== null) {
             $this->container = $container;
