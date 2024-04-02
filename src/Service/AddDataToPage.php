@@ -89,7 +89,7 @@ class AddDataToPage implements EventSubscriberInterface
         if ($isCurrentControllerKnown && $isControllerWhitelistActive) {
             $loadEnderecoSettings = false;
             foreach ($configContainer->controllerWhitelist as $whitelist) {
-                if (\str_contains($currentController, "Controller\\${whitelist}Controller::")) {
+                if (\str_contains($currentController, "Controller\\{$whitelist}Controller::")) {
                     $loadEnderecoSettings = true;
                     break;
                 }
