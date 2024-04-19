@@ -17,6 +17,7 @@ class Migration1674133739CreateEnderecoAddressExtensionTable extends MigrationSt
 
     /**
      * @throws Exception
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function update(Connection $connection): void
     {
@@ -35,6 +36,9 @@ class Migration1674133739CreateEnderecoAddressExtensionTable extends MigrationSt
         $connection->executeStatement($sql);
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
     public function updateDestructive(Connection $connection): void
     {
         // implement update destructive

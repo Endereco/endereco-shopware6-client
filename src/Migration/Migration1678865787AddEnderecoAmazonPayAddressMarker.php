@@ -16,6 +16,8 @@ class Migration1678865787AddEnderecoAmazonPayAddressMarker extends MigrationStep
     }
 
     /**
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     *
      * @throws Exception
      */
     public function update(Connection $connection): void
@@ -27,6 +29,9 @@ class Migration1678865787AddEnderecoAmazonPayAddressMarker extends MigrationStep
         $connection->executeStatement($sql);
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
     public function updateDestructive(Connection $connection): void
     {
         // implement update destructive

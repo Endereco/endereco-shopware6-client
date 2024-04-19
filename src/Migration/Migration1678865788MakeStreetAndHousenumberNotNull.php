@@ -15,6 +15,9 @@ class Migration1678865788MakeStreetAndHousenumberNotNull extends MigrationStep
         return 1678865788;
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
     public function update(Connection $connection): void
     {
         // This section was removed because setting the house number and street fields to "NOT NULL" was causing errors
@@ -23,6 +26,9 @@ class Migration1678865788MakeStreetAndHousenumberNotNull extends MigrationStep
         // value, and consequently causing a MySQL exception.
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
     public function updateDestructive(Connection $connection): void
     {
         // implement update destructive

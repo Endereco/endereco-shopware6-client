@@ -72,10 +72,10 @@ class AddDataToPage implements EventSubscriberInterface
         $configContainer = new stdClass();
 
         // Enrich the structure with advanced settings.
-        $this->addAdvancedSettingsData($configContainer, $context, $salesChannelId);
+        $this->addAdvancedSettingsData($configContainer, $salesChannelId);
 
         // Enrich the structure with API settings.
-        $this->addApiData($configContainer, $context, $salesChannelId);
+        $this->addApiData($configContainer, $salesChannelId);
 
         // Determine whether the rest of the settings should be loaded. If the plugin is inactive or inactive for the
         // current controller, there is no need to load all the settings from the database.
@@ -104,7 +104,7 @@ class AddDataToPage implements EventSubscriberInterface
             $configContainer->enderecoVersion = $this->enderecoService->getPluginVersion($context);
 
             // Enrich the structure with email check settings.
-            $this->addEmailCheckData($configContainer, $context, $salesChannelId);
+            $this->addEmailCheckData($configContainer, $salesChannelId);
 
             // Enrich the structure with name check settings.
             $this->addNameCheckData($configContainer, $context, $salesChannelId);
@@ -113,7 +113,7 @@ class AddDataToPage implements EventSubscriberInterface
             $this->addAddressCheckData($configContainer, $context, $salesChannelId);
 
             // Enrich the structure with phone check settings.
-            $this->addPhoneCheckData($configContainer, $context, $salesChannelId);
+            $this->addPhoneCheckData($configContainer, $salesChannelId);
         }
 
         // Assign the configuration to the page.
@@ -126,7 +126,6 @@ class AddDataToPage implements EventSubscriberInterface
      * These settings are used to dictate frontend behaviour.
      *
      * @param stdClass $configContainer The object that holds the configuration settings. Passed by reference.
-     * @param Context $context The context of the sales channel in the current lifecycle.
      * @param string $salesChannelId The ID of the sales channel from which the settings are fetched.
      *
      * The method fetches the following settings:
@@ -138,7 +137,7 @@ class AddDataToPage implements EventSubscriberInterface
      *
      * @return void
      */
-    private function addApiData(stdClass &$configContainer, Context $context, string $salesChannelId): void
+    private function addApiData(stdClass &$configContainer, string $salesChannelId): void
     {
         $configContainer->defaultCountry =
             $this->systemConfigService
@@ -163,7 +162,6 @@ class AddDataToPage implements EventSubscriberInterface
      * These settings are used for email validation and related frontend behaviour.
      *
      * @param stdClass $configContainer The object that holds the configuration settings. Passed by reference.
-     * @param Context $context The context of the sales channel in the current lifecycle.
      * @param string $salesChannelId The ID of the sales channel from which the settings are fetched.
      *
      * The method fetches the following settings:
@@ -175,7 +173,7 @@ class AddDataToPage implements EventSubscriberInterface
      *
      * @return void
      */
-    private function addEmailCheckData(stdClass &$configContainer, Context $context, string $salesChannelId): void
+    private function addEmailCheckData(stdClass &$configContainer, string $salesChannelId): void
     {
         $configContainer->enderecoEmailCheckActive =
             $this->systemConfigService
@@ -278,7 +276,6 @@ class AddDataToPage implements EventSubscriberInterface
      * These settings are used for phone validation and related frontend behaviour.
      *
      * @param stdClass $configContainer The object that holds the configuration settings. Passed by reference.
-     * @param Context $context The context of the sales channel in the current lifecycle.
      * @param string $salesChannelId The ID of the sales channel from which the settings are fetched.
      *
      * The method fetches the following settings:
@@ -293,7 +290,7 @@ class AddDataToPage implements EventSubscriberInterface
      *
      * @return void
      */
-    public function addPhoneCheckData(stdClass &$configContainer, Context $context, string $salesChannelId): void
+    public function addPhoneCheckData(stdClass &$configContainer, string $salesChannelId): void
     {
         $configContainer->enderecoPhsActive =
             $this->systemConfigService
@@ -314,7 +311,6 @@ class AddDataToPage implements EventSubscriberInterface
      * These settings include loading CSS, defining controller whitelists, and the path to an IO PHP file.
      *
      * @param stdClass $configContainer The object that holds the configuration settings. Passed by reference.
-     * @param Context $context The context of the sales channel in the current lifecycle.
      * @param string $salesChannelId The ID of the sales channel from which the settings are fetched.
      *
      * The method fetches the following settings:
@@ -330,7 +326,7 @@ class AddDataToPage implements EventSubscriberInterface
      *
      * @return void
      */
-    public function addAdvancedSettingsData(stdClass &$configContainer, Context $context, string $salesChannelId): void
+    public function addAdvancedSettingsData(stdClass &$configContainer, string $salesChannelId): void
     {
         $configContainer->enderecoLoadCss =
             $this->systemConfigService

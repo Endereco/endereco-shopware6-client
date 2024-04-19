@@ -1043,7 +1043,7 @@ class EnderecoService
         } else {
             $stateCode = '';
         }
-        
+
         return $stateCode;
     }
 
@@ -1281,7 +1281,7 @@ class EnderecoService
     {
         $criteria = (new Criteria())
             ->addFilter(new EqualsFilter('name', 'EnderecoShopware6Client'));
-        
+
         /** @var Plugin|null $plugin */
         $plugin = $this->pluginRepository->search($criteria, $context)->first();
 

@@ -150,7 +150,7 @@ class AddressSubscriber implements EventSubscriberInterface
             // So we just sync the entity with this information.
             $processedEntityIds = array_keys($this->addressEntityCache);
             if (in_array($entity->getId(), $processedEntityIds)) {
-                $this->syncAddressEntity($entity, $context);
+                $this->syncAddressEntity($entity);
                 continue;
             }
 
@@ -259,10 +259,9 @@ class AddressSubscriber implements EventSubscriberInterface
      * entity in order to have correct display on the frontend without having to reload the page.
      *
      * @param CustomerAddressEntity $addressEntity
-     * @param Context $context
      * @return void
      */
-    public function syncAddressEntity(CustomerAddressEntity $addressEntity, Context $context): void
+    public function syncAddressEntity(CustomerAddressEntity $addressEntity): void
     {
         if (!array_key_exists($addressEntity->getId(), $this->addressEntityCache)) {
             return;
@@ -495,6 +494,8 @@ class AddressSubscriber implements EventSubscriberInterface
      * Delayed doaccounting can be also used for other serverside checks, that dont rely on $_POST variable.
      *
      * We don't send doAccounting at this point. It will actually happen after the address is saved.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      *
      * @param BuildValidationEvent $event
      * @return void

@@ -16,6 +16,8 @@ class Migration1675858542AddEnderecoAmsStatusColumn extends MigrationStep
     }
 
     /**
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     *
      * @throws Exception
      */
     public function update(Connection $connection): void
@@ -29,6 +31,9 @@ class Migration1675858542AddEnderecoAmsStatusColumn extends MigrationStep
         $connection->executeStatement($sql);
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
     public function updateDestructive(Connection $connection): void
     {
         // implement update destructive

@@ -7,3 +7,5 @@ package-lock.json
 composer.lock
 EnderecoShopware6Client*.zip
 EnderecoShopware6ClientStore*.zip
+shops/*
+!shops/.gitkeep
