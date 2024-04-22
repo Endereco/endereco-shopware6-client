@@ -1,0 +1,11 @@
+parameters:
+    level: 8
+    paths:
+        - ./src
+    excludePaths:
+        - ./shops
+        - ./vendor
+        - ./node_modules
+    bootstrapFiles:
+        - shops/6.4.6.1/vendor/autoload.php
+    checkGenericClassInNonGenericObjectType: false

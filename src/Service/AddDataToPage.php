@@ -233,9 +233,9 @@ class AddDataToPage implements EventSubscriberInterface
         ];
         $salutationMapping = [];
         foreach ($salutations as $salutation) {
-            /** @var SalutationEntity $salutation */
 
-            $salutationKey = $salutation->getSalutationKey() ?? '';
+            /** @var SalutationEntity $salutation */
+            $salutationKey = (string) $salutation->getSalutationKey();
 
             if (array_key_exists($salutationKey, $relevanceMapping)) {
                 $salutationMapping[$salutation->getId()] = $relevanceMapping[$salutationKey];

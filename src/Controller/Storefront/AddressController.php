@@ -6,10 +6,10 @@ namespace Endereco\Shopware6Client\Controller\Storefront;
 
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Exception;
-use Shopware\Core\Checkout\Cart\Exception\CustomerNotLoggedInException;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Checkout\Customer\CustomerEvents;
 use Shopware\Core\Checkout\Customer\Exception\AddressNotFoundException;
+use Shopware\Core\Checkout\Cart\Exception\CustomerNotLoggedInException;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -79,7 +79,7 @@ class AddressController extends StorefrontController
         $customer = $context->getCustomer();
 
         if (is_null($customer)) {
-            throw CustomerNotLoggedInException::customerNotLoggedIn();
+            throw new CustomerNotLoggedInException();;
         }
 
         /** @var Context $mainContext */

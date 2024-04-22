@@ -71,13 +71,8 @@ class EnderecoService
         $this->customerAddressRepository = $customerAddressRepository;
         $this->requestStack = $requestStack;
 
-        $legacyMethodExists = method_exists(RequestStack::class, 'getMasterRequest');
-        // @phpstan-ignore-next-line
-        if ($legacyMethodExists && !is_null($requestStack->getMasterRequest())) {
-            // @phpstan-ignore-next-line
+        if (!is_null($requestStack->getMasterRequest())) {
             $this->session = $requestStack->getMasterRequest()->getSession();
-        } elseif (!is_null($requestStack->getMainRequest())) {
-            $this->session = $requestStack->getMainRequest()->getSession();
         } else {
             $this->session = null;
         }
