@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # List of supported Shopware versions
-declare -a versions=("6.4.0.0" "6.4.1.2" "6.4.2.1" "6.4.3.1" "6.4.4.1" "6.4.5.1" "6.4.6.1" "6.4.7.0" "6.4.8.2" "6.4.9.0" "6.4.10.1" "6.4.11.1" "6.4.12.0" "6.4.13.0" "6.4.14.0" "6.4.15.2" "6.4.16.1" "6.4.17.2" "6.4.18.1" "6.4.19.0" "6.4.20.2")
+declare -a versions=("6.6.0.0" "6.6.1.1")
 
 # Function to check if an element is in the array
 containsElement () {

@@ -5,17 +5,24 @@ container_name="admin_builder"
 host_ssh_port=2222
 plugin_host_dir="./"  # Directory on host where your plugin files are stored
 plugin_container_dir="/var/www/html/custom/plugins/EnderecoShopware6Client"  # Directory in the container where plugins are stored
+temp_host_dir="./temp_plugin_files"
 
 # Start the Dockware container
-docker run -d -p $host_ssh_port:22 --name $container_name dockware/dev:6.4.18.1
+docker run -d -p $host_ssh_port:22 --name $container_name dockware/dev:6.6.1.1
 
 # Wait for container to fully start up (adjust time as needed)
 sleep 10
 
 # Copy plugin files to container and set permissions, excluding certain directories
-rsync -az --exclude 'shops/' --exclude '.git/' --exclude 'node_modules/' $plugin_host_dir dockware@localhost:$plugin_container_dir -e "ssh -p $host_ssh_port"
+mkdir -p $temp_host_dir
+rsync -az --exclude 'shops/' --exclude '.git/' --exclude 'node_modules/' $plugin_host_dir $temp_host_dir
 
+# Copy plugin files from temporary directory to container and set permissions
+docker cp $temp_host_dir $container_name:$plugin_container_dir
 docker exec -u root $container_name chown -R www-data:www-data $plugin_container_dir
+
+# Remove temporary directory
+rm -rf $temp_host_dir
 
 # Install and activate the plugin via the console
 docker exec $container_name php bin/console plugin:refresh

@@ -15,9 +15,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Event\DataMappingEvent;
-use Shopware\Core\Framework\Routing\Annotation\LoginRequired;
-use Shopware\Core\Framework\Routing\Annotation\RouteScope;
-use Shopware\Core\Framework\Routing\Annotation\Since;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\StorefrontController;
@@ -35,7 +32,6 @@ use function count;
  * @author Michal Daniel
  * @author Ilja Weber
  *
- * @RouteScope(scopes={"storefront"}) // For SW Version < 6.4.11.0
  * @Route(defaults={"_routeScope"={"storefront"}}) // For SW Version >= 6.4.11.0
  */
 class AddressController extends StorefrontController
@@ -79,7 +75,7 @@ class AddressController extends StorefrontController
         $customer = $context->getCustomer();
 
         if (is_null($customer)) {
-            throw new CustomerNotLoggedInException();;
+            throw CustomerNotLoggedInException::customerNotLoggedIn();
         }
 
         /** @var Context $mainContext */

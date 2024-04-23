@@ -4,7 +4,6 @@ namespace Endereco\Shopware6Client\Controller\Api;
 
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,7 +16,6 @@ use GuzzleHttp\Client;
  * @author Ilja Weber
  * @package Endereco\Shopware6Client\Controller\Api
  *
- * @RouteScope(scopes={"api"}) // For SW Version < 6.4.11.0
  * @Route(defaults={"_routeScope"={"api"}}) // For SW Version >= 6.4.11.0
  */
 class ApiTestController extends AbstractController

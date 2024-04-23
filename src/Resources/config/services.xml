@@ -36,7 +36,7 @@
             <argument type="service" id="sales_channel_domain.repository"/>
             <argument type="service" id="customer_address.repository"/>
             <argument type="service" id="request_stack"/>
-            <argument type="service" id="Endereco\Shopware6Client\Logger" />
+            <argument type="service" id="Endereco\Shopware6Client\Run\Logger" />
         </service>
 
         <service id="Endereco\Shopware6Client\Service\AddDataToPage" >
@@ -48,10 +48,11 @@
             <argument type="service" id="plugin.repository"/>
             <tag name="kernel.event_subscriber" />
         </service>
+        
+        <service id="Endereco\Shopware6Client\Run\LoggerFactory"/>
 
-        <service id="Endereco\Shopware6Client\Logger" class="Monolog\Logger">
-            <factory service="Shopware\Core\Framework\Log\LoggerFactory" method="createRotating"/>
-
+        <service id="Endereco\Shopware6Client\Run\Logger" class="Monolog\Logger">
+            <factory service="Endereco\Shopware6Client\Run\LoggerFactory" method="createRotating"/>
             <argument type="string">endereco_shopware6_client</argument>
         </service>
 

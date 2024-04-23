@@ -1,0 +1,2 @@
+monolog:
+    channels: ['endereco_shopware6_client']

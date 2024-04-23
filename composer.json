@@ -1,7 +1,7 @@
 {
     "name": "endereco/endereco-shopware6-client",
     "description": "Checks customers' addresses in real time. In case of errors, the customer is prompted to correct his address before sending via warning windows and error messages.",
-    "version": "4.5.0",
+    "version": "6.5.0",
     "type": "shopware-platform-plugin",
     "license": "AGPL-3.0-or-later",
     "authors": [
@@ -14,8 +14,8 @@
     "require": {
         "ext-curl": "*",
         "ext-json": "*",
-        "shopware/core": "^6.4",
-        "shopware/storefront": "^6.4"
+        "shopware/core": "6.6.*",
+        "shopware/storefront": "6.6.*"
     },
     "extra": {
         "shopware-plugin-class": "Endereco\\Shopware6Client\\EnderecoShopware6Client",
@@ -38,7 +38,6 @@
         "squizlabs/php_codesniffer": "^3.7",
         "phpunit/phpunit": "9.5.*",
         "phpstan/phpstan": "^1.10",
-        "brainmaestro/composer-git-hooks": "^2.8",
         "phpmd/phpmd": "^2.10"
     },
     "scripts": {
@@ -46,36 +45,19 @@
             "@phpcs",
             "@phpmd",
             "@phpstan",
-            "@phpcompat"
+            "@phpcompat",
+            "@phpcheckimports"
         ],
         "phpcbf": "phpcbf --standard=PSR12 --ignore=vendor/*,shops/*,node_modules/* ./src/**/*.php",
         "phpcs": "phpcs --standard=PSR12 --ignore=vendor/*,shops/*,node_modules/* ./src/**/*.php",
         "phpstan": [
-            "phpstan analyse -c phpstan.6.4.0.0.neon",
-            "phpstan analyse -c phpstan.6.4.1.2.neon",
-            "phpstan analyse -c phpstan.6.4.2.1.neon",
-            "phpstan analyse -c phpstan.6.4.3.1.neon",
-            "phpstan analyse -c phpstan.6.4.4.1.neon",
-            "phpstan analyse -c phpstan.6.4.5.1.neon",
-            "phpstan analyse -c phpstan.6.4.6.1.neon",
-            "phpstan analyse -c phpstan.6.4.7.0.neon",
-            "phpstan analyse -c phpstan.6.4.8.2.neon",
-            "phpstan analyse -c phpstan.6.4.9.0.neon",
-            "phpstan analyse -c phpstan.6.4.10.1.neon",
-            "phpstan analyse -c phpstan.6.4.11.1.neon",
-            "phpstan analyse -c phpstan.6.4.12.0.neon",
-            "phpstan analyse -c phpstan.6.4.13.0.neon",
-            "phpstan analyse -c phpstan.6.4.14.0.neon",
-            "phpstan analyse -c phpstan.6.4.15.2.neon",
-            "phpstan analyse -c phpstan.6.4.16.1.neon",
-            "phpstan analyse -c phpstan.6.4.17.2.neon",
-            "phpstan analyse -c phpstan.6.4.18.1.neon",
-            "phpstan analyse -c phpstan.6.4.19.0.neon",
-            "phpstan analyse -c phpstan.6.4.20.2.neon"
+            "phpstan analyse -c phpstan.6.6.0.0.neon",
+            "phpstan analyse -c phpstan.6.6.1.1.neon"
         ],
         "build-admin": "./build_admin.sh",
         "phpmd": "./check_phpmd.sh",
         "phpcompat": "./test_php_versions.sh",
+        "phpcheckimports": "php check_imports.php",
         "serve": "./playground.sh",
         "post-install-cmd": [
             "chmod +x test_php_versions.sh",
@@ -83,8 +65,7 @@
             "chmod +x build.sh",
             "chmod +x build_admin.sh",
             "chmod +x check_phpmd.sh",
-            "chmod +x playground.sh",
-            "cghooks add --ignore-lock"
+            "chmod +x playground.sh"
         ],
         "post-update-cmd": [
             "chmod +x test_php_versions.sh",
@@ -92,8 +73,7 @@
             "chmod +x build.sh",
             "chmod +x build_admin.sh",
             "chmod +x check_phpmd.sh",
-            "chmod +x playground.sh",
-            "cghooks update"
+            "chmod +x playground.sh"
         ]
     },
     "config": {

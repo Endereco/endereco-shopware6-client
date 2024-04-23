@@ -71,8 +71,8 @@ class EnderecoService
         $this->customerAddressRepository = $customerAddressRepository;
         $this->requestStack = $requestStack;
 
-        if (!is_null($requestStack->getMasterRequest())) {
-            $this->session = $requestStack->getMasterRequest()->getSession();
+        if (!is_null($requestStack->getMainRequest())) {
+            $this->session = $requestStack->getMainRequest()->getSession();
         } else {
             $this->session = null;
         }
