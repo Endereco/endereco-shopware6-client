@@ -7,5 +7,5 @@ parameters:
         - ./vendor
         - ./node_modules
     bootstrapFiles:
-        - shops/6.4.14.0/vendor/autoload.php
+        - shops/6.5.0.0/vendor/autoload.php
     checkGenericClassInNonGenericObjectType: false

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # List of supported Shopware versions
-declare -a versions=("6.4.0.0" "6.4.1.2" "6.4.2.1" "6.4.3.1" "6.4.4.1" "6.4.5.1" "6.4.6.1" "6.4.7.0" "6.4.8.2" "6.4.9.0" "6.4.10.1" "6.4.11.1" "6.4.12.0" "6.4.13.0" "6.4.14.0" "6.4.15.2" "6.4.16.1" "6.4.17.2" "6.4.18.1" "6.4.19.0" "6.4.20.2")
+declare -a versions=("6.5.0.0" "6.5.1.1" "6.5.2.1" "6.5.3.3" "6.5.4.1" "6.5.5.2" "6.5.6.1" "6.5.7.4" "6.5.8.9")
 
 # Function to check if an element is in the array
 containsElement () {
@@ -19,8 +19,14 @@ read -p "Enter the version of Shopware 6 you want to use: " version
 
 # Check if the version is valid
 if containsElement "$version" "${versions[@]}"; then
-    echo "Starting Shopware 6 in Dockware container with version $version"
+    echo "Preparing to start Shopware 6 in Dockware container with version $version"
     
+    # Check and remove existing container if necessary
+    if [ "$(docker ps -aq -f name=^shopware-$version$)" ]; then
+        echo "Removing existing container named shopware-$version"
+        docker rm -f shopware-$version
+    fi
+
     # Start the Docker container
     docker run -d --name shopware-$version -v $(pwd):/var/www/html/custom/plugins/EnderecoShopware6Client -p 80:80 dockware/dev:$version
 
