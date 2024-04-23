@@ -17,6 +17,7 @@ for version in "${versions[@]}"; do
     container_id=$(docker run -d --rm "$image_name" tail -f /dev/null)
 
     # Create target directory for shop files
+    rm -rf "./shops/$version"
     mkdir -p "./shops/$version"
     
     # Copy files from container to host
