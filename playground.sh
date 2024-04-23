@@ -19,7 +19,13 @@ read -p "Enter the version of Shopware 6 you want to use: " version
 
 # Check if the version is valid
 if containsElement "$version" "${versions[@]}"; then
-    echo "Starting Shopware 6 in Dockware container with version $version"
+    echo "Preparing to start Shopware 6 in Dockware container with version $version"
+    
+    # Check and remove existing container if necessary
+    if [ "$(docker ps -aq -f name=^shopware-$version$)" ]; then
+        echo "Removing existing container named shopware-$version"
+        docker rm -f shopware-$version
+    fi
     
     # Start the Docker container
     docker run -d --name shopware-$version -v $(pwd):/var/www/html/custom/plugins/EnderecoShopware6Client -p 80:80 dockware/dev:$version

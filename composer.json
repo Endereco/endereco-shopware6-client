@@ -45,6 +45,7 @@
         "qa": [
             "@phpcs",
             "@phpmd",
+            "@phpcheckimports",
             "@phpstan",
             "@phpcompat"
         ],
@@ -76,6 +77,7 @@
         "build-admin": "./build_admin.sh",
         "phpmd": "./check_phpmd.sh",
         "phpcompat": "./test_php_versions.sh",
+        "phpcheckimports": "php check_imports.php",
         "serve": "./playground.sh",
         "post-install-cmd": [
             "chmod +x test_php_versions.sh",
