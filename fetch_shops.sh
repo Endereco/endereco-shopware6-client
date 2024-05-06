@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define an array of versions
-versions=("6.6.0.0" "6.6.1.1")
+versions=("6.6.0.0" "6.6.1.1" "6.6.2.0")
 
 # Loop through each version
 for version in "${versions[@]}"; do
