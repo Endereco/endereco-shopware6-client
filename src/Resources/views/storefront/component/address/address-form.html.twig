@@ -63,12 +63,36 @@
                         data-title-selector="[name='{{ prefix }}[title]']"
                 >
 
-                <input type="hidden" name="{{ prefix }}[amsStatus]"
-                       value="{{ data.get('extensions')['enderecoAddress'].amsStatus }}">
-                <input type="hidden" name="{{ prefix }}[amsTimestamp]"
-                       value="{{ data.get('extensions')['enderecoAddress'].amsTimestamp }}">
-                <input type="hidden" name="{{ prefix }}[amsPredictions]"
-                       value="{{ data.get('extensions')['enderecoAddress'].amsPredictions|json_encode }}">
+                {% set amsStatus = '' %}
+                {% set amsTimestamp = '' %}
+                {% set amsPredictions = '' %}
+
+                {% if data is not null and data is instanceof('Shopware\\Core\\Framework\\Validation\\DataBag\\RequestDataBag') %}
+                    {% if data.get('amsStatus') %}
+                        {% set amsStatus = data.get('amsStatus') %}
+                    {% endif %}
+                    {% if data.get('amsTimestamp') %}
+                        {% set amsTimestamp = data.get('amsTimestamp') %}
+                    {% endif %}
+                    {% if data.get('amsPredictions') %}
+                        {% set amsPredictions = data.get('amsPredictions') %}
+                    {% endif %}
+                {% elseif data.extensions is defined and data.extensions.enderecoAddress is defined %}
+                    {% if data.extensions.enderecoAddress.amsStatus is defined %}
+                        {% set amsStatus = data.extensions.enderecoAddress.amsStatus %}
+                    {% endif %}
+                    {% if data.extensions.enderecoAddress.amsTimestamp is defined %}
+                        {% set amsTimestamp = data.extensions.enderecoAddress.amsTimestamp %}
+                    {% endif %}
+                    {% if data.extensions.enderecoAddress.amsPredictions is defined %}
+                        {% set amsPredictions = data.extensions.enderecoAddress.amsPredictions|json_encode %}
+                    {% endif %}
+                {% endif %}
+
+                <input type="hidden" name="{{ prefix }}[amsStatus]" value="{{ amsStatus }}">
+                <input type="hidden" name="{{ prefix }}[amsTimestamp]" value="{{ amsTimestamp }}">
+                <input type="hidden" name="{{ prefix }}[amsPredictions]" value="{{ amsPredictions }}">
+
             {% endif %}
         {% endblock %}
     {% endblock %}
