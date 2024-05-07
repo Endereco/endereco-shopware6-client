@@ -207,13 +207,7 @@
                                                 {
                                                     name: objectName,
                                                     addressType: addressType,
-                                                    ajaxForm: isAjax,
-                                                    beforeActivation: function(EAO) {
-                                                        EAO.subdivisionCode = getInitialSubdivisionCode(
-                                                            selectorsCollection.subdivisionCode,
-                                                            window.EnderecoIntegrator.subdivisionMappingReverse
-                                                        );
-                                                    }
+                                                    ajaxForm: isAjax
                                                 }
                                             );
                                             setBlurListener(EAO, selectorsCollection);
@@ -280,51 +274,6 @@
                         }
                     }, 1);
                     window.EnderecoIntegrator.configScannerStarted = true;
-                }
-
-                /**
-                 * Retrieves the initial subdivision code based on a provided selector and mapping object.
-                 *
-                 * @param {string} subdivisionCodeSelector - A CSS selector string to select the DOM element.
-                 * @param {Object} mappingObject - An object that maps subdivision select IDs to subdivision codes.
-                 * @returns {string} The mapped subdivision code corresponding to the selected element's ID. Returns an empty string if any validation fails or if the mapping is not found.
-                 *
-                 * @example
-                 * // Suppose there is an element in the DOM like: <div id="subdivision" data-initial-country-state-id="12345"></div>
-                 * // And a mapping object like: { "12345": "SubdivisionCode1" }
-                 * const subdivisionCode = getInitialSubdivisionCode('#subdivision', { "12345": "SubdivisionCode1" });
-                 * console.log(subdivisionCode); // Outputs: "SubdivisionCode1"
-                 */
-                function getInitialSubdivisionCode(subdivisionCodeSelector, mappingObject) {
-                    // Validate the selector
-                    if (!subdivisionCodeSelector || typeof subdivisionCodeSelector !== 'string') {
-                        return '';
-                    }
-
-                    // Validate the mapping object
-                    if (!mappingObject || typeof mappingObject !== 'object') {
-                        return '';
-                    }
-
-                    // Select the element
-                    const subdivisionElement = document.querySelector(subdivisionCodeSelector);
-                    if (!subdivisionElement) {
-                        return '';
-                    }
-
-                    // Retrieve the data attribute
-                    const subdivisionSelectId = subdivisionElement.getAttribute('data-initial-country-state-id');
-                    if (!subdivisionSelectId) {
-                        return '';
-                    }
-
-                    // Check for the specific key in the mapping object
-                    if (!(subdivisionSelectId in mappingObject)) {
-                        return '';
-                    }
-
-                    // Return the mapped subdivision code
-                    return mappingObject[subdivisionSelectId];
                 }
 
                 /**

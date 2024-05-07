@@ -66,7 +66,7 @@ EnderecoIntegrator.resolvers.subdivisionCodeSetValue = function (subscriber, val
     }
 }
 
-EnderecoIntegrator.resolvers.countryCodeWrite = function (value) {
+EnderecoIntegrator.resolvers.countryCodeWrite = function (value, subscriber) {
     return new Promise(function (resolve, reject) {
         var key = window.EnderecoIntegrator.countryMapping[value.toUpperCase()];
         if (key !== undefined) {
@@ -76,18 +76,23 @@ EnderecoIntegrator.resolvers.countryCodeWrite = function (value) {
         }
     });
 }
-EnderecoIntegrator.resolvers.countryCodeRead = function (value) {
+
+EnderecoIntegrator.resolvers.countryCodeRead = function (value, subscriber) {
+    if (subscriber?.object?.options?.length === 1) {
+        value = subscriber.object.dataset?.initialCountryId ?? value;
+    }
+
     return new Promise(function (resolve, reject) {
-        var key = window.EnderecoIntegrator.countryMappingReverse[value];
+        const key = window.EnderecoIntegrator.countryMappingReverse?.[value];
         if (key !== undefined) {
-            resolve(window.EnderecoIntegrator.countryMappingReverse[value]);
+            resolve(key);
         } else {
             resolve('');
         }
     });
 }
 
-EnderecoIntegrator.resolvers.subdivisionCodeWrite = function (value) {
+EnderecoIntegrator.resolvers.subdivisionCodeWrite = function (value, subscriber) {
     return new Promise(function (resolve, reject) {
         var key = window.EnderecoIntegrator.subdivisionMapping[value.toUpperCase()];
         if (key !== undefined) {
@@ -97,11 +102,16 @@ EnderecoIntegrator.resolvers.subdivisionCodeWrite = function (value) {
         }
     });
 }
-EnderecoIntegrator.resolvers.subdivisionCodeRead = function (value) {
+
+EnderecoIntegrator.resolvers.subdivisionCodeRead = function (value, subscriber) {
+    if (subscriber?.object?.options?.length === 1) {
+        value = subscriber.object.dataset?.initialCountryStateId ?? value;
+    }
+
     return new Promise(function (resolve, reject) {
-        var key = window.EnderecoIntegrator.subdivisionMappingReverse[value];
+        const key = window.EnderecoIntegrator.subdivisionMappingReverse?.[value];
         if (key !== undefined) {
-            resolve(window.EnderecoIntegrator.subdivisionMappingReverse[value]);
+            resolve(key);
         } else {
             resolve('');
         }
