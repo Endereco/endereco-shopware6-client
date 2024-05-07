@@ -130,8 +130,8 @@ class AddressController extends StorefrontController
             'street' => $address['street'] ?? '',
             'extensions' => [
                 'enderecoAddress' => [
-                    'street' => $address['enderecoStreet'],
-                    'houseNumber' => $address['enderecoHousenumber'],
+                    'street' => $address['enderecoStreet'] ?? '',
+                    'houseNumber' => $address['enderecoHousenumber'] ?? '',
                     'amsStatus' => $address['amsStatus'],
                     'amsPredictions' => $predictions,
                     'amsTimestamp' => time()
