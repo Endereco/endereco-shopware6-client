@@ -11,8 +11,11 @@ rm -rf EnderecoShopware6ClientStore/node_modules
 rm EnderecoShopware6ClientStore/.gitignore
 rm EnderecoShopware6ClientStore/.idea
 rm EnderecoShopware6ClientStore/*.sh
+rm EnderecoShopware6ClientStore/*.neon
+rm EnderecoShopware6ClientStore/composer.lock
+rm EnderecoShopware6ClientStore/check_imports.php
 rm EnderecoShopware6ClientStore/docker-compose.yml
-rm EnderecoShopware6ClientStore/endereco.js
+rm EnderecoShopware6ClientStore/*.js
 rm EnderecoShopware6ClientStore/endereco.scss
 rm EnderecoShopware6ClientStore/package.json
 rm EnderecoShopware6ClientStore/package-lock.json
@@ -50,9 +53,12 @@ rsync -ar --exclude 'vendor' --exclude 'node_modules' --exclude 'shops' --exclud
 rm -rf EnderecoShopware6Client/node_modules
 rm EnderecoShopware6Client/.gitignore
 rm EnderecoShopware6Client/.idea
-rm EnderecoShopware6Client/build.sh
+rm EnderecoShopware6Client/*.sh
+rm EnderecoShopware6Client/*.neon
+rm EnderecoShopware6Client/composer.lock
+rm EnderecoShopware6Client/check_imports.php
 rm EnderecoShopware6Client/docker-compose.yml
-rm EnderecoShopware6Client/endereco.js
+rm EnderecoShopware6Client/*.js
 rm EnderecoShopware6Client/endereco.scss
 rm EnderecoShopware6Client/package.json
 rm EnderecoShopware6Client/package-lock.json
