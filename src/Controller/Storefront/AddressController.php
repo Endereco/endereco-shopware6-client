@@ -97,7 +97,7 @@ class AddressController extends StorefrontController
 
         /** @var array<string, string> $shippingAddressAddress */
         $shippingAddressAddress = $requestInputBag->has('shippingAddress')
-            ? $requestInputBag->get('shippingAddress')
+            ? $requestInputBag->all('shippingAddress')
             : [];
 
         if (!empty($billingAddress)) {
