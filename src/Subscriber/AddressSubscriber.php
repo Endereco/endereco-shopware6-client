@@ -405,10 +405,21 @@ class AddressSubscriber implements EventSubscriberInterface
             // Fetch the form definition
             $definition = $event->getDefinition();
 
-            // If street splitting is enabled, add NotBlank validation rule
-            // to 'enderecoStreet' and 'enderecoHousenumber'
-            $definition->add('enderecoStreet', new NotBlank());
-            $definition->add('enderecoHousenumber', new NotBlank());
+            /* Check if 'pickwareDhlAddressRadioGroup' is present and 'regular'
+               to ensure compatibility with template changes by PickwareDhl */
+            if (
+                $event->getData()->has('pickwareDhlAddressRadioGroup') &&
+                $event->getData()->only('pickwareDhlAddressRadioGroup') !== 'regular'
+            ) {
+                // If street splitting is enabled, add NotBlank validation rule
+                // to 'enderecoStreet' and 'enderecoHousenumber'
+                $definition->add('enderecoStreet', new Optional());
+                $definition->add('enderecoHousenumber', new Optional());
+            } else {
+                // Disable required-validation in case of PickwareDhl functionality use
+                $definition->add('enderecoStreet', new NotBlank());
+                $definition->add('enderecoHousenumber', new NotBlank());
+            }
 
             // And set the 'street' field as optional since it is replaced in the frontend form
             $definition->set('street', new Optional());
