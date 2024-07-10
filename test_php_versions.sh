@@ -4,7 +4,7 @@
 versions=("7.4" "8.0" "8.1" "8.2" "8.3")
 
 # Find all PHP files in the current directory and subdirectories, excluding vendor, node_modules and shops folders
-php_files=$(find . -type f -name "*.php" ! -path "./vendor/*" ! -path "./node_modules/*" ! -path "./shops/*" )
+php_files=$(find . -type d \( -path './vendor' -o -path './node_modules' -o -path './shops' \) -prune -o -type f -name '*.php' -print)
 
 # Initialize a flag to track syntax errors
 syntax_error_found=0
