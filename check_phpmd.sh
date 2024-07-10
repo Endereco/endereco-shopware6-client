@@ -1,12 +1,23 @@
 #!/bin/bash
 
-# Find PHP files and run PHPMD, excluding certain paths
-OUTPUT=$(find . -type f -name '*.php' ! -path './vendor/*' ! -path './node_modules/*' ! -path './shops/*' -exec phpmd {} text unusedcode \;)
+error_found=0
 
-if [ -n "$OUTPUT" ]; then
-    echo "PHPMD reported issues:"
-    echo "$OUTPUT"
+files=$(find . -type d \( -path './vendor' -o -path './node_modules' -o -path './shops' \) -prune -o -type f -name '*.php' -print)
+
+for file in $files; do
+    echo "Checking $file"
+    output=$(vendor/bin/phpmd "$file" text unusedcode)
+    if [ -n "$output" ]; then
+        echo "$output"
+        error_found=1
+    fi
+done
+
+# Check if any errors were found
+if [ $error_found -eq 1 ]; then
+    echo "Errors found. Exiting with error code."
     exit 1
 else
-    echo "No issues found."
+    echo "No errors found. Exiting successfully."
+    exit 0
 fi
