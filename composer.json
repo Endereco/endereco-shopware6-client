@@ -52,7 +52,9 @@
         "phpcs": "phpcs --standard=PSR12 --ignore=vendor/*,shops/*,node_modules/* ./src/**/*.php",
         "phpstan": [
             "phpstan analyse -c phpstan.6.6.0.0.neon",
-            "phpstan analyse -c phpstan.6.6.1.2.neon"
+            "phpstan analyse -c phpstan.6.6.1.2.neon",
+            "phpstan analyse -c phpstan.6.6.3.1.neon",
+            "phpstan analyse -c phpstan.6.6.4.0.neon"
         ],
         "build-admin": "./build_admin.sh",
         "phpmd": "./check_phpmd.sh",
