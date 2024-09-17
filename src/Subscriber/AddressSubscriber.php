@@ -23,6 +23,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Optional;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 class AddressSubscriber implements EventSubscriberInterface
 {
@@ -35,8 +37,10 @@ class AddressSubscriber implements EventSubscriberInterface
     protected EntityRepository $countryStateRepository;
     protected RequestStack $requestStack;
 
-    /** @var CustomerAddressEntity[] $addressEntityCache */
-    private array $addressEntityCache = [];
+    /**
+     * @var CacheInterface
+     */
+    private CacheInterface $cache;
 
     public function __construct(
         SystemConfigService $systemConfigService,
@@ -46,7 +50,8 @@ class AddressSubscriber implements EventSubscriberInterface
         EntityRepository $enderecoAddressExtensionRepository,
         EntityRepository $countryRepository,
         EntityRepository $countryStateRepository,
-        RequestStack $requestStack
+        RequestStack $requestStack,
+        CacheInterface $cache
     ) {
         $this->enderecoService = $enderecoService;
         $this->systemConfigService = $systemConfigService;
@@ -56,6 +61,7 @@ class AddressSubscriber implements EventSubscriberInterface
         $this->countryRepository = $countryRepository;
         $this->countryStateRepository = $countryStateRepository;
         $this->requestStack = $requestStack;
+        $this->cache = $cache;
     }
 
     /**
@@ -148,8 +154,7 @@ class AddressSubscriber implements EventSubscriberInterface
 
             // IF the address has been processed already, we can be sure the database has all the information
             // So we just sync the entity with this information.
-            $processedEntityIds = array_keys($this->addressEntityCache);
-            if (in_array($entity->getId(), $processedEntityIds)) {
+            if ($this->getAddressEntityFromCache($entity->getId())) {
                 $this->syncAddressEntity($entity);
                 continue;
             }
@@ -263,15 +268,13 @@ class AddressSubscriber implements EventSubscriberInterface
      */
     public function syncAddressEntity(CustomerAddressEntity $addressEntity): void
     {
-        if (!array_key_exists($addressEntity->getId(), $this->addressEntityCache)) {
+        $cachedEntity = $this->getAddressEntityFromCache($addressEntity->getId());
+        if (!$cachedEntity) {
             return;
         }
 
-        /** @var CustomerAddressEntity $processedEntity */
-        $processedEntity = $this->addressEntityCache[$addressEntity->getId()];
-
         /** @var EnderecoAddressExtensionEntity $processedAddressExtension */
-        $processedAddressExtension = $processedEntity->getExtension('enderecoAddress');
+        $processedAddressExtension = $cachedEntity->getExtension('enderecoAddress');
 
         /** @var EnderecoAddressExtensionEntity|null $toAddressExtension */
         $toAddressExtension = $addressEntity->getExtension('enderecoAddress');
@@ -284,11 +287,11 @@ class AddressSubscriber implements EventSubscriberInterface
             $addressEntity->addExtension('enderecoAddress', $toAddressExtension);
         }
 
-        $addressEntity->setZipcode($processedEntity->get('zipcode'));
-        $addressEntity->setCity($processedEntity->get('city'));
-        $addressEntity->setStreet($processedEntity->get('street'));
-        if (!is_null($processedEntity->get('countryStateId'))) {
-            $addressEntity->setCountryStateId($processedEntity->get('countryStateId'));
+        $addressEntity->setZipcode($cachedEntity->get('zipcode'));
+        $addressEntity->setCity($cachedEntity->get('city'));
+        $addressEntity->setStreet($cachedEntity->get('street'));
+        if (!is_null($cachedEntity->get('countryStateId'))) {
+            $addressEntity->setCountryStateId($cachedEntity->get('countryStateId'));
         }
 
         $toAddressExtension->setStreet($processedAddressExtension->get('street'));
@@ -341,7 +344,7 @@ class AddressSubscriber implements EventSubscriberInterface
             $this->enderecoService->applyAddressCheckResult($addressCheckResult, $addressEntity, $context);
 
             // Cache the entity, in case others entities might need an update. We will just copy values from this one.
-            $this->addressEntityCache[$addressEntity->getId()] = $addressEntity;
+            $this->setAddressEntityToCache($addressEntity);
         }
     }
 
@@ -697,5 +700,40 @@ class AddressSubscriber implements EventSubscriberInterface
 
         // Compare the expected and current full street strings and return the result
         return $expectedFullStreet !== $currentFullStreet;
+    }
+
+    /**
+     * Retrieve the address entity from cache.
+     *
+     * @param string $addressId
+     * @return CustomerAddressEntity|null
+     *
+     */
+    public function getAddressEntityFromCache(string $addressId): ?CustomerAddressEntity
+    {
+        return $this->cache->get(
+            'address_entity_' . $addressId,
+            function () {
+                return null; // Return null if not found in cache
+            }
+        );
+    }
+
+    /**
+     * Cache the address entity for later use.
+     *
+     * @param CustomerAddressEntity $addressEntity
+     * @return void
+     *
+     */
+    public function setAddressEntityToCache(CustomerAddressEntity $addressEntity): void
+    {
+        $this->cache->get(
+            'address_entity_' . $addressEntity->getId(),
+            function (ItemInterface $item) use ($addressEntity) {
+                $item->expiresAfter(3600); // Cache for 1 hour
+                return $addressEntity;
+            }
+        );
     }
 }

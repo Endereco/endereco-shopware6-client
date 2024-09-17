@@ -66,6 +66,7 @@
             <argument type="service" id="country.repository"/>
             <argument type="service" id="country_state.repository"/>
             <argument type="service" id="request_stack"/>
+            <argument type="service" id="Symfony\Contracts\Cache\CacheInterface"/>
         </service>
     </services>
 </container>
