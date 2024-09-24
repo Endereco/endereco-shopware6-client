@@ -451,6 +451,21 @@
             <helpText lang="de-DE">Die PayPal Express Prüfung aktiviert die Validierung von Adressen für Kunden, die über PayPal Express eine Bestellung tätigen. Beim Rücksprung aus PayPal zum Shop wird bei einem Adressfehler ein Korrekturvorschlag angezeigt.</helpText>
             <defaultValue>false</defaultValue>
         </input-field>
+
+        <input-field type="bool">
+            <name>enderecoImportExportCheck</name>
+            <label>Enable address checks during customer import</label>
+            <label lang="de-DE">Adressprüfung beim Kundenimport durchführen</label>
+            <defaultValue>false</defaultValue>
+            <helpText>
+                If enabled, Endereco will perform address checks on customer addresses during import operations. 
+                This can help ensure data quality but may slow down the import process.
+            </helpText>
+            <helpText lang="de-DE">
+                Wenn aktiviert, führt Endereco während des Importvorgangs Adressprüfungen für Kundenadressen durch. 
+                Dies kann die Datenqualität verbessern, könnte aber den Importvorgang verlangsamen.
+            </helpText>
+        </input-field>
     </card>
 
     <card>
