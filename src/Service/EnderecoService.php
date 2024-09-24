@@ -765,6 +765,36 @@ class EnderecoService
     }
 
     /**
+     * Checks if the Import/Export Check feature is enabled for a given sales channel.
+     *
+     * This method determines whether the Import/Export Check feature of the Endereco plugin
+     * is active and ready to use for the specified sales channel. It checks two conditions:
+     * 1. If the Endereco plugin is active for the given sales channel.
+     * 2. If the Import/Export Check feature is enabled in the plugin settings for the given sales channel.
+     *
+     * Essentially its used to block validation (e.g. AddressCheck) for when user is importing a bunch of data.
+     *
+     * @param string $salesChannelId The ID of the sales channel to check.
+     *
+     * @return bool Returns true if the Import/Export Check feature is enabled and ready to use,
+     *              false otherwise.
+     */
+    public function isImportExportCheckFeatureEnabled(string $salesChannelId): bool
+    {
+        // Check if the Endereco plugin is active and ready to use for the given sales channel.
+        $pluginIsReadyToUse = $this->isEnderecoPluginActive($salesChannelId);
+
+        // Check if the street splitting feature is active in the settings for the given sales channel.
+        $featureIsActiveInSettings = $this->systemConfigService
+            ->getBool('EnderecoShopware6Client.config.enderecoImportExportCheck', $salesChannelId);
+
+        // The feature is active if both the plugin is ready to use and the feature is active in settings.
+        $featureIsActive = $pluginIsReadyToUse && $featureIsActiveInSettings;
+
+        return $featureIsActive;
+    }
+
+    /**
      * Checks whether the 'existing customer address check' feature is enabled.
      *
      * This method accepts a sales channel ID and checks two conditions:

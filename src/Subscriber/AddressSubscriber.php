@@ -23,6 +23,11 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Optional;
+use Shopware\Core\Content\ImportExport\Event\ImportExportBeforeImportRecordEvent;
+use Shopware\Core\Content\ImportExport\Event\ImportExportAfterImportRecordEvent;
+use Shopware\Core\Content\ImportExport\Event\ImportExportExceptionImportRecordEvent;
+use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityWrittenContainerEvent;
+use Shopware\Core\Checkout\Customer\CustomerDefinition;
 
 class AddressSubscriber implements EventSubscriberInterface
 {
@@ -37,6 +42,8 @@ class AddressSubscriber implements EventSubscriberInterface
 
     /** @var CustomerAddressEntity[] $addressEntityCache */
     private array $addressEntityCache = [];
+
+    private bool $isImport = false;
 
     public function __construct(
         SystemConfigService $systemConfigService,
@@ -103,13 +110,76 @@ class AddressSubscriber implements EventSubscriberInterface
             CustomerEvents::CUSTOMER_ADDRESS_WRITTEN_EVENT => ['closeStoredSessions']
         ];
 
+        // This two events are used to recognize a running import to optionaly deactivate checks.
+        $importExportEvents = [
+            ImportExportBeforeImportRecordEvent::class => ['onBeforeImportRecord'],
+            ImportExportAfterImportRecordEvent::class => ['onAfterImportRecord'],
+            ImportExportExceptionImportRecordEvent::class => ['onImportFailed'],
+        ];
+
         // Merge all the events into a single array and return
         return array_merge(
             $loadAddressEvents,
             $formValidationEvents,
             $beforeAddressWritingEvents,
-            $afterAddressWritingEvents
+            $afterAddressWritingEvents,
+            $importExportEvents
         );
+    }
+
+    /**
+     * Handles the event before an import record is processed.
+     *
+     * This method is triggered before each record is imported during an import process.
+     * It sets the internal `isImport` flag to true, indicating that an import operation
+     * is currently in progress. This flag can be used elsewhere in the class to modify
+     * behavior specific to import operations.
+     *
+     * @param ImportExportBeforeImportRecordEvent $event The event object containing information
+     *                                                   about the import process.
+     * @return void
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    public function onBeforeImportRecord(ImportExportBeforeImportRecordEvent $event): void
+    {
+        $this->isImport = true;
+    }
+
+    /**
+     * Handles the event after an import record has been processed.
+     *
+     * This method is triggered after each record has been imported during an import process.
+     * It resets the internal `isImport` flag to `false`, indicating the completion of the import operation
+     * for the current record.
+     *
+     * @param ImportExportAfterImportRecordEvent $event The event object containing the result of the import process.
+     *
+     * @return void
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    public function onAfterImportRecord(ImportExportAfterImportRecordEvent $event): void
+    {
+        $this->isImport = false;
+    }
+
+    /**
+     * Handles the event when an import record fails to process.
+     *
+     * This method is triggered when an exception occurs during the import of a record.
+     * It resets the internal `isImport` flag to `false`, indicating that the import operation
+     * for the current record has failed and any special handling for import operations should be turned off.
+     *
+     * @param ImportExportExceptionImportRecordEvent $event The event object containing information
+     *                                                      about the import exception.
+     * @return void
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    public function onImportFailed(ImportExportExceptionImportRecordEvent $event): void
+    {
+        $this->isImport = false;
     }
 
     /**
@@ -143,14 +213,29 @@ class AddressSubscriber implements EventSubscriberInterface
 
             $addressEntity = $entity;
 
-            // Ensure the address extension exists and the street is split
+            // If the entity doesnt have a corresponding entry in the database we skip the rest.
+            // TODO: refactor the logic, its messy and not quite clear. You have to differentiate between
+            // the event of generally loading the entity (to later persist it) and the case when entity is
+            // loaded from the database entry.
+            if (!$entity->getId()) {
+                continue;
+            }
+
+            // Ensure the address extension exists.
             $this->ensureAddressExtensionExists($addressEntity, $context);
 
-            // IF the address has been processed already, we can be sure the database has all the information
+            // If the address has been processed already, we can be sure the database has all the information
             // So we just sync the entity with this information.
             $processedEntityIds = array_keys($this->addressEntityCache);
             if (in_array($entity->getId(), $processedEntityIds)) {
                 $this->syncAddressEntity($entity);
+                continue;
+            }
+
+            // Early skip.
+            // TODO: this whole logic looks clumsy and should be refactored.
+            if (!$this->enderecoService->isImportExportCheckFeatureEnabled($salesChannelId) && $this->isImport) {
+                // Skip the rest.
                 continue;
             }
 
@@ -168,8 +253,17 @@ class AddressSubscriber implements EventSubscriberInterface
                 $this->enderecoService->isPayPalCheckoutAddressCheckFeatureEnabled($salesChannelId)
                 && $this->enderecoService->isAddressFromPayPal($addressEntity);
 
+            // Determine if check for freshly imported/updated through import customer address is required
+            $importFileCheckIsRelevant =
+                $this->enderecoService->isImportExportCheckFeatureEnabled($salesChannelId)
+                && $this->isImport;
+
             // If either check is required, ensure the address status is set
-            if ($existingCustomerCheckIsRelevant || $paypalExpressCheckoutCheckIsRelevant) {
+            if (
+                $existingCustomerCheckIsRelevant ||
+                $paypalExpressCheckoutCheckIsRelevant ||
+                $importFileCheckIsRelevant
+            ) {
                 $this->ensureAddressStatusIsSet($addressEntity, $context, $salesChannelId);
             }
         }
