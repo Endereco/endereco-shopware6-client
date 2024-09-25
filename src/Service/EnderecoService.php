@@ -349,7 +349,7 @@ class EnderecoService
             'Content-Type' => 'application/json',
             'X-Auth-Key' => $apiKey,
             'X-Transaction-Id' => $sessionId,
-            'X-Transaction-Referer' => $_SERVER['HTTP_REFERER'] ?: __FILE__,
+            'X-Transaction-Referer' => $_SERVER['HTTP_REFERER'] ?? __FILE__,
             'X-Agent' => $appName,
         ];
 
@@ -1147,7 +1147,7 @@ class EnderecoService
                 'Content-Type' => 'application/json',
                 'X-Auth-Key' => $apiKey,
                 'X-Transaction-Id' => 'not_required',
-                'X-Transaction-Referer' => $_SERVER['HTTP_REFERER'] ?: __FILE__,
+                'X-Transaction-Referer' => $_SERVER['HTTP_REFERER'] ?? __FILE__,
                 'X-Agent' => $appName,
             ];
 
