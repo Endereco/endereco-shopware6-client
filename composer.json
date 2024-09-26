@@ -54,7 +54,7 @@
             "phpstan analyse -c phpstan.6.5.5.2.neon",
             "phpstan analyse -c phpstan.6.5.6.1.neon",
             "phpstan analyse -c phpstan.6.5.7.4.neon",
-            "phpstan analyse -c phpstan.6.5.8.9.neon"
+            "phpstan analyse -c phpstan.6.5.8.13.neon"
         ],
         "phpmd": "./check_phpmd.sh",
         "phpcompat": "./test_php_versions.sh",
