@@ -85,12 +85,20 @@
         </service>
         <service alias="Endereco\Shopware6Client\Service\AddressCheck\SubdivisionCodeFetcher" id="Endereco\Shopware6Client\Service\AddressCheck\SubdivisionCodeFetcherInterface" />
 
+        <service id="Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcher" public="false"/>
+        <service alias="Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcher" id="Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcherInterface" />
+
         <service id="Endereco\Shopware6Client\Run\LoggerFactory"/>
 
         <service id="Endereco\Shopware6Client\Logger" class="Monolog\Logger">
             <factory service="Shopware\Core\Framework\Log\LoggerFactory" method="createRotating"/>
 
             <argument type="string">endereco_shopware6_client</argument>
+        </service>
+
+        <service id="Endereco\Shopware6Client\Subscriber\ConvertCartToOrderSubscriber">
+            <tag name="kernel.event_subscriber"/>
+            <argument type="service" id="Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcherInterface" />
         </service>
 
         <service id="Endereco\Shopware6Client\Subscriber\CustomerAddressSubscriber">
