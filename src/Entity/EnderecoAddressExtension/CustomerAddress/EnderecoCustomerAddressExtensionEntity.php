@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress;
 
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoBaseAddressExtensionEntity;
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionEntity;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 
@@ -45,5 +46,20 @@ class EnderecoCustomerAddressExtensionEntity extends EnderecoBaseAddressExtensio
         }
 
         $this->address = $address;
+    }
+
+    public function createOrderAddressExtension(string $orderAddressId): EnderecoOrderAddressExtensionEntity
+    {
+        $entity = new EnderecoOrderAddressExtensionEntity();
+        $entity->setAddressId($orderAddressId);
+        $entity->setAmsStatus($this->getAmsStatus());
+        $entity->setAmsTimestamp($this->getAmsTimestamp());
+        $entity->setAmsPredictions($this->getAmsPredictions());
+        $entity->setIsPayPalAddress($this->isPayPalAddress());
+        $entity->setIsAmazonPayAddress($this->isAmazonPayAddress());
+        $entity->setStreet($this->getStreet());
+        $entity->setHouseNumber($this->getHouseNumber());
+
+        return $entity;
     }
 }

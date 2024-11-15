@@ -46,4 +46,21 @@ class EnderecoOrderAddressExtensionEntity extends EnderecoBaseAddressExtensionEn
 
         $this->address = $address;
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function buildCartToOrderConversionData(): array
+    {
+        $data = $this->getVars();
+        unset($data['extensions']);
+        unset($data['_uniqueIdentifier']);
+        unset($data['versionId']);
+        unset($data['translated']);
+        unset($data['createdAt']);
+        unset($data['updatedAt']);
+        unset($data['address']);
+
+        return $data;
+    }
 }
