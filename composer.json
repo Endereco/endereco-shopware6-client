@@ -58,7 +58,8 @@
             "phpstan analyse -c phpstan.6.6.5.1.neon",
             "phpstan analyse -c phpstan.6.6.6.1.neon",
             "phpstan analyse -c phpstan.6.6.7.1.neon",
-            "phpstan analyse -c phpstan.6.6.8.2.neon"
+            "phpstan analyse -c phpstan.6.6.8.2.neon",
+            "phpstan analyse -c phpstan.6.6.9.0.neon"
         ],
         "build-admin": "./build_admin.sh",
         "phpmd": "./check_phpmd.sh",
