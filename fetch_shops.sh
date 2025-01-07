@@ -1,10 +1,15 @@
 #!/bin/bash
-
 # Define an array of versions
 versions=("6.5.0.0" "6.5.1.1" "6.5.2.1" "6.5.3.3" "6.5.4.1" "6.5.5.2" "6.5.6.1" "6.5.7.4" "6.5.8.15")
 
 # Loop through each version
 for version in "${versions[@]}"; do
+    # Check if directory already exists
+    if [ -d "./shops/$version" ]; then
+        echo "Skipping version $version - directory already exists"
+        continue
+    fi
+
     echo "Processing version $version..."
     
     # Define image name
@@ -15,9 +20,8 @@ for version in "${versions[@]}"; do
     
     # Start a temporary container
     container_id=$(docker run -d --rm "$image_name" tail -f /dev/null)
-
+    
     # Create target directory for shop files
-    rm -rf "./shops/$version"
     mkdir -p "./shops/$version"
     
     # Copy files from container to host
@@ -31,5 +35,4 @@ for version in "${versions[@]}"; do
     
     echo "Completed processing for version $version"
 done
-
 echo "All versions processed successfully."
