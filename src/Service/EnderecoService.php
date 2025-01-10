@@ -9,26 +9,24 @@ use Endereco\Shopware6Client\Misc\EnderecoConstants;
 use Endereco\Shopware6Client\Model\AddressCheckResult;
 use Endereco\Shopware6Client\Model\FailedAddressCheckResult;
 use Endereco\Shopware6Client\Model\SuccessfulAddressCheckResult;
+use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
+use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\RequestException;
+use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Framework\Api\Context\SalesChannelApiSource;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-use Shopware\Core\System\Country\CountryEntity;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
-use GuzzleHttp\Exception\RequestException;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
-use Psr\Log\LoggerInterface;
+use Shopware\Core\Framework\Plugin\PluginEntity as Plugin;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Throwable;
-use Symfony\Component\HttpFoundation\Session\Session;
-use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
-use Shopware\Core\System\Country\Aggregate\CountryState\CountryStateEntity;
-use Shopware\Core\Framework\Plugin\PluginEntity as Plugin;
 
 class EnderecoService
 {
@@ -36,11 +34,7 @@ class EnderecoService
 
     private EntityRepository $pluginRepository;
 
-    private EntityRepository $countryRepository;
-
     private EntityRepository $countryStateRepository;
-
-    private EntityRepository $salesChannelDomainRepository;
 
     private EntityRepository $customerAddressRepository;
 
@@ -50,25 +44,29 @@ class EnderecoService
 
     private ?SessionInterface $session;
 
+    private CountryCodeFetcherInterface $countryCodeFetcher;
+
+    private AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder;
+
     protected RequestStack $requestStack;
 
     public function __construct(
         SystemConfigService $systemConfigService,
         EntityRepository $pluginRepository,
-        EntityRepository $countryRepository,
         EntityRepository $countryStateRepository,
-        EntityRepository $salesChannelDomainRepository,
         EntityRepository $customerAddressRepository,
+        CountryCodeFetcherInterface $countryCodeFetcher,
+        AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder,
         RequestStack $requestStack,
         LoggerInterface $logger
     ) {
         $this->httpClient = new Client(['timeout' => 3.0, 'connection_timeout' => 2.0]);
         $this->systemConfigService = $systemConfigService;
         $this->pluginRepository = $pluginRepository;
-        $this->countryRepository = $countryRepository;
         $this->countryStateRepository = $countryStateRepository;
-        $this->salesChannelDomainRepository = $salesChannelDomainRepository;
         $this->customerAddressRepository = $customerAddressRepository;
+        $this->countryCodeFetcher = $countryCodeFetcher;
+        $this->addressCheckPayloadBuilder = $addressCheckPayloadBuilder;
         $this->requestStack = $requestStack;
 
         if (!is_null($requestStack->getMainRequest())) {
@@ -192,55 +190,6 @@ class EnderecoService
                 $this->logger->warning('Serverside doConversion failed', ['error' => $e->getMessage()]);
             }
         }
-    }
-
-    /**
-     * Fetches the locale from the sales channel domain associated with a given sales channel ID.
-     *
-     * This method constructs a new criteria object and adds a filter to match the provided sales channel ID.
-     * It then uses this criteria to search the sales channel domain repository. The first matching
-     * sales channel domain is retrieved, and the locale of its language is fetched.
-     *
-     * The final returned string is a 2-character locale code.
-     *
-     * @param Context $context The context which includes details of the event triggering this method.
-     * @param string $salesChannelId The ID of the sales channel whose locale is to be fetched.
-     *
-     * @return string The 2-character locale code associated with the sales channel.
-     *
-     * @throws \RuntimeException If the sales channel with the provided ID cannot be found.
-     */
-    public function getLocaleFromSalesChannelId(Context $context, string $salesChannelId): string
-    {
-        $criteria = (new Criteria())
-            ->addFilter(new EqualsFilter('salesChannelId', $salesChannelId))
-            ->addAssociation('language.locale');
-
-        if (!empty($context->getLanguageId())) {
-            $criteria->addFilter(new EqualsFilter('languageId', $context->getLanguageId()));
-        }
-
-        /** @var SalesChannelDomainEntity|null $salesChannelDomain */
-        $salesChannelDomain = $this->salesChannelDomainRepository->search($criteria, $context)->first();
-
-        if (!$salesChannelDomain) {
-            throw new \RuntimeException(sprintf('Sales channel with id %s not found', $salesChannelId));
-        }
-
-        // Get the locale code from the sales channel
-        $language = $salesChannelDomain->getLanguage();
-        if ($language === null) {
-            throw new \RuntimeException('Language entity is not available.');
-        }
-
-        $locale = $language->getLocale();
-        if ($locale === null) {
-            throw new \RuntimeException('Locale entity is not available.');
-        }
-
-        $localeCode = substr($locale->getCode(), 0, 2);
-
-        return $localeCode;
     }
 
     /**
@@ -406,56 +355,18 @@ class EnderecoService
             $sessionId
         );
 
-        // Prepare the payload
-        $payloadData = [];
-
-        // Set locale
-        try {
-            $lang = $this->getLocaleFromSalesChannelId($context, $salesChannelId);
-        } catch (\Exception $e) {
-            $lang = 'de'; // set "de" by default.
-        }
-        $payloadData['language'] = $lang;
-
-        // Set country
-        $countryId = $addressEntity->getCountryId();
-        $countryCode = $this->getCountryCodeById(
-            $countryId,
+        $payload = $this->addressCheckPayloadBuilder->buildAddressCheckPayload(
+            $salesChannelId,
+            $addressEntity,
             $context
         );
-        $payloadData['country'] = $countryCode;
-
-        // Set postal code
-        $payloadData['postCode'] = empty($addressEntity->getZipcode()) ? '' : $addressEntity->getZipcode();
-
-        // Set locality
-        $payloadData['cityName'] = $addressEntity->getCity();
-
-        // Set street.
-        $payloadData['streetFull'] = $addressEntity->getStreet();
-
-        // Set optional subdivisionCode
-        if (!is_null($addressEntity->getCountryStateId())) {
-            $subdivisionCode = $this->getSubdivisionCodeById(
-                $addressEntity->getCountryStateId(),
-                $context
-            );
-
-            if (!empty($subdivisionCode)) {
-                $payloadData['subdivisionCode'] = $subdivisionCode;
-            }
-        } elseif ($this->isCountryWithSubdivisionsById($countryId, $context)) {
-            // If a state was not assigned, but it would have been possible, check it.
-            // Maybe subdivision code must be enriched.
-            $payloadData['subdivisionCode'] = '';
-        }
 
         // Send the headers and payload to endereco api for valdiation.
         try {
             $payload = json_encode(
                 $this->preparePayload(
                     'addressCheck',
-                    $payloadData
+                    $payload->data()
                 )
             );
 
@@ -636,7 +547,11 @@ class EnderecoService
             $buildingNumber = $addressData['extensions']['enderecoAddress']['houseNumber'];
 
             // If country is unknown, use Germany as default
-            $countryCode = $this->getCountryCodeById($addressData['countryId'], $context, 'DE');
+            $countryCode = $this->countryCodeFetcher->fetchCountryCodeByCountryIdAndContext(
+                $addressData['countryId'],
+                $context,
+                'DE'
+            );
 
             // Construct full street.
             $fullStreet = $this->buildFullStreet(
@@ -652,7 +567,7 @@ class EnderecoService
             $fullStreet = $addressData['street'];
 
             // If country is unknown, use Germany as default
-            $countryCode = $this->getCountryCodeById(
+            $countryCode = $this->countryCodeFetcher->fetchCountryCodeByCountryIdAndContext(
                 $addressData['countryId'],
                 $context,
                 'DE'
@@ -675,7 +590,11 @@ class EnderecoService
                 $buildingNumber = $addressData['extensions']['enderecoAddress']['houseNumber'];
 
                 // If country is unknown, use Germany as default
-                $countryCode = $this->getCountryCodeById($addressData['countryId'], $context, 'DE');
+                $countryCode = $this->countryCodeFetcher->fetchCountryCodeByCountryIdAndContext(
+                    $addressData['countryId'],
+                    $context,
+                    'DE'
+                );
 
                 // Construct full street.
                 $fullStreet = $this->buildFullStreet(
@@ -691,7 +610,7 @@ class EnderecoService
                 $fullStreet = $addressData['street'];
 
                 // If country is unknown, use Germany as default
-                $countryCode = $this->getCountryCodeById(
+                $countryCode = $this->countryCodeFetcher->fetchCountryCodeByCountryIdAndContext(
                     $addressData['countryId'],
                     $context,
                     'DE'
@@ -984,92 +903,6 @@ class EnderecoService
             }
         }
         return array_keys($accountableSessionIds);
-    }
-
-    /**
-     * Retrieves the ISO code of a country by its ID. If the country is not found or
-     * the country ID is missing, a default country code is returned.
-     *
-     * @param string $countryId The ID of the country.
-     * @param Context $context The current context.
-     * @param string $defaultCountryCode The default country code to use if the country is not found.
-     *
-     * @return string Returns the country's ISO code, or the default country code if the country is not found.
-     */
-    public function getCountryCodeById(string $countryId, Context $context, string $defaultCountryCode = 'DE')
-    {
-        /** @var CountryEntity|null $country */
-        $country = $this->countryRepository->search(new Criteria([$countryId]), $context)->first();
-
-        // Check if the country was found
-        if ($country !== null) {
-            // If country is found, get the ISO code
-            $countryCode = $country->getIso() ?? $defaultCountryCode;
-        } else {
-            // If no country is found, default to the provided default country code
-            $countryCode = $defaultCountryCode;
-        }
-
-        return $countryCode;
-    }
-
-    /**
-     * Checks if a country, specified by its ID, has associated subdivisions (states).
-     *
-     * This method searches the country repository for a country that matches the provided ID.
-     * If the country is found, it checks if the country has any associated states.
-     * If the country has more than one associated state, it returns true, indicating that the
-     * country has subdivisions. If no states are associated or only one is present, it returns false.
-     *
-     * @param string $countryId The ID of the country to check for subdivisions.
-     * @param Context $context The context which includes details of the event triggering this method.
-     *
-     * @return bool True if the country has more than one subdivision, false otherwise.
-     */
-    public function isCountryWithSubdivisionsById(string $countryId, Context $context): bool
-    {
-        $criteria = new Criteria([$countryId]);
-        $criteria->addAssociation('states');
-
-        /** @var CountryEntity $country */
-        $country = $this->countryRepository->search($criteria, $context)->first();
-
-        // Check if the country was found and if it has more than one state
-        // If so, return true, indicating that the country has subdivisions
-        if (!is_null($country->getStates()) && $country->getStates()->count() > 1) {
-            return true;
-        }
-
-        // If the country is not found or does not have more than one state, return false
-        return false;
-    }
-
-    /**
-     * Fetches the ISO code of the subdivision (state) associated with a given subdivision ID.
-     *
-     * This method performs a search in the country state repository for a subdivision matching
-     * the provided ID. If a subdivision is found, its ISO code is retrieved, converted to uppercase,
-     * and returned. If no subdivision is found, an empty string is returned.
-     *
-     * @param string $subdivisionId The ID of the subdivision whose ISO code is to be fetched.
-     * @param Context $context The context which includes details of the event triggering this method.
-     *
-     * @return string The ISO code of the subdivision if found, or an empty string if not.
-     */
-    protected function getSubdivisionCodeById(string $subdivisionId, Context $context): string
-    {
-        /** @var CountryStateEntity|null $state */
-        $state = $this->countryStateRepository->search(new Criteria([$subdivisionId]), $context)->first();
-
-        // If a subdivision is found, get its ISO code and convert it to uppercase
-        // If no subdivision is found, default to an empty string
-        if ($state !== null) {
-            $stateCode = strtoupper($state->getShortCode());
-        } else {
-            $stateCode = '';
-        }
-
-        return $stateCode;
     }
 
     /**
