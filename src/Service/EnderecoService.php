@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Endereco\Shopware6Client\Service;
 
-use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoAddressExtensionEntity;
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
 use Endereco\Shopware6Client\Misc\EnderecoConstants;
 use Endereco\Shopware6Client\Model\AddressCheckResult;
 use Endereco\Shopware6Client\Model\FailedAddressCheckResult;
@@ -476,11 +476,11 @@ class EnderecoService
             $updatePayload['extensions']['enderecoAddress']['amsPredictions'] = [];
             $updatePayload['extensions']['enderecoAddress']['amsTimestamp'] = time();
 
-            /** @var EnderecoAddressExtensionEntity|null $addressExtension */
+            /** @var EnderecoCustomerAddressExtensionEntity|null $addressExtension */
             $addressExtension = $addressEntity->getExtension('enderecoAddress');
 
             if (is_null($addressExtension)) {
-                $addressExtension = new EnderecoAddressExtensionEntity();
+                $addressExtension = new EnderecoCustomerAddressExtensionEntity();
                 $addressEntity->addExtension('enderecoAddress', $addressExtension);
             }
 
@@ -500,10 +500,10 @@ class EnderecoService
             $updatePayload['extensions']['enderecoAddress']['amsPredictions'] = $addressCheckResult->getPredictions();
             $updatePayload['extensions']['enderecoAddress']['amsTimestamp'] = time();
 
-            /** @var EnderecoAddressExtensionEntity|null $addressExtension */
+            /** @var EnderecoCustomerAddressExtensionEntity|null $addressExtension */
             $addressExtension = $addressEntity->getExtension('enderecoAddress');
             if (is_null($addressExtension)) {
-                $addressExtension = new EnderecoAddressExtensionEntity();
+                $addressExtension = new EnderecoCustomerAddressExtensionEntity();
                 $addressEntity->addExtension('enderecoAddress', $addressExtension);
             }
 
@@ -795,7 +795,7 @@ class EnderecoService
      */
     public function isAddressFromRemote(CustomerAddressEntity $addressEntity): bool
     {
-        /** @var EnderecoAddressExtensionEntity $addressExtension */
+        /** @var EnderecoCustomerAddressExtensionEntity $addressExtension */
         $addressExtension = $addressEntity->getExtension('enderecoAddress');
 
         $isFromPayPal = $addressExtension->isPayPalAddress();
@@ -844,7 +844,7 @@ class EnderecoService
      */
     public function isAddressFromPayPal(CustomerAddressEntity $addressEntity): bool
     {
-        /** @var EnderecoAddressExtensionEntity $addressExtension */
+        /** @var EnderecoCustomerAddressExtensionEntity $addressExtension */
         $addressExtension = $addressEntity->getExtension('enderecoAddress');
 
         $isFromPayPal = $addressExtension->isPayPalAddress();
@@ -868,7 +868,7 @@ class EnderecoService
      */
     public function isAddressFromAmazonPay(CustomerAddressEntity $addressEntity): bool
     {
-        /** @var EnderecoAddressExtensionEntity $addressExtension */
+        /** @var EnderecoCustomerAddressExtensionEntity $addressExtension */
         $addressExtension = $addressEntity->getExtension('enderecoAddress');
 
         $isFromAmazonPay = $addressExtension->isAmazonPayAddress();
