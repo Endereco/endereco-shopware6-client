@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Endereco\Shopware6Client\Subscriber;
 
-use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoAddressExtensionEntity;
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoBaseAddressExtensionEntity;
 use Endereco\Shopware6Client\Model\FailedAddressCheckResult;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
@@ -30,7 +31,7 @@ use Shopware\Core\Content\ImportExport\Event\ImportExportExceptionImportRecordEv
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityWrittenContainerEvent;
 use Shopware\Core\Checkout\Customer\CustomerDefinition;
 
-class AddressSubscriber implements EventSubscriberInterface
+class CustomerAddressSubscriber implements EventSubscriberInterface
 {
     protected SystemConfigService $systemConfigService;
     protected EnderecoService $enderecoService;
@@ -302,7 +303,7 @@ class AddressSubscriber implements EventSubscriberInterface
         $customerCustomFields = $customer->getCustomFields();
         $isPaypalAddress = isset($customerCustomFields['payPalExpressPayerId']);
 
-        /** @var EnderecoAddressExtensionEntity $enderecoAddressExtension */
+        /** @var EnderecoCustomerAddressExtensionEntity $enderecoAddressExtension */
         $enderecoAddressExtension = $addressEntity->getExtension('enderecoAddress');
 
         // If it doesn't exist, create a new one with default values
@@ -339,7 +340,7 @@ class AddressSubscriber implements EventSubscriberInterface
         $customerCustomFields = $customer->getCustomFields();
         $isAmazonPayAddress = isset($customerCustomFields['swag_amazon_pay_account_id']);
 
-        /** @var EnderecoAddressExtensionEntity $enderecoAddressExtension */
+        /** @var EnderecoCustomerAddressExtensionEntity $enderecoAddressExtension */
         $enderecoAddressExtension = $addressEntity->getExtension('enderecoAddress');
 
         // If it doesn't exist, create a new one with default values
@@ -369,15 +370,15 @@ class AddressSubscriber implements EventSubscriberInterface
         /** @var CustomerAddressEntity $processedEntity */
         $processedEntity = $this->addressEntityCache[$addressEntity->getId()];
 
-        /** @var EnderecoAddressExtensionEntity $processedAddressExtension */
+        /** @var EnderecoCustomerAddressExtensionEntity $processedAddressExtension */
         $processedAddressExtension = $processedEntity->getExtension('enderecoAddress');
 
-        /** @var EnderecoAddressExtensionEntity|null $toAddressExtension */
+        /** @var EnderecoCustomerAddressExtensionEntity|null $toAddressExtension */
         $toAddressExtension = $addressEntity->getExtension('enderecoAddress');
 
         if (is_null($toAddressExtension)) {
             // Create a new extension.
-            $toAddressExtension = new EnderecoAddressExtensionEntity();
+            $toAddressExtension = new EnderecoCustomerAddressExtensionEntity();
 
             // Add the new extension to the address entity.
             $addressEntity->addExtension('enderecoAddress', $toAddressExtension);
@@ -419,7 +420,7 @@ class AddressSubscriber implements EventSubscriberInterface
         Context $context,
         string $salesChannelId
     ): void {
-        /** @var EnderecoAddressExtensionEntity $addressExtension */
+        /** @var EnderecoCustomerAddressExtensionEntity $addressExtension */
         $addressExtension = $addressEntity->getExtension('enderecoAddress');
 
         if ($this->isNewStatusNeededForAddressExtension($addressExtension)) {
@@ -455,17 +456,17 @@ class AddressSubscriber implements EventSubscriberInterface
      * check is needed. If the current status is neither empty nor the default value, the method returns false,
      * indicating that no new status check is required.
      *
-     * @param EnderecoAddressExtensionEntity $addressExtension The Endereco address extension entity for which to
-     *                                                         determine the need for a new AMS status check.
+     * @param EnderecoCustomerAddressExtensionEntity $addressExtension The Endereco address extension entity for which
+     *                                                         to determine the need for a new AMS status check.
      *
      * @return bool Returns true if a new AMS status check is needed, false otherwise.
      */
-    public function isNewStatusNeededForAddressExtension(EnderecoAddressExtensionEntity $addressExtension): bool
+    public function isNewStatusNeededForAddressExtension(EnderecoCustomerAddressExtensionEntity $addressExtension): bool
     {
         $currentStatus = $addressExtension->getAmsStatus();
 
         $isEmpty = empty($currentStatus);
-        $hasDefaultValue =  ($currentStatus === EnderecoAddressExtensionEntity::AMS_STATUS_NOT_CHECKED);
+        $hasDefaultValue =  ($currentStatus === EnderecoBaseAddressExtensionEntity::AMS_STATUS_NOT_CHECKED);
 
         $isCheckNeeded = $isEmpty || $hasDefaultValue;
 
@@ -583,7 +584,7 @@ class AddressSubscriber implements EventSubscriberInterface
             'enderecoAddress' => [
                 'street' => $input->get('enderecoStreet', ''),
                 'houseNumber' => $input->get('enderecoHousenumber', ''),
-                'amsStatus' => $input->get('amsStatus') ?? EnderecoAddressExtensionEntity::AMS_STATUS_NOT_CHECKED,
+                'amsStatus' => $input->get('amsStatus') ?? EnderecoBaseAddressExtensionEntity::AMS_STATUS_NOT_CHECKED,
                 'amsTimestamp' => (int) $input->get('amsTimestamp', 0),
                 'amsPredictions' => $predictions,
                 'isPayPalAddress' => false // We will calculate it later.
@@ -686,12 +687,12 @@ class AddressSubscriber implements EventSubscriberInterface
             // If it doesn't exist, create a new one with default values
             $this->enderecoAddressExtensionRepository->upsert([[
                 'addressId' => $addressEntity->getId(),
-                'amsStatus' => EnderecoAddressExtensionEntity::AMS_STATUS_NOT_CHECKED,
+                'amsStatus' => EnderecoBaseAddressExtensionEntity::AMS_STATUS_NOT_CHECKED,
                 'amsPredictions' => []
             ]], $context);
 
             // Add the new extension to the address entity
-            $addressEntity->addExtension('enderecoAddress', new EnderecoAddressExtensionEntity());
+            $addressEntity->addExtension('enderecoAddress', new EnderecoCustomerAddressExtensionEntity());
         }
     }
 
@@ -721,7 +722,7 @@ class AddressSubscriber implements EventSubscriberInterface
         Context $context,
         string $salesChannelId
     ): void {
-        /** @var EnderecoAddressExtensionEntity $addressExtension */
+        /** @var EnderecoCustomerAddressExtensionEntity $addressExtension */
         $addressExtension = $addressEntity->getExtension('enderecoAddress');
 
         $fullStreet = $addressEntity->getStreet();
@@ -773,15 +774,15 @@ class AddressSubscriber implements EventSubscriberInterface
      *
      * @param CustomerAddressEntity $addressEntity The address entity for which to determine the need for street
      *                                             splitting.
-     * @param EnderecoAddressExtensionEntity $addressExtension The corresponding Endereco address extension for the
-     *                                                         address entity.
+     * @param EnderecoCustomerAddressExtensionEntity $addressExtension The corresponding Endereco address extension
+     *                                                         for the address entity.
      * @param Context $context The context of the current execution.
      *
      * @return bool Returns true if street splitting is needed, false otherwise.
      */
     public function isStreetSplitNeeded(
         CustomerAddressEntity $addressEntity,
-        EnderecoAddressExtensionEntity $addressExtension,
+        EnderecoCustomerAddressExtensionEntity $addressExtension,
         Context $context
     ): bool {
         // Construct the expected full street string

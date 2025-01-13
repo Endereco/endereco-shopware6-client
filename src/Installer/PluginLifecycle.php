@@ -6,7 +6,8 @@ namespace Endereco\Shopware6Client\Installer;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
-use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoAddressExtensionDefinition;
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionDefinition;
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionDefinition;
 use RuntimeException;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -60,7 +61,8 @@ class PluginLifecycle
 
         // The tables to be dropped during uninstallation
         $dropTables = [
-            EnderecoAddressExtensionDefinition::ENTITY_NAME
+            EnderecoCustomerAddressExtensionDefinition::ENTITY_NAME,
+            EnderecoOrderAddressExtensionDefinition::ENTITY_NAME
         ];
 
         /** @var Connection $conn The database connection */

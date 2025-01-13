@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Endereco\Shopware6Client\Entity\EnderecoAddressExtension;
 
-use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 
 /**
@@ -16,7 +15,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Entity;
  * This class provides a custom entity to manage extensions for the Address object in the context
  * of the Endereco plugin.
  */
-class EnderecoAddressExtensionEntity extends Entity
+abstract class EnderecoBaseAddressExtensionEntity extends Entity
 {
     public const AMS_STATUS_NOT_CHECKED = 'not-checked';
     public const AMS_STATUS_MINOR_CORRECTION = 'address_minor_correction';
@@ -55,9 +54,6 @@ class EnderecoAddressExtensionEntity extends Entity
 
     /** @var string The house number part of the address. */
     protected string $houseNumber = '';
-
-    /** @var ?CustomerAddressEntity The associated address entity. */
-    protected ?CustomerAddressEntity $address = null;
 
     /**
      * Get address ID.
@@ -222,22 +218,16 @@ class EnderecoAddressExtensionEntity extends Entity
     /**
      * Get the associated address entity.
      *
-     * @return CustomerAddressEntity|null The associated address entity, or null if none is set.
+     * @return Entity|null The associated address entity, or null if none is set.
      */
-    public function getAddress(): ?CustomerAddressEntity
-    {
-        return $this->address;
-    }
+    abstract public function getAddress(): ?Entity;
 
     /**
      * Set the associated address entity.
      *
-     * @param CustomerAddressEntity|null $address The associated address entity to set.
+     * @param Entity|null $address The associated address entity to set.
      */
-    public function setAddress(?CustomerAddressEntity $address): void
-    {
-        $this->address = $address;
-    }
+    abstract public function setAddress(?Entity $address): void;
 
     /**
      * Check if the address has been checked by the AMS.

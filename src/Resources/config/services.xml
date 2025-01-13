@@ -4,11 +4,19 @@
 
     <services>
         <!-- Entity definitions -->
-        <service id="Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoAddressExtensionDefinition">
+        <service id="Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionDefinition">
             <tag name="shopware.entity.definition"/>
         </service>
 
         <service id="Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension">
+            <tag name="shopware.entity.extension"/>
+        </service>
+
+        <service id="Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionDefinition">
+            <tag name="shopware.entity.definition"/>
+        </service>
+
+        <service id="Endereco\Shopware6Client\Entity\OrderAddress\OrderAddressExtension">
             <tag name="shopware.entity.extension"/>
         </service>
 
@@ -84,13 +92,13 @@
             <argument type="string">endereco_shopware6_client</argument>
         </service>
 
-        <service id="Endereco\Shopware6Client\Subscriber\AddressSubscriber">
+        <service id="Endereco\Shopware6Client\Subscriber\CustomerAddressSubscriber">
             <tag name="kernel.event_subscriber"/>
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="Endereco\Shopware6Client\Service\EnderecoService" />
             <argument type="service" id="customer.repository"/>
             <argument type="service" id="customer_address.repository"/>
-            <argument type="service" id="endereco_address_ext.repository"/>
+            <argument type="service" id="endereco_customer_address_ext_gh.repository"/>
             <argument type="service" id="country.repository"/>
             <argument type="service" id="country_state.repository"/>
             <argument type="service" id="Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface" />
