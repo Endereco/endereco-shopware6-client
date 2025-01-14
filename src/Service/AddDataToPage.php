@@ -13,6 +13,7 @@ use Shopware\Core\System\Country\CountryEntity;
 use Shopware\Core\System\Country\Aggregate\CountryState\CountryStateEntity;
 use Shopware\Core\System\Salutation\SalutationEntity;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 
 class AddDataToPage implements EventSubscriberInterface
 {
@@ -421,8 +422,10 @@ class AddDataToPage implements EventSubscriberInterface
             $this->systemConfigService
                 ->get('EnderecoShopware6Client.config.enderecoCheckPayPalExpressAddress', $salesChannelId);
 
+        $criteria = (new Criteria())->addFilter(new EqualsFilter('active', 1));
+
         /** @var EntitySearchResult $countries */
-        $countries = $this->countryRepository->search(new Criteria(), $context);
+        $countries = $this->countryRepository->search($criteria, $context);
         $mapping = [];
         $mappingReverse = [];
         $codeToNameMapping = [];
@@ -443,8 +446,10 @@ class AddDataToPage implements EventSubscriberInterface
         $configContainer->countryMapping = $this->createSafeJsonString($mapping);
         $configContainer->countryMappingReverse = $this->createSafeJsonString($mappingReverse);
 
+        $criteria = (new Criteria())->addFilter(new EqualsFilter('active', 1));
+
         /** @var EntitySearchResult $states */
-        $states = $this->stateRepository->search(new Criteria(), $context);
+        $states = $this->stateRepository->search($criteria, $context);
         $statesMapping = [];
         $statesMappingReverse = [];
         $statesCodeToNameMapping = [];
