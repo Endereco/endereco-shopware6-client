@@ -784,7 +784,7 @@ class EnderecoService
         // Check if the Endereco plugin is active and ready to use for the given sales channel.
         $pluginIsReadyToUse = $this->isEnderecoPluginActive($salesChannelId);
 
-        // Check if the street splitting feature is active in the settings for the given sales channel.
+        // Check if the addresses of imported customers should be validated.
         $featureIsActiveInSettings = $this->systemConfigService
             ->getBool('EnderecoShopware6Client.config.enderecoImportExportCheck', $salesChannelId);
 
