@@ -110,7 +110,7 @@ class AddressSubscriber implements EventSubscriberInterface
             CustomerEvents::CUSTOMER_ADDRESS_WRITTEN_EVENT => ['closeStoredSessions']
         ];
 
-        // This two events are used to recognize a running import to optionaly deactivate checks.
+        // These three events are used to recognize a running import to optionally deactivate checks.
         $importExportEvents = [
             ImportExportBeforeImportRecordEvent::class => ['onBeforeImportRecord'],
             ImportExportAfterImportRecordEvent::class => ['onAfterImportRecord'],
