@@ -9,14 +9,18 @@ use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 
 /**
- * Class EnderecoCustomerAddressExtensionEntity.
+ * Class EnderecoOrderAddressExtensionEntity
  *
- * @author Michal Daniel
- * @author Ilja Weber
- * @author Martin Bens
+ * Represents an extension entity for order addresses in the Endereco address verification system.
+ * Provides functionality for managing address verification data and status for order addresses.
  *
- * This class provides a custom entity to manage extensions for the Order Address object in the context
- * of the Endereco plugin.
+ * Features:
+ * - Manages address verification status and metadata
+ * - Handles relationships with Shopware order addresses
+ * - Provides data conversion methods for cart and order processes
+ *
+ * @package Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress
+ * @property-read OrderAddressEntity|null $address Associated order address entity
  */
 class EnderecoOrderAddressExtensionEntity extends EnderecoBaseAddressExtensionEntity
 {
@@ -24,9 +28,9 @@ class EnderecoOrderAddressExtensionEntity extends EnderecoBaseAddressExtensionEn
     protected ?OrderAddressEntity $address = null;
 
     /**
-     * Get the associated order address entity.
+     * Gets the associated order address entity.
      *
-     * @return OrderAddressEntity|null The associated order address entity, or null if none is set.
+     * @return OrderAddressEntity|null The associated order address entity or null if not set
      */
     public function getAddress(): ?OrderAddressEntity
     {
@@ -34,9 +38,11 @@ class EnderecoOrderAddressExtensionEntity extends EnderecoBaseAddressExtensionEn
     }
 
     /**
-     * Set the associated order address entity.
+     * Sets the associated order address entity.
+     * Validates that the provided entity is of the correct type.
      *
-     * @param OrderAddressEntity|null $address The associated order address entity to set.
+     * @param OrderAddressEntity|null $address The order address entity to associate
+     * @throws \InvalidArgumentException If the provided address is not an OrderAddressEntity
      */
     public function setAddress(?Entity $address): void
     {
@@ -48,7 +54,10 @@ class EnderecoOrderAddressExtensionEntity extends EnderecoBaseAddressExtensionEn
     }
 
     /**
-     * @return array<string, mixed>
+     * Builds data array for cart to order conversion.
+     * Prepares entity data for use in order creation process.
+     *
+     * @return array<string, mixed> Array of entity data with system fields removed
      */
     public function buildCartToOrderConversionData(): array
     {
@@ -62,5 +71,17 @@ class EnderecoOrderAddressExtensionEntity extends EnderecoBaseAddressExtensionEn
         unset($data['address']);
 
         return $data;
+    }
+
+    /**
+     * Builds data array for order custom fields.
+     * Currently returns the same data as buildCartToOrderConversionData().
+     *
+     * @return array<string, mixed> Array of data for order custom fields
+     */
+    public function buildDataForOrderCustomField(): array
+    {
+        // The required data is currently the same. This might change in the future.
+        return $this->buildCartToOrderConversionData();
     }
 }

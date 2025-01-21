@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionDefinition;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionDefinition;
+use Endereco\Shopware6Client\Struct\OrderCustomFields;
 use RuntimeException;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -65,12 +66,25 @@ class PluginLifecycle
             EnderecoOrderAddressExtensionDefinition::ENTITY_NAME
         ];
 
-        /** @var Connection $conn The database connection */
         $conn = $this->getConnection();
 
         // Drop each of the specified tables
         foreach ($dropTables as $dropTable) {
             $conn->executeStatement(sprintf('DROP TABLE IF EXISTS %s', $dropTable));
+        }
+
+        // The custom fields to be dropped from the `Order` entity during uninstallation
+        $dropOrderCustomFields = OrderCustomFields::FIELDS;
+
+        // Drop each of the specified custom fields in the order table
+        foreach ($dropOrderCustomFields as $dropOrderCustomField) {
+            $jsonPathExpression = sprintf('$."%s"', $dropOrderCustomField);
+            $conn->executeStatement(
+                sprintf(
+                    'UPDATE `order` SET `custom_fields` = JSON_REMOVE(`custom_fields`, \'%s\')',
+                    $jsonPathExpression
+                )
+            );
         }
     }
 

@@ -65,6 +65,11 @@
         </service>
         <service alias="Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilder" id="Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface" />
 
+        <service id="Endereco\Shopware6Client\Service\BySystemConfigFilter" public="false">
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+        </service>
+        <service alias="Endereco\Shopware6Client\Service\BySystemConfigFilter" id="Endereco\Shopware6Client\Service\BySystemConfigFilterInterface" />
+
         <service id="Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcher" public="false">
             <argument type="service" id="country.repository"/>
         </service>
@@ -87,6 +92,16 @@
 
         <service id="Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcher" public="false"/>
         <service alias="Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcher" id="Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcherInterface" />
+
+        <service id="Endereco\Shopware6Client\Service\OrderCustomFieldsBuilder" public="false" />
+        <service alias="Endereco\Shopware6Client\Service\OrderCustomFieldsBuilder" id="Endereco\Shopware6Client\Service\OrderCustomFieldsBuilderInterface" />
+
+        <service id="Endereco\Shopware6Client\Service\OrdersCustomFieldsUpdater" public="false">
+            <argument type="service" id="order.repository" />
+            <argument type="service" id="Endereco\Shopware6Client\Service\OrderCustomFieldsBuilderInterface" />
+            <argument type="service" id="Shopware\Core\Framework\Api\Sync\SyncService"/>
+        </service>
+        <service alias="Endereco\Shopware6Client\Service\OrdersCustomFieldsUpdater" id="Endereco\Shopware6Client\Service\OrdersCustomFieldsUpdaterInterface" />
 
         <service id="Endereco\Shopware6Client\Run\LoggerFactory"/>
 
@@ -111,6 +126,13 @@
             <argument type="service" id="country_state.repository"/>
             <argument type="service" id="Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface" />
             <argument type="service" id="request_stack"/>
+        </service>
+
+        <service id="Endereco\Shopware6Client\Subscriber\OrderAddressExtensionWrittenSubscriber">
+            <tag name="kernel.event_subscriber"/>
+            <argument type="service" id="order_address.repository" />
+            <argument type="service" id="Endereco\Shopware6Client\Service\BySystemConfigFilterInterface" />
+            <argument type="service" id="Endereco\Shopware6Client\Service\OrdersCustomFieldsUpdaterInterface" />
         </service>
     </services>
 </container>
