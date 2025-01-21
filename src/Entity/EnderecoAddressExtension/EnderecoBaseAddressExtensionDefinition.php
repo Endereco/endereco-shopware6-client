@@ -31,7 +31,7 @@ abstract class EnderecoBaseAddressExtensionDefinition extends EntityDefinition
      *
      * @return FieldCollection The collection of fields for the entity.
      */
-    final protected function defineFields(): FieldCollection
+    protected function defineFields(): FieldCollection
     {
         return new FieldCollection([
             // The primary key field linked to the address.
