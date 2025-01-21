@@ -43,11 +43,23 @@ class EnderecoCustomerAddressExtensionDefinition extends EnderecoBaseAddressExte
         return EnderecoCustomerAddressExtensionEntity::class;
     }
 
+    /**
+     * Creates the foreign key field that links this extension to a customer address.
+     * Implements the abstract method from the base definition.
+     *
+     * @return FkField The configured foreign key field for customer address association
+     */
     protected function addressAssociationForeignKeyField(): FkField
     {
         return new FkField('address_id', 'addressId', CustomerAddressDefinition::class);
     }
 
+    /**
+     * Creates the one-to-one association field with the customer address.
+     * Implements the abstract method from the base definition.
+     *
+     * @return OneToOneAssociationField The configured one-to-one association field
+     */
     protected function addressAssociationField(): OneToOneAssociationField
     {
         return new OneToOneAssociationField('address', 'address_id', 'id', CustomerAddressDefinition::class, false);
