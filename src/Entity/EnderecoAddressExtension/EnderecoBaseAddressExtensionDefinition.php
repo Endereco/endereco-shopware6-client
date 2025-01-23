@@ -37,6 +37,9 @@ abstract class EnderecoBaseAddressExtensionDefinition extends EntityDefinition
             // The primary key field linked to the address.
             $this->addressAssociationForeignKeyField()->addFlags(new Required(), new PrimaryKey()),
 
+            // A field that contains a JSON array of predictions for possible address corrections.
+            (new JsonField('ams_request_payload', 'amsRequestPayload')),
+
             // A field that saves a list of status codes that describe the current address.
             (new LongTextField('ams_status', 'amsStatus')),
 

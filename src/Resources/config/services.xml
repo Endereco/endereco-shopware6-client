@@ -57,6 +57,15 @@
             <tag name="kernel.event_subscriber" />
         </service>
 
+        <service id="Endereco\Shopware6Client\Service\AddressesExtensionAmsRequestPayloadUpdater">
+            <argument type="service" id="customer_address.repository"/>
+            <argument type="service" id="order_address.repository"/>
+            <argument type="service" id="Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface"/>
+            <argument type="service" id="endereco_customer_address_ext_gh.repository"/>
+            <argument type="service" id="endereco_order_address_ext_gh.repository"/>
+        </service>
+        <service alias="Endereco\Shopware6Client\Service\AddressesExtensionAmsRequestPayloadUpdater" id="Endereco\Shopware6Client\Service\AddressesExtensionAmsRequestPayloadUpdaterInterface"/>
+
         <service id="Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilder" public="false">
             <argument type="service" id="Endereco\Shopware6Client\Service\AddressCheck\LocaleFetcherInterface"/>
             <argument type="service" id="Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface"/>
@@ -109,6 +118,11 @@
             <factory service="Shopware\Core\Framework\Log\LoggerFactory" method="createRotating"/>
 
             <argument type="string">endereco_shopware6_client</argument>
+        </service>
+
+        <service id="Endereco\Shopware6Client\Subscriber\AddressExtensionWrittenSubscriber">
+            <tag name="kernel.event_subscriber"/>
+            <argument type="service" id="Endereco\Shopware6Client\Service\AddressesExtensionAmsRequestPayloadUpdaterInterface" />
         </service>
 
         <service id="Endereco\Shopware6Client\Subscriber\ConvertCartToOrderSubscriber">
