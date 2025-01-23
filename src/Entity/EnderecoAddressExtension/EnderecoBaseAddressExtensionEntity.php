@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Endereco\Shopware6Client\Entity\EnderecoAddressExtension;
 
+use Endereco\Shopware6Client\Model\AddressCheckData;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 
 /**
@@ -14,6 +15,8 @@ use Shopware\Core\Framework\DataAbstractionLayer\Entity;
  *
  * This class provides a custom entity to manage extensions for the Address object in the context
  * of the Endereco plugin.
+ *
+ * @phpstan-import-type AddressCheckDataData from AddressCheckData
  */
 abstract class EnderecoBaseAddressExtensionEntity extends Entity
 {
@@ -33,6 +36,9 @@ abstract class EnderecoBaseAddressExtensionEntity extends Entity
 
     /** @var string The ID of the associated address. */
     protected string $addressId;
+
+    /** @var ?AddressCheckDataData The request payload that was sent to verify the address. */
+    protected ?array $amsRequestPayload;
 
     /** @var string The status of the AMS (Address Management System) check. */
     protected string $amsStatus = self::AMS_STATUS_NOT_CHECKED;
@@ -73,6 +79,26 @@ abstract class EnderecoBaseAddressExtensionEntity extends Entity
     public function setAddressId(string $addressId): void
     {
         $this->addressId = $addressId;
+    }
+
+    /**
+     * Get the request payload that was sent to verify the address.
+     *
+     * @return ?AddressCheckDataData The request payload that was sent to verify the address
+     */
+    public function getAmsRequestPayload(): ?array
+    {
+        return $this->amsRequestPayload;
+    }
+
+    /**
+     * Set the request payload that was sent to verify the address.
+     *
+     * @param ?AddressCheckDataData $amsRequestPayload The request payload that was sent to verify the address.
+     */
+    public function setAmsRequestPayload(?array $amsRequestPayload): void
+    {
+        $this->amsRequestPayload = $amsRequestPayload;
     }
 
     /**
