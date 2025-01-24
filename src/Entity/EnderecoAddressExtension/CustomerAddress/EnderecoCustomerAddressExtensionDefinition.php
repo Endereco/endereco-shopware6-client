@@ -9,18 +9,9 @@ use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressDef
 use Shopware\Core\Framework\DataAbstractionLayer\Field\FkField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToOneAssociationField;
 
-/**
- * Class EnderecoAddressExtensionDefinition
- *
- * Entity definition for Endereco Address Extension.
- *
- * @package Endereco\Shopware6Client\Entity\EnderecoAddressExtension
- */
 class EnderecoCustomerAddressExtensionDefinition extends EnderecoBaseAddressExtensionDefinition
 {
-    /**
-     * The entity name constant.
-     */
+    /** Entity name in database */
     public const ENTITY_NAME = 'endereco_customer_address_ext_gh';
 
     /**
@@ -44,10 +35,9 @@ class EnderecoCustomerAddressExtensionDefinition extends EnderecoBaseAddressExte
     }
 
     /**
-     * Creates the foreign key field that links this extension to a customer address.
-     * Implements the abstract method from the base definition.
+     * Creates FK field linking to customer address
      *
-     * @return FkField The configured foreign key field for customer address association
+     * @return FkField The foreign key field
      */
     protected function addressAssociationForeignKeyField(): FkField
     {
@@ -55,10 +45,9 @@ class EnderecoCustomerAddressExtensionDefinition extends EnderecoBaseAddressExte
     }
 
     /**
-     * Creates the one-to-one association field with the customer address.
-     * Implements the abstract method from the base definition.
+     * Creates one-to-one association with customer address
      *
-     * @return OneToOneAssociationField The configured one-to-one association field
+     * @return OneToOneAssociationField The association field
      */
     protected function addressAssociationField(): OneToOneAssociationField
     {

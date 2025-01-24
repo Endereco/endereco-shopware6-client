@@ -14,6 +14,7 @@ use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\DirectoryLoader;
 use Symfony\Component\DependencyInjection\Loader\GlobFileLoader;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 /**
@@ -32,6 +33,7 @@ class EnderecoShopware6Client extends Plugin
         $locator = new FileLocator('Resources/config');
 
         $resolver = new LoaderResolver([
+            new PhpFileLoader($container, $locator),
             new YamlFileLoader($container, $locator),
             new GlobFileLoader($container, $locator),
             new DirectoryLoader($container, $locator),

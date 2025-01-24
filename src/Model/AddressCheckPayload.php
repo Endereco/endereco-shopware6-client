@@ -6,7 +6,6 @@ namespace Endereco\Shopware6Client\Model;
  * Represents a structured payload for address validation requests to the Endereco API.
  *
  * This class encapsulates all necessary address components required for validation:
- * - Language for localized responses
  * - Country code
  * - Postal/ZIP code
  * - City name
@@ -20,11 +19,6 @@ namespace Endereco\Shopware6Client\Model;
  */
 class AddressCheckPayload
 {
-    /**
-     * The language code for API responses (e.g., 'de' for German)
-     */
-    private string $language;
-
     /**
      * The country code (ISO format) for the address
      */
@@ -56,7 +50,6 @@ class AddressCheckPayload
     /**
      * Creates a new address check payload with all required components.
      *
-     * @param string $language The language code for API responses
      * @param string $country The country code in ISO format
      * @param string $postCode The postal/ZIP code
      * @param string $cityName The city name
@@ -64,14 +57,12 @@ class AddressCheckPayload
      * @param string|null $subdivisionCode The state/province code or null/empty string based on availability
      */
     public function __construct(
-        string $language,
         string $country,
         string $postCode,
         string $cityName,
         string $streetFull,
         ?string $subdivisionCode
     ) {
-        $this->language = $language;
         $this->country = $country;
         $this->postCode = $postCode;
         $this->cityName = $cityName;
@@ -87,7 +78,6 @@ class AddressCheckPayload
      * scenarios.
      *
      * @return array{
-     *     language: string,
      *     country: string,
      *     postCode: string,
      *     cityName: string,
@@ -98,7 +88,6 @@ class AddressCheckPayload
     public function data(): array
     {
         $data = [
-            'language' => $this->language,
             'country' => $this->country,
             'postCode' => $this->postCode,
             'cityName' => $this->cityName,
@@ -109,6 +98,20 @@ class AddressCheckPayload
             $data['subdivisionCode'] = $this->subdivisionCode;
         }
 
+        // Ensure the same order of fields.
+        ksort($data);
+
         return $data;
+    }
+
+    /**
+     * Converts payload to JSON string with proper UTF-8 handling
+     *
+     * @throws \JsonException On encoding failure
+     * @return string JSON representation of address data
+     */
+    public function toJSON(): string
+    {
+        return json_encode($this->data(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
     }
 }

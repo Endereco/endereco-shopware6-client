@@ -5,8 +5,18 @@ namespace Endereco\Shopware6Client\Service;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionCollection;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionEntity;
 use Endereco\Shopware6Client\Entity\OrderAddress\OrderAddressExtension;
+use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Aggregation\Bucket\FilterAggregation;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Aggregation\Bucket\TermsAggregation;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\AggregationResult\Bucket\TermsResult;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\OrFilter;
 
 /**
  * Builds custom fields containing address validation data for Shopware orders.
@@ -21,30 +31,51 @@ use Shopware\Core\Checkout\Order\OrderEntity;
 final class OrderCustomFieldsBuilder implements OrderCustomFieldsBuilderInterface
 {
     /**
-     * {@inheritDoc}
+     * Compresses data from address extension into an array. This data will be saved in custom fields of order.
+     * This method gathers data from the billing address.
      *
-     * Processes all addresses associated with the order and extracts their
-     * validation data into a format suitable for custom fields.
+     * @param OrderEntity $orderEntity The order containing billing addresses
+     * @return array<string, array<string, mixed>> Formatted validation data for order custom fields
      */
-    public function buildOrderBillingAddressValidationData(OrderEntity $orderEntity): array
-    {
+    public function buildOrderBillingAddressValidationData(
+        OrderEntity $orderEntity
+    ): array {
         $orderAddressExtensionCollection = new EnderecoOrderAddressExtensionCollection();
+        $orderAddresses = $orderEntity->getAddresses();
 
-        foreach ($orderEntity->getAddresses() ?? [] as $orderAddressEntity) {
-            $this->addOrderAddressExtensionToCollection($orderAddressEntity, $orderAddressExtensionCollection);
+        if (is_null($orderAddresses)) {
+            return [];
+        }
+        /** @var OrderAddressCollection $orderAddresses */
+
+        /** @var array<int, OrderAddressEntity> $billingAddresses */
+        $billingAddresses = $orderAddresses->filter(
+            function(OrderAddressEntity $address) use ($orderEntity) {
+                return $address->getId() === $orderEntity->getBillingAddressId();
+            }
+        );
+
+        /** @var OrderAddressEntity $orderAddressEntity */
+        foreach ($billingAddresses as $orderAddressEntity) {
+            $this->addOrderAddressExtensionToCollection(
+                $orderAddressEntity,
+                $orderAddressExtensionCollection
+            );
         }
 
         return $orderAddressExtensionCollection->buildDataForOrderCustomField();
     }
 
     /**
-     * {@inheritDoc}
+     * Compresses data from address extension into an array. This data will be saved in custom fields of order.
+     * This method gathers data from the shipping address or addresses if there are many.
      *
-     * Processes shipping addresses from all deliveries associated with the order
-     * and extracts their validation data into a format suitable for custom fields.
+     * @param OrderEntity $orderEntity The order containing billing addresses
+     * @return array<string, array<string, mixed>> Formatted validation data for order custom fields
      */
-    public function buildOrderShippingAddressValidationData(OrderEntity $orderEntity): array
-    {
+    public function buildOrderShippingAddressValidationData(
+        OrderEntity $orderEntity
+    ): array {
         $orderAddressExtensionCollection = new EnderecoOrderAddressExtensionCollection();
 
         foreach ($orderEntity->getDeliveries() ?? [] as $deliveryEntity) {
