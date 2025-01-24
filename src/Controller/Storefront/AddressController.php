@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Endereco\Shopware6Client\Controller\Storefront;
 
+use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Exception;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
-use Shopware\Core\Checkout\Customer\CustomerEvents;
 use Shopware\Core\Checkout\Customer\Exception\AddressNotFoundException;
 use Shopware\Core\Checkout\Cart\Exception\CustomerNotLoggedInException;
 use Shopware\Core\Framework\Context;
@@ -22,7 +22,6 @@ use Shopware\Storefront\Controller\StorefrontController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 use function count;
@@ -38,17 +37,17 @@ use function count;
 class AddressController extends StorefrontController
 {
     protected EntityRepository $addressRepository;
-    protected EventDispatcherInterface $eventDispatcher;
+    protected AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder;
     protected EnderecoService $enderecoService;
 
     public function __construct(
         EnderecoService $enderecoService,
         EntityRepository $addressRepository,
-        EventDispatcherInterface $eventDispatcher
+        AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder
     ) {
         $this->enderecoService = $enderecoService;
         $this->addressRepository = $addressRepository;
-        $this->eventDispatcher = $eventDispatcher;
+        $this->addressCheckPayloadBuilder = $addressCheckPayloadBuilder;
     }
 
     /**
@@ -146,6 +145,20 @@ class AddressController extends StorefrontController
 
         // Make sure that custom "street name" and "house number" are filled or the default "street" is filled.
         $this->enderecoService->syncStreet($updatePayload, $mainContext, $salesChannelId);
+
+        // Calculate payload
+        $payloadBody = $this->addressCheckPayloadBuilder->buildFromArray(
+            [
+                'countryId' => $updatePayload['countryId'],
+                'countryStateId' => $updatePayload['countryStateId'],
+                'zipcode' => $updatePayload['zipcode'],
+                'city' => $updatePayload['city'],
+                'street' => $updatePayload['street']
+            ],
+            $mainContext
+        );
+        $updatePayload['extensions']['enderecoAddress']['amsRequestPayload'] = $payloadBody->toJSON();
+
 
         // Update the data in the database.
         $this->addressRepository->update([$updatePayload], $mainContext);

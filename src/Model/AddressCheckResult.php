@@ -34,6 +34,11 @@ class AddressCheckResult
     protected $usedSessionId = '';
 
     /**
+     * @var string A concatenated string of address fields used as fingerprint to detect address changes
+     */
+    protected $addressSignature = '';
+
+    /**
      * Checks if automatic correction has been applied.
      *
      * @return bool Always returns false. This method is meant to be overridden by subclasses
@@ -52,6 +57,22 @@ class AddressCheckResult
     public function getStatusesAsString(): string
     {
         return implode(',', $this->statuses);
+    }
+
+    /**
+     * @return string Fingerprint to verify if address validation results are still valid for current address
+     */
+    public function getAddressSignature(): string
+    {
+        return $this->addressSignature;
+    }
+
+    /**
+     * @param string $addressSignature Fingerprint generated from concatenated address fields
+     */
+    public function setAddressSignature(string $addressSignature): void
+    {
+        $this->addressSignature = $addressSignature;
     }
 
     /**

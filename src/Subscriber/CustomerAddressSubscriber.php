@@ -4,19 +4,16 @@ declare(strict_types=1);
 
 namespace Endereco\Shopware6Client\Subscriber;
 
-use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoBaseAddressExtensionEntity;
-use Endereco\Shopware6Client\Model\FailedAddressCheckResult;
+use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
+use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityInsuranceInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
-use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Checkout\Customer\CustomerEvents;
-use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityLoadedEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityWrittenEvent;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Event\DataMappingEvent;
 use Shopware\Core\Framework\Validation\BuildValidationEvent;
 use Shopware\Core\Framework\Validation\DataBag\DataBag;
@@ -40,16 +37,13 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
     protected EntityRepository $enderecoAddressExtensionRepository;
     protected EntityRepository $countryRepository;
     protected EntityRepository $countryStateRepository;
-
     protected CountryCodeFetcherInterface $countryCodeFetcher;
+    private CustomerAddressIntegrityInsuranceInterface $customerAddressIntegrityInsurance;
     protected RequestStack $requestStack;
-
-    /** @var CustomerAddressEntity[] $addressEntityCache */
-    private array $addressEntityCache = [];
-
-    private bool $isImport = false;
+    private AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder;
 
     public function __construct(
+        AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder,
         SystemConfigService $systemConfigService,
         EnderecoService $enderecoService,
         EntityRepository $customerRepository,
@@ -58,8 +52,10 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         EntityRepository $countryRepository,
         EntityRepository $countryStateRepository,
         CountryCodeFetcherInterface $countryCodeFetcher,
+        CustomerAddressIntegrityInsuranceInterface $customerAddressIntegrityInsurance,
         RequestStack $requestStack
     ) {
+        $this->addressCheckPayloadBuilder = $addressCheckPayloadBuilder;
         $this->enderecoService = $enderecoService;
         $this->systemConfigService = $systemConfigService;
         $this->customerRepository = $customerRepository;
@@ -68,6 +64,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         $this->countryRepository = $countryRepository;
         $this->countryStateRepository = $countryStateRepository;
         $this->countryCodeFetcher = $countryCodeFetcher;
+        $this->customerAddressIntegrityInsurance = $customerAddressIntegrityInsurance;
         $this->requestStack = $requestStack;
     }
 
@@ -149,7 +146,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
      */
     public function onBeforeImportRecord(ImportExportBeforeImportRecordEvent $event): void
     {
-        $this->isImport = true;
+        $this->enderecoService->isImport = true;
     }
 
     /**
@@ -167,7 +164,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
      */
     public function onAfterImportRecord(ImportExportAfterImportRecordEvent $event): void
     {
-        $this->isImport = false;
+        $this->enderecoService->isImport = false;
     }
 
     /**
@@ -185,7 +182,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
      */
     public function onImportFailed(ImportExportExceptionImportRecordEvent $event): void
     {
-        $this->isImport = false;
+        $this->enderecoService->isImport = false;
     }
 
     /**
@@ -217,260 +214,11 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
                 continue;
             }
 
-            $addressEntity = $entity;
-
-            // If the entity doesnt have a corresponding entry in the database we skip the rest.
-            // TODO: refactor the logic, its messy and not quite clear. You have to differentiate between
-            // the event of generally loading the entity (to later persist it) and the case when entity is
-            // loaded from the database entry.
-            if (!$entity->getId()) {
-                continue;
-            }
-
-            // Ensure the address extension exists.
-            $this->ensureAddressExtensionExists($addressEntity, $context);
-
-            // If the address has been processed already, we can be sure the database has all the information
-            // So we just sync the entity with this information.
-            $processedEntityIds = array_keys($this->addressEntityCache);
-            if (in_array($entity->getId(), $processedEntityIds)) {
-                $this->syncAddressEntity($entity);
-                continue;
-            }
-
-            // Early skip.
-            // TODO: this whole logic looks clumsy and should be refactored.
-            if (!$this->enderecoService->isImportExportCheckFeatureEnabled($salesChannelId) && $this->isImport) {
-                // Skip the rest.
-                continue;
-            }
-
-            $this->ensureTheStreetIsSplit($addressEntity, $context, $salesChannelId);
-            $this->ensurePayPalExpressFlagIsSet($addressEntity, $context);
-            $this->ensureAmazonPayFlagIsSet($addressEntity, $context);
-
-            // Determine if existing customer address check or PayPal checkout address check is required
-            $existingCustomerCheckIsRelevant =
-                $this->enderecoService->isExistingCustomerAddressCheckFeatureEnabled($salesChannelId)
-                && !$this->enderecoService->isAddressFromRemote($addressEntity)
-                && !$this->enderecoService->isAddressRecent($addressEntity);
-
-            $paypalExpressCheckoutCheckIsRelevant =
-                $this->enderecoService->isPayPalCheckoutAddressCheckFeatureEnabled($salesChannelId)
-                && $this->enderecoService->isAddressFromPayPal($addressEntity);
-
-            // Determine if check for freshly imported/updated through import customer address is required
-            $importFileCheckIsRelevant =
-                $this->enderecoService->isImportExportCheckFeatureEnabled($salesChannelId)
-                && $this->isImport;
-
-            // If either check is required, ensure the address status is set
-            if (
-                $existingCustomerCheckIsRelevant ||
-                $paypalExpressCheckoutCheckIsRelevant ||
-                $importFileCheckIsRelevant
-            ) {
-                $this->ensureAddressStatusIsSet($addressEntity, $context, $salesChannelId);
-            }
+            $this->customerAddressIntegrityInsurance->ensure($entity, $context);
         }
 
         // Close all stored sessions after checking all addresses
         $this->enderecoService->closeStoredSessions($context, $salesChannelId);
-    }
-
-    /**
-     * Ensures that the 'isPaypalAddress' flag is set in the 'EnderecoAddressExtension' of a customer's address.
-     *
-     * The function first retrieves the customer based on the provided CustomerAddressEntity. Then, it checks if
-     * 'payPalExpressPayerId' exists in the customer's custom fields. If so, 'isPaypalAddress' is set to true.
-     *
-     * The function then gets or creates the 'EnderecoAddressExtension' for the provided address,
-     * and sets the 'isPaypalAddress' value in it.
-     *
-     * @param CustomerAddressEntity $addressEntity The customer's address entity.
-     * @param Context $context The context for the search and upsert operations.
-     *
-     * @return void
-     */
-    private function ensurePayPalExpressFlagIsSet(CustomerAddressEntity $addressEntity, Context $context): void
-    {
-        $customerId = $addressEntity->getCustomerId();
-
-        /** @var CustomerEntity $customer */
-        $customer = $this->customerRepository->search(new Criteria([$customerId]), $context)->first();
-
-        /** @var  array<mixed>|null $customerCustomFields */
-        $customerCustomFields = $customer->getCustomFields();
-        $isPaypalAddress = isset($customerCustomFields['payPalExpressPayerId']);
-
-        /** @var EnderecoCustomerAddressExtensionEntity $enderecoAddressExtension */
-        $enderecoAddressExtension = $addressEntity->getExtension('enderecoAddress');
-
-        // If it doesn't exist, create a new one with default values
-        $this->enderecoAddressExtensionRepository->upsert([[
-            'addressId' => $addressEntity->getId(),
-            'isPayPalAddress' => $isPaypalAddress,
-        ]], $context);
-
-        $enderecoAddressExtension->setIsPayPalAddress($isPaypalAddress);
-    }
-
-    /**
-     * Ensures that the 'isAmazonPayAddress' flag is set in the 'EnderecoAddressExtension' of a customer's address.
-     *
-     * The function first retrieves the customer based on the provided CustomerAddressEntity. Then, it checks if
-     * 'swag_amazon_pay_account_id' exists in the customer's custom fields. If so, 'isAmazonPayAddress' is set to true.
-     *
-     * The function then gets or creates the 'EnderecoAddressExtension' for the provided address,
-     * and sets the 'isAmazonPayAddress' value in it.
-     *
-     * @param CustomerAddressEntity $addressEntity The customer's address entity.
-     * @param Context $context The context for the search and upsert operations.
-     *
-     * @return void
-     */
-    private function ensureAmazonPayFlagIsSet(CustomerAddressEntity $addressEntity, Context $context): void
-    {
-        $customerId = $addressEntity->getCustomerId();
-
-        /** @var CustomerEntity $customer */
-        $customer = $this->customerRepository->search(new Criteria([$customerId]), $context)->first();
-
-        /** @var  array<mixed>|null $customerCustomFields */
-        $customerCustomFields = $customer->getCustomFields();
-        $isAmazonPayAddress = isset($customerCustomFields['swag_amazon_pay_account_id']);
-
-        /** @var EnderecoCustomerAddressExtensionEntity $enderecoAddressExtension */
-        $enderecoAddressExtension = $addressEntity->getExtension('enderecoAddress');
-
-        // If it doesn't exist, create a new one with default values
-        $this->enderecoAddressExtensionRepository->upsert([[
-            'addressId' => $addressEntity->getId(),
-            'isAmazonPayAddress' => $isAmazonPayAddress,
-        ]], $context);
-
-        $enderecoAddressExtension->setIsAmazonPayAddress($isAmazonPayAddress);
-    }
-
-    /**
-     * When the customer address entity is loaded, it can happen, that it doesnt have the address extension
-     * and the relevant data from address check in the entity (but has it in the database), because
-     * those data have been added in the same request process. So we use this method to update the data inside the
-     * entity in order to have correct display on the frontend without having to reload the page.
-     *
-     * @param CustomerAddressEntity $addressEntity
-     * @return void
-     */
-    public function syncAddressEntity(CustomerAddressEntity $addressEntity): void
-    {
-        if (!array_key_exists($addressEntity->getId(), $this->addressEntityCache)) {
-            return;
-        }
-
-        /** @var CustomerAddressEntity $processedEntity */
-        $processedEntity = $this->addressEntityCache[$addressEntity->getId()];
-
-        /** @var EnderecoCustomerAddressExtensionEntity $processedAddressExtension */
-        $processedAddressExtension = $processedEntity->getExtension('enderecoAddress');
-
-        /** @var EnderecoCustomerAddressExtensionEntity|null $toAddressExtension */
-        $toAddressExtension = $addressEntity->getExtension('enderecoAddress');
-
-        if (is_null($toAddressExtension)) {
-            // Create a new extension.
-            $toAddressExtension = new EnderecoCustomerAddressExtensionEntity();
-
-            // Add the new extension to the address entity.
-            $addressEntity->addExtension('enderecoAddress', $toAddressExtension);
-        }
-
-        $addressEntity->setZipcode($processedEntity->get('zipcode'));
-        $addressEntity->setCity($processedEntity->get('city'));
-        $addressEntity->setStreet($processedEntity->get('street'));
-        if (!is_null($processedEntity->get('countryStateId'))) {
-            $addressEntity->setCountryStateId($processedEntity->get('countryStateId'));
-        }
-
-        $toAddressExtension->setStreet($processedAddressExtension->get('street'));
-        $toAddressExtension->setHouseNumber($processedAddressExtension->get('houseNumber'));
-        $toAddressExtension->setIsPayPalAddress($processedAddressExtension->get('isPayPalAddress'));
-        $toAddressExtension->setAmsStatus($processedAddressExtension->get('amsStatus'));
-        $toAddressExtension->setAmsPredictions($processedAddressExtension->get('amsPredictions'));
-        $toAddressExtension->setAmsTimestamp($processedAddressExtension->get('amsTimestamp'));
-    }
-
-
-    /**
-     * Ensures that an address status is set by checking and applying the result from the Endereco API.
-     *
-     * This method checks whether a new status is needed for the address. If so, it uses the Endereco service
-     * to check the address. If the check fails, it doesn't throw an exception but simply stops.
-     *
-     * If a session ID was used in the check, it adds it to the accountable session IDs storage.
-     * Then, it applies the check result to the address entity.
-     *
-     * @param CustomerAddressEntity $addressEntity The customer address to be checked.
-     * @param Context $context The context which includes details of the event triggering this method.
-     * @param string $salesChannelId The ID of the sales channel the address is associated with.
-     *
-     * @return void
-     */
-    public function ensureAddressStatusIsSet(
-        CustomerAddressEntity $addressEntity,
-        Context $context,
-        string $salesChannelId
-    ): void {
-        /** @var EnderecoCustomerAddressExtensionEntity $addressExtension */
-        $addressExtension = $addressEntity->getExtension('enderecoAddress');
-
-        if ($this->isNewStatusNeededForAddressExtension($addressExtension)) {
-            $addressCheckResult = $this->enderecoService->checkAddress($addressEntity, $context, $salesChannelId);
-
-            // We dont throw exceptions, we just gracefully stop here. Maybe the API will be available later again.
-            if ($addressCheckResult instanceof FailedAddressCheckResult) {
-                return;
-            }
-
-            if (!empty($addressCheckResult->getUsedSessionId())) {
-                $this->enderecoService->addAccountableSessionIdsToStorage([$addressCheckResult->getUsedSessionId()]);
-            }
-
-            // Here we save the status codes and predictions. If it's an automatic correction, then we also save
-            // the data from the correction to customer address entity and generate a new,
-            // "virtual" address check result.
-            $this->enderecoService->applyAddressCheckResult($addressCheckResult, $addressEntity, $context);
-
-            // Cache the entity, in case others entities might need an update. We will just copy values from this one.
-            $this->addressEntityCache[$addressEntity->getId()] = $addressEntity;
-        }
-    }
-
-    /**
-     * Determines whether the given EnderecoAddressExtensionEntity requires a new address management
-     * system (AMS) status.
-     *
-     * This method accepts an EnderecoAddressExtensionEntity and retrieves its current AMS status. It then checks if the
-     * current status is empty or has the default value (as defined by the AMS_STATUS_NOT_CHECKED constant).
-     *
-     * If the current status is empty or has the default value, this method returns true, indicating that a new status
-     * check is needed. If the current status is neither empty nor the default value, the method returns false,
-     * indicating that no new status check is required.
-     *
-     * @param EnderecoCustomerAddressExtensionEntity $addressExtension The Endereco address extension entity for which
-     *                                                         to determine the need for a new AMS status check.
-     *
-     * @return bool Returns true if a new AMS status check is needed, false otherwise.
-     */
-    public function isNewStatusNeededForAddressExtension(EnderecoCustomerAddressExtensionEntity $addressExtension): bool
-    {
-        $currentStatus = $addressExtension->getAmsStatus();
-
-        $isEmpty = empty($currentStatus);
-        $hasDefaultValue =  ($currentStatus === EnderecoBaseAddressExtensionEntity::AMS_STATUS_NOT_CHECKED);
-
-        $isCheckNeeded = $isEmpty || $hasDefaultValue;
-
-        return $isCheckNeeded;
     }
 
 
@@ -594,6 +342,19 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         // Make sure the default street and endereco street name and house number are synchronized.
         $this->enderecoService->syncStreet($output, $context, $salesChannelId);
 
+        // Calculate payload
+        $payloadBody = $this->addressCheckPayloadBuilder->buildFromArray(
+            [
+                'countryId' => $output['countryId'],
+                'countryStateId' => $output['countryStateId'],
+                'zipcode' => $output['zipcode'],
+                'city' => $output['city'],
+                'street' => $output['street']
+            ],
+            $context
+        );
+        $output['extensions']['enderecoAddress']['amsRequestPayload'] = $payloadBody->toJSON();
+
         // Update the output data in the event
         $event->setOutput($output);
     }
@@ -656,150 +417,5 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
 
         // Close sessions.
         $this->enderecoService->closeStoredSessions($context, $salesChannelId);
-    }
-
-    /**
-     * Ensures that a corresponding EnderecoAddressExtension entry exists for a given address entity.
-     *
-     * This method accepts a CustomerAddressEntity and a Context. It checks if the address entity has a corresponding
-     * EnderecoAddressExtension (indicated by the presence of the 'enderecoAddress' extension).
-     *
-     * If the address entity does not have a corresponding EnderecoAddressExtension, this method creates one with
-     * default values
-     * (such as a default status and an empty list of predictions) using the EnderecoAddressExtensionRepository, and
-     * adds it to the address entity.
-     *
-     * This ensures that the address entity has a corresponding EnderecoAddressExtension, which is important for
-     * managing additional address-related information provided by the Endereco service.
-     *
-     * @param CustomerAddressEntity $addressEntity The address entity for which to ensure the existence of
-     *                                             a corresponding EnderecoAddressExtension.
-     * @param Context $context The context in which the address entity is being handled.
-     *
-     * @return void
-     */
-    private function ensureAddressExtensionExists(CustomerAddressEntity $addressEntity, Context $context): void
-    {
-        // Check if the address has an 'enderecoAddress' extension
-        $enderecoAddressExtension = $addressEntity->getExtension('enderecoAddress');
-
-        if (!$enderecoAddressExtension) {
-            // If it doesn't exist, create a new one with default values
-            $this->enderecoAddressExtensionRepository->upsert([[
-                'addressId' => $addressEntity->getId(),
-                'amsStatus' => EnderecoBaseAddressExtensionEntity::AMS_STATUS_NOT_CHECKED,
-                'amsPredictions' => []
-            ]], $context);
-
-            // Add the new extension to the address entity
-            $addressEntity->addExtension('enderecoAddress', new EnderecoCustomerAddressExtensionEntity());
-        }
-    }
-
-    /**
-     * Ensures that the full street address of a given address entity is properly split into street name and building
-     * number.
-     *
-     * This method accepts a CustomerAddressEntity and a Context. It retrieves the corresponding
-     * EnderecoAddressExtensionEntity for the address and the full street address stored in the CustomerAddressEntity.
-     * It checks whether a street splitting operation is needed by comparing the expected full street (constructed using
-     * data from the EnderecoAddressExtensionEntity) with the current full street.
-     *
-     * If the street address is not empty and street splitting is needed, the method splits the full street address into
-     * street name and building number using the 'splitStreet' method of the Endereco service. The country code for
-     * splitting the street is retrieved using the 'getCountryCodeById' method (defaulting to 'DE' if unknown). The
-     * split street name and building number are then saved back into the EnderecoAddressExtensionEntity for the
-     * address.
-     *
-     * @param CustomerAddressEntity $addressEntity The address entity for which to ensure the street is split.
-     * @param Context $context The context in which the address entity is being handled.
-     * @param string $salesChannelId The ID of the sales channel the address is associated with.
-     *
-     * @return void
-     */
-    public function ensureTheStreetIsSplit(
-        CustomerAddressEntity $addressEntity,
-        Context $context,
-        string $salesChannelId
-    ): void {
-        /** @var EnderecoCustomerAddressExtensionEntity $addressExtension */
-        $addressExtension = $addressEntity->getExtension('enderecoAddress');
-
-        $fullStreet = $addressEntity->getStreet();
-
-        if (!empty($fullStreet) && $this->isStreetSplitNeeded($addressEntity, $addressExtension, $context)) {
-            // If country is unknown, use Germany as default
-            $countryCode = $this->countryCodeFetcher->fetchCountryCodeByCountryIdAndContext(
-                $addressEntity->getCountryId(),
-                $context,
-                'DE'
-            );
-
-            list($streetName, $buildingNumber) = $this->enderecoService->splitStreet(
-                $fullStreet,
-                $countryCode,
-                $context,
-                $salesChannelId
-            );
-
-            $this->enderecoAddressExtensionRepository->upsert(
-                [[
-                    'addressId' => $addressEntity->getId(),
-                    'street' => $streetName,
-                    'houseNumber' => $buildingNumber
-                ]],
-                $context
-            );
-
-            $addressExtension->setStreet($streetName);
-            $addressExtension->setHouseNumber($buildingNumber);
-        }
-    }
-
-    /**
-     * Determines whether a street splitting operation is necessary for the given address.
-     *
-     * This method accepts a CustomerAddressEntity, a corresponding EnderecoAddressExtensionEntity,
-     * and the context of the current execution. It constructs an expected full street string using the
-     * street and house number from the EnderecoAddressExtensionEntity, along with the country ISO code
-     * from the CustomerAddressEntity.
-     *
-     * The expected full street string is then compared to the current full street string stored
-     * in the CustomerAddressEntity. The country code is fetched by the `getCountryCodeById` method
-     * and 'DE' is used as a default if the country code cannot be determined.
-     *
-     * If the expected and current full street strings do not match, the method returns true,
-     * indicating that a street splitting operation is necessary. If they do match, the method
-     * returns false, indicating that no street splitting operation is required.
-     *
-     * @param CustomerAddressEntity $addressEntity The address entity for which to determine the need for street
-     *                                             splitting.
-     * @param EnderecoCustomerAddressExtensionEntity $addressExtension The corresponding Endereco address extension
-     *                                                         for the address entity.
-     * @param Context $context The context of the current execution.
-     *
-     * @return bool Returns true if street splitting is needed, false otherwise.
-     */
-    public function isStreetSplitNeeded(
-        CustomerAddressEntity $addressEntity,
-        EnderecoCustomerAddressExtensionEntity $addressExtension,
-        Context $context
-    ): bool {
-        // Construct the expected full street string
-        $expectedFullStreet = $this->enderecoService->buildFullStreet(
-            $addressExtension->getStreet(),
-            $addressExtension->getHouseNumber(),
-            $this->countryCodeFetcher->fetchCountryCodeByCountryIdAndContext(
-                $addressEntity->getCountryId(),
-                $context,
-                'DE'
-            )
-        );
-
-        // Fetch the current full street string from the address entity
-        $currentFullStreet = $addressEntity->getStreet();
-
-        // Compare the expected and current full street strings and return the result
-        return $expectedFullStreet !== $currentFullStreet;
     }
 }

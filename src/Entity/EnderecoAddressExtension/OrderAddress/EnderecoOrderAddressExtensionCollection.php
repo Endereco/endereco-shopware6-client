@@ -15,6 +15,9 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
  */
 class EnderecoOrderAddressExtensionCollection extends EntityCollection
 {
+    /**
+     * @return string API alias for collection
+     */
     public function getApiAlias(): string
     {
         return 'endereco_order_address_extension_collection';

@@ -18,18 +18,14 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\StringField;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
 
 /**
- * Class EnderecoAddressExtensionDefinition
- *
- * Entity definition for Endereco Address Extension.
- *
- * @package Endereco\Shopware6Client\Entity\EnderecoAddressExtension
+ * Base definition for Endereco address extensions
  */
 abstract class EnderecoBaseAddressExtensionDefinition extends EntityDefinition
 {
     /**
-     * Define the fields of the entity.
+     * Defines entity structure
      *
-     * @return FieldCollection The collection of fields for the entity.
+     * @return FieldCollection Collection of entity fields
      */
     protected function defineFields(): FieldCollection
     {
@@ -38,7 +34,7 @@ abstract class EnderecoBaseAddressExtensionDefinition extends EntityDefinition
             $this->addressAssociationForeignKeyField()->addFlags(new Required(), new PrimaryKey()),
 
             // A field that contains a JSON array of predictions for possible address corrections.
-            (new JsonField('ams_request_payload', 'amsRequestPayload')),
+            (new LongTextField('ams_request_payload', 'amsRequestPayload')),
 
             // A field that saves a list of status codes that describe the current address.
             (new LongTextField('ams_status', 'amsStatus')),
@@ -66,7 +62,17 @@ abstract class EnderecoBaseAddressExtensionDefinition extends EntityDefinition
         ]);
     }
 
+    /**
+     * Creates FK field for address association
+     *
+     * @return FkField Foreign key field configuration
+     */
     abstract protected function addressAssociationForeignKeyField(): FkField;
 
+    /**
+     * Creates one-to-one field for address association
+     *
+     * @return OneToOneAssociationField Association field configuration
+     */
     abstract protected function addressAssociationField(): OneToOneAssociationField;
 }
