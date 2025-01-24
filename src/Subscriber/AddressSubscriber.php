@@ -6,6 +6,7 @@ namespace Endereco\Shopware6Client\Subscriber;
 
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoAddressExtensionEntity;
 use Endereco\Shopware6Client\Model\FailedAddressCheckResult;
+use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
@@ -38,6 +39,8 @@ class AddressSubscriber implements EventSubscriberInterface
     protected EntityRepository $enderecoAddressExtensionRepository;
     protected EntityRepository $countryRepository;
     protected EntityRepository $countryStateRepository;
+
+    protected CountryCodeFetcherInterface $countryCodeFetcher;
     protected RequestStack $requestStack;
 
     /** @var CustomerAddressEntity[] $addressEntityCache */
@@ -53,6 +56,7 @@ class AddressSubscriber implements EventSubscriberInterface
         EntityRepository $enderecoAddressExtensionRepository,
         EntityRepository $countryRepository,
         EntityRepository $countryStateRepository,
+        CountryCodeFetcherInterface $countryCodeFetcher,
         RequestStack $requestStack
     ) {
         $this->enderecoService = $enderecoService;
@@ -62,6 +66,7 @@ class AddressSubscriber implements EventSubscriberInterface
         $this->enderecoAddressExtensionRepository = $enderecoAddressExtensionRepository;
         $this->countryRepository = $countryRepository;
         $this->countryStateRepository = $countryStateRepository;
+        $this->countryCodeFetcher = $countryCodeFetcher;
         $this->requestStack = $requestStack;
     }
 
@@ -723,7 +728,7 @@ class AddressSubscriber implements EventSubscriberInterface
 
         if (!empty($fullStreet) && $this->isStreetSplitNeeded($addressEntity, $addressExtension, $context)) {
             // If country is unknown, use Germany as default
-            $countryCode = $this->enderecoService->getCountryCodeById(
+            $countryCode = $this->countryCodeFetcher->fetchCountryCodeByCountryIdAndContext(
                 $addressEntity->getCountryId(),
                 $context,
                 'DE'
@@ -783,7 +788,11 @@ class AddressSubscriber implements EventSubscriberInterface
         $expectedFullStreet = $this->enderecoService->buildFullStreet(
             $addressExtension->getStreet(),
             $addressExtension->getHouseNumber(),
-            $this->enderecoService->getCountryCodeById($addressEntity->getCountryId(), $context, 'DE')
+            $this->countryCodeFetcher->fetchCountryCodeByCountryIdAndContext(
+                $addressEntity->getCountryId(),
+                $context,
+                'DE'
+            )
         );
 
         // Fetch the current full street string from the address entity
