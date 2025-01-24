@@ -9,22 +9,23 @@ use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressEntity;
 use Shopware\Core\Framework\Context;
 
 /**
- * Implements the creation of address check payloads for the Endereco API.
+ * Implements building address check payloads for the Endereco API.
  *
- * This service transforms Shopware customer addresses into structured payloads
- * for the Endereco address validation API. It handles:
- * - Locale detection with German fallback
+ * Transforms addresses into structured API payloads by handling:
  * - Country code resolution
  * - State/subdivision code processing
  * - Address component extraction and formatting
+ *
+ * @phpstan-type AddressDataStructure array{
+ *   countryId: string,
+ *   countryStateId?: string|null,
+ *   zipcode: string,
+ *   city: string,
+ *   street: string
+ * }
  */
 final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInterface
 {
-    /**
-     * Service for fetching locale information
-     */
-    private LocaleFetcherInterface $localeFetcher;
-
     /**
      * Service for resolving country codes
      */
@@ -43,137 +44,106 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
     /**
      * Creates a new AddressCheckPayloadBuilder with required dependencies.
      *
-     * @param LocaleFetcherInterface $localeFetcher Service for locale resolution
      * @param CountryCodeFetcherInterface $countryCodeFetcher Service for country code lookup
      * @param SubdivisionCodeFetcherInterface $subdivisionCodeFetcher Service for subdivision code resolution
      * @param CountryHasStatesCheckerInterface $countryHasStatesChecker Service for checking country subdivision support
      */
     public function __construct(
-        LocaleFetcherInterface $localeFetcher,
         CountryCodeFetcherInterface $countryCodeFetcher,
         SubdivisionCodeFetcherInterface $subdivisionCodeFetcher,
         CountryHasStatesCheckerInterface $countryHasStatesChecker
     ) {
-        $this->localeFetcher = $localeFetcher;
         $this->countryCodeFetcher = $countryCodeFetcher;
         $this->subdivisionCodeFetcher = $subdivisionCodeFetcher;
         $this->countryHasStatesChecker = $countryHasStatesChecker;
     }
 
     /**
-     * @inheritDoc
-     *
-     * Creates an address check payload with the following logic:
-     * - Attempts to detect locale, falls back to 'de' if unsuccessful
-     * - Resolves country code from address country ID
-     * - Processes postal code with empty string fallback
-     * - Extracts city name and full street address
-     * - Handles subdivision codes with special cases:
-     *   - null: country has no states
-     *   - empty string: country has states but none selected
-     *   - specific code: selected state code
-     *
-     * @throws \Exception potentially from locale fetching (caught and handled with fallback)
+     * @param AddressDataStructure $addressData Address data to transform
+     * @param Context $context Shopware context
+     * @return AddressCheckPayload Payload (not ready for API)
      */
-    public function buildAddressCheckPayload(
-        string $salesChannelId,
-        CustomerAddressEntity $addressEntity,
+    public function buildFromArray(
+        array $addressData,
         Context $context
     ): AddressCheckPayload {
-        $lang = $this->getLang($salesChannelId, $context);
-        $countryCode = $this->getCountryCode($addressEntity, $context);
-        $postCode = $this->getPostCode($addressEntity);
-        $cityName = $this->getCityName($addressEntity);
-        $streetFull = $this->getStreetFull($addressEntity);
-        $subdivisionCode = $this->getSubdivisionCode($addressEntity, $context);
+        $countryCode = $this->countryCodeFetcher->fetchCountryCodeByCountryIdAndContext(
+            $addressData['countryId'],
+            $context
+        );
+
+        $subdivisionCode = null;
+        if (isset($addressData['countryStateId'])) {
+            $subdivisionCode = $this->getSubdivisionCodeFromArray($addressData, $context);
+        }
 
         return new AddressCheckPayload(
-            $lang,
             $countryCode,
-            $postCode,
-            $cityName,
-            $streetFull,
+            $addressData['zipcode'],
+            $addressData['city'],
+            $addressData['street'],
             $subdivisionCode
         );
     }
 
-    public function buildAddressCheckPayloadWithoutLanguage(
-        $addressEntity,
+    /**
+     * Builds payload by extracting data from CustomerAddressEntity.
+     *
+     * @param CustomerAddressEntity $address Customer address entity
+     * @param Context $context Shopware context
+     * @return AddressCheckPayload Payload (not ready for API)
+     */
+    public function buildFromCustomerAddress(
+        CustomerAddressEntity $address,
         Context $context
-    ): AddressCheckData {
-        $countryCode = $this->getCountryCode($addressEntity, $context);
-        $postCode = $this->getPostCode($addressEntity);
-        $cityName = $this->getCityName($addressEntity);
-        $streetFull = $this->getStreetFull($addressEntity);
-        $subdivisionCode = $this->getSubdivisionCode($addressEntity, $context);
-
-        return new AddressCheckData(
-            $countryCode,
-            $postCode,
-            $cityName,
-            $streetFull,
-            $subdivisionCode
+    ): AddressCheckPayload {
+        return $this->buildFromArray(
+            [
+                'countryId' => $address->getCountryId(),
+                'countryStateId' => $address->getCountryStateId(),
+                'zipcode' => $address->getZipcode(),
+                'city' => $address->getCity(),
+                'street' => $address->getStreet()
+            ],
+            $context
         );
     }
 
-    private function getLang(string $salesChannelId, Context $context): string
-    {
-        try {
-            return $this->localeFetcher->fetchLocaleBySalesChannelId($salesChannelId, $context);
-        } catch (\Exception $e) {
-            return 'de'; // set "de" by default.
-        }
+    /**
+     * Builds payload by extracting data from OrderAddressEntity.
+     *
+     * @param OrderAddressEntity $address Order address entity
+     * @param Context $context Shopware context
+     * @return AddressCheckPayload Payload (not ready for API)
+     */
+    public function buildFromOrderAddress(
+        OrderAddressEntity $address,
+        Context $context
+    ): AddressCheckPayload {
+        return $this->buildFromArray(
+            [
+                'countryId' => $address->getCountryId(),
+                'countryStateId' => $address->getCountryStateId(),
+                'zipcode' => $address->getZipcode(),
+                'city' => $address->getCity(),
+                'street' => $address->getStreet()
+            ],
+            $context
+        );
     }
 
     /**
-     * @param CustomerAddressEntity|OrderAddressEntity $addressEntity
+     * Extracts and processes subdivision code from address data.
+     *
+     * @param AddressDataStructure $addressData Address data in array, we just need "countryStateId" and "countryId"
      * @param Context $context
-     * @return string
+     * @return string|null Subdivision code or null if not applicable
      */
-    private function getCountryCode($addressEntity, Context $context): string
+    private function getSubdivisionCodeFromArray(array $addressData, Context $context): ?string
     {
-        $countryId = $addressEntity->getCountryId();
-
-        return $this->countryCodeFetcher->fetchCountryCodeByCountryIdAndContext($countryId, $context);
-    }
-
-    /**
-     * @param CustomerAddressEntity|OrderAddressEntity $addressEntity
-     * @return string
-     */
-    private function getPostCode($addressEntity): string
-    {
-        return empty($addressEntity->getZipcode()) ? '' : $addressEntity->getZipcode();
-    }
-
-    /**
-     * @param CustomerAddressEntity|OrderAddressEntity $addressEntity
-     * @return string
-     */
-    private function getCityName($addressEntity): string
-    {
-        return $addressEntity->getCity();
-    }
-
-    /**
-     * @param CustomerAddressEntity|OrderAddressEntity $addressEntity
-     * @return string
-     */
-    private function getStreetFull($addressEntity): string
-    {
-        return $addressEntity->getStreet();
-    }
-
-    /**
-     * @param CustomerAddressEntity|OrderAddressEntity $addressEntity
-     * @param Context $context
-     * @return string|null
-     */
-    private function getSubdivisionCode($addressEntity, Context $context): ?string
-    {
-        if ($addressEntity->getCountryStateId() !== null) {
+        if (!empty($addressData['countryStateId'])) {
             $subdivisionCode = $this->subdivisionCodeFetcher->fetchSubdivisionCodeByCountryStateId(
-                $addressEntity->getCountryStateId(),
+                $addressData['countryStateId'],
                 $context
             );
 
@@ -182,10 +152,7 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
             }
         }
 
-        $countryId = $addressEntity->getCountryId();
-        if ($this->countryHasStatesChecker->hasCountryStates($countryId, $context)) {
-            // If a state was not assigned, but it would have been possible, check it.
-            // Maybe subdivision code must be enriched.
+        if ($this->countryHasStatesChecker->hasCountryStates($addressData['countryId'], $context)) {
             return '';
         }
 

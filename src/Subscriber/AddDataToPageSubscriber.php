@@ -1,21 +1,22 @@
 <?php
 
-namespace Endereco\Shopware6Client\Service;
+namespace Endereco\Shopware6Client\Subscriber;
 
+use Endereco\Shopware6Client\Service\EnderecoService;
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\System\Country\Aggregate\CountryState\CountryStateEntity;
+use Shopware\Core\System\Country\CountryEntity;
+use Shopware\Core\System\Salutation\SalutationEntity;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Page\GenericPageLoadedEvent;
 use stdClass;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
-use Shopware\Core\System\Country\CountryEntity;
-use Shopware\Core\System\Country\Aggregate\CountryState\CountryStateEntity;
-use Shopware\Core\System\Salutation\SalutationEntity;
-use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 
-class AddDataToPage implements EventSubscriberInterface
+class AddDataToPageSubscriber implements EventSubscriberInterface
 {
     protected SystemConfigService $systemConfigService;
     protected EnderecoService $enderecoService;

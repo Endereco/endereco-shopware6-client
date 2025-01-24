@@ -12,6 +12,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
 
 class CustomerAddressExtension extends EntityExtension
 {
+    /** @var string Extension identifier for Endereco address */
     public const ENDERECO_EXTENSION = 'enderecoAddress';
 
     /**

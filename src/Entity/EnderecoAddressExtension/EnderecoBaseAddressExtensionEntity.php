@@ -37,8 +37,8 @@ abstract class EnderecoBaseAddressExtensionEntity extends Entity
     /** @var string The ID of the associated address. */
     protected string $addressId;
 
-    /** @var ?AddressCheckDataData The request payload that was sent to verify the address. */
-    protected ?array $amsRequestPayload;
+    /** @var string The serialized request payload that was sent to verify the address. */
+    protected string $amsRequestPayload = '';
 
     /** @var string The status of the AMS (Address Management System) check. */
     protected string $amsStatus = self::AMS_STATUS_NOT_CHECKED;
@@ -84,9 +84,9 @@ abstract class EnderecoBaseAddressExtensionEntity extends Entity
     /**
      * Get the request payload that was sent to verify the address.
      *
-     * @return ?AddressCheckDataData The request payload that was sent to verify the address
+     * @return string The request payload that was sent to verify the address
      */
-    public function getAmsRequestPayload(): ?array
+    public function getAmsRequestPayload(): string
     {
         return $this->amsRequestPayload;
     }
@@ -94,9 +94,9 @@ abstract class EnderecoBaseAddressExtensionEntity extends Entity
     /**
      * Set the request payload that was sent to verify the address.
      *
-     * @param ?AddressCheckDataData $amsRequestPayload The request payload that was sent to verify the address.
+     * @param string $amsRequestPayload The request payload that was sent to verify the address.
      */
-    public function setAmsRequestPayload(?array $amsRequestPayload): void
+    public function setAmsRequestPayload(string $amsRequestPayload): void
     {
         $this->amsRequestPayload = $amsRequestPayload;
     }
@@ -242,16 +242,16 @@ abstract class EnderecoBaseAddressExtensionEntity extends Entity
     }
 
     /**
-     * Get the associated address entity.
-     *
-     * @return Entity|null The associated address entity, or null if none is set.
+     * Get the associated address entity
+     * @return Entity|null The address entity
      */
     abstract public function getAddress(): ?Entity;
 
     /**
-     * Set the associated address entity.
+     * Set the associated address entity
+     * @param Entity|null $address The address entity to set
      *
-     * @param Entity|null $address The associated address entity to set.
+     * @throws \InvalidArgumentException When invalid entity type provided
      */
     abstract public function setAddress(?Entity $address): void;
 

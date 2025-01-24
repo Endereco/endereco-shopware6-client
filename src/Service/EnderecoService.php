@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Endereco\Shopware6Client\Service;
 
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionEntity;
+use Endereco\Shopware6Client\Entity\OrderAddress\OrderAddressExtension;
 use Endereco\Shopware6Client\Misc\EnderecoConstants;
 use Endereco\Shopware6Client\Model\AddressCheckResult;
 use Endereco\Shopware6Client\Model\FailedAddressCheckResult;
@@ -17,6 +19,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressEntity;
 use Shopware\Core\Framework\Api\Context\SalesChannelApiSource;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -38,6 +41,8 @@ class EnderecoService
 
     private EntityRepository $customerAddressRepository;
 
+    private EntityRepository $orderAddressRepository;
+
     private LoggerInterface $logger;
 
     private SystemConfigService $systemConfigService;
@@ -48,6 +53,8 @@ class EnderecoService
 
     private AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder;
 
+    public bool $isImport = false;
+
     protected RequestStack $requestStack;
 
     public function __construct(
@@ -55,6 +62,7 @@ class EnderecoService
         EntityRepository $pluginRepository,
         EntityRepository $countryStateRepository,
         EntityRepository $customerAddressRepository,
+        EntityRepository $orderAddressRepository,
         CountryCodeFetcherInterface $countryCodeFetcher,
         AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder,
         RequestStack $requestStack,
@@ -65,6 +73,7 @@ class EnderecoService
         $this->pluginRepository = $pluginRepository;
         $this->countryStateRepository = $countryStateRepository;
         $this->customerAddressRepository = $customerAddressRepository;
+        $this->orderAddressRepository = $orderAddressRepository;
         $this->countryCodeFetcher = $countryCodeFetcher;
         $this->addressCheckPayloadBuilder = $addressCheckPayloadBuilder;
         $this->requestStack = $requestStack;
@@ -283,12 +292,12 @@ class EnderecoService
      * is retrieved using the provided context.
      *
      * @param Context $context The context.
-     * @param string $salesChannelId The sales channel ID.
+     * @param ?string $salesChannelId The sales channel ID.
      * @param string|null $sessionId The session ID, defaulting to 'not_required'.
      *
      * @return array<string, string> The generated headers.
      */
-    public function generateRequestHeaders(Context $context, string $salesChannelId, $sessionId = 'not_required')
+    public function generateRequestHeaders(Context $context, ?string $salesChannelId, $sessionId = 'not_required')
     {
         $appName = $this->getAgentInfo($context);
         $apiKey = $this->systemConfigService
@@ -355,18 +364,22 @@ class EnderecoService
             $sessionId
         );
 
-        $payload = $this->addressCheckPayloadBuilder->buildAddressCheckPayload(
-            $salesChannelId,
+        $payloadBody = $this->addressCheckPayloadBuilder->buildFromCustomerAddress(
             $addressEntity,
             $context
         );
 
+
+
         // Send the headers and payload to endereco api for valdiation.
         try {
+            $data = $payloadBody->data();
+            $data['language'] = 'de'; // Its just 'de' at this point. We'll remove this param in the future.
+
             $payload = json_encode(
                 $this->preparePayload(
                     'addressCheck',
-                    $payload->data()
+                    $data
                 )
             );
 
@@ -399,8 +412,82 @@ class EnderecoService
         }
 
         $addressCheckResult->setUsedSessionId($sessionId);
+        $addressCheckResult->setAddressSignature($payloadBody->toJSON());
 
         return $addressCheckResult;
+    }
+
+    /**
+     * Resets the metadata of a customer address entity.
+     *
+     * Updates the Endereco extension fields of the address with empty values while preserving
+     * the AMS status. Specifically clears the request payload, predictions, and updates the timestamp,
+     * then persists these changes to the database.
+     *
+     * @param CustomerAddressEntity $addressEntity The address entity to reset
+     * @param Context $context The context for database operations
+     *
+     * @return void
+     */
+    public function resetCustomerAddressMetaData(
+        CustomerAddressEntity $addressEntity,
+        Context $context
+    ): void {
+        $addressId = $addressEntity->getId();
+
+        $updatePayload = [
+            'id' => $addressId,
+        ];
+
+        $addressExtension = new EnderecoCustomerAddressExtensionEntity();
+        $addressEntity->addExtension('enderecoAddress', $addressExtension);
+
+        $updatePayload['extensions']['enderecoAddress']['amsRequestPayload']
+            = $addressExtension->getAmsRequestPayload();
+        $updatePayload['extensions']['enderecoAddress']['amsStatus'] = $addressExtension->getAmsStatus();
+        $updatePayload['extensions']['enderecoAddress']['amsPredictions'] = $addressExtension->getAmsPredictions();
+        $updatePayload['extensions']['enderecoAddress']['amsTimestamp'] = $addressExtension->getAmsTimestamp();
+
+        // Update the customer address in the repository
+        $this->customerAddressRepository->update([$updatePayload], $context);
+    }
+
+    /**
+     * Resets the metadata of an oder address entity.
+     *
+     * Updates the Endereco extension fields of the address with empty values while preserving
+     * the AMS status. Specifically clears the request payload, predictions, and updates the timestamp,
+     * then persists these changes to the database.
+     *
+     * @param OrderAddressEntity $addressEntity The address entity to reset
+     * @param Context $context The context for database operations
+     *
+     * @return void
+     */
+    public function resetOrderAddressMetaData(
+        OrderAddressEntity $addressEntity,
+        Context $context
+    ): void {
+        $addressId = $addressEntity->getId();
+
+        $updatePayload = [
+            'id' => $addressId,
+        ];
+
+        $addressExtension = new EnderecoOrderAddressExtensionEntity();
+        $addressEntity->addExtension(OrderAddressExtension::ENDERECO_EXTENSION, $addressExtension);
+
+        $updatePayload['extensions'][OrderAddressExtension::ENDERECO_EXTENSION]['amsRequestPayload']
+            = $addressExtension->getAmsRequestPayload();
+        $updatePayload['extensions'][OrderAddressExtension::ENDERECO_EXTENSION]['amsStatus']
+            = $addressExtension->getAmsStatus();
+        $updatePayload['extensions'][OrderAddressExtension::ENDERECO_EXTENSION]['amsPredictions']
+            = $addressExtension->getAmsPredictions();
+        $updatePayload['extensions'][OrderAddressExtension::ENDERECO_EXTENSION]['amsTimestamp']
+            = $addressExtension->getAmsTimestamp();
+
+        // Update the customer address in the repository
+        $this->orderAddressRepository->update([$updatePayload], $context);
     }
 
     /**
@@ -475,6 +562,8 @@ class EnderecoService
             $updatePayload['extensions']['enderecoAddress']['amsStatus'] = implode(',', $newStatuses);
             $updatePayload['extensions']['enderecoAddress']['amsPredictions'] = [];
             $updatePayload['extensions']['enderecoAddress']['amsTimestamp'] = time();
+            $updatePayload['extensions']['enderecoAddress']['amsRequestPayload']
+                = $addressCheckResult->getAddressSignature();
 
             /** @var EnderecoCustomerAddressExtensionEntity|null $addressExtension */
             $addressExtension = $addressEntity->getExtension('enderecoAddress');
@@ -493,12 +582,15 @@ class EnderecoService
             $addressExtension->setHouseNumber($correction['buildingNumber']);
             $addressExtension->setAmsStatus(implode(',', $newStatuses));
             $addressExtension->setAmsPredictions([]);
-            $addressExtension->setAmstimestamp(time());
+            $addressExtension->setAmsTimestamp(time());
+            $addressExtension->setAmsRequestPayload($addressCheckResult->getAddressSignature());
         } else {
             // If there was no automatic correction, save the statuses and predictions from the address check result
             $updatePayload['extensions']['enderecoAddress']['amsStatus'] = $addressCheckResult->getStatusesAsString();
             $updatePayload['extensions']['enderecoAddress']['amsPredictions'] = $addressCheckResult->getPredictions();
             $updatePayload['extensions']['enderecoAddress']['amsTimestamp'] = time();
+            $updatePayload['extensions']['enderecoAddress']['amsRequestPayload']
+                = $addressCheckResult->getAddressSignature();
 
             /** @var EnderecoCustomerAddressExtensionEntity|null $addressExtension */
             $addressExtension = $addressEntity->getExtension('enderecoAddress');
@@ -510,6 +602,7 @@ class EnderecoService
             $addressExtension->setAmsStatus($addressCheckResult->getStatusesAsString());
             $addressExtension->setAmsPredictions($addressCheckResult->getPredictions());
             $addressExtension->setAmstimestamp(time());
+            $addressExtension->setAmsRequestPayload($addressCheckResult->getAddressSignature());
         }
 
         // Update the customer address in the repository
@@ -659,6 +752,21 @@ class EnderecoService
     }
 
     /**
+     * Determines if address validation is active for a given sales channel.
+     *
+     * @param string $salesChannelId The ID of the sales channel to check
+     * @return bool Returns true if address validation is active for the given sales channel
+     */
+    public function isAddressCheckActive(string $salesChannelId): bool
+    {
+        // Check if the plugin is active for this channel
+        $isAddressCheckActiveForThisChannel = $this->systemConfigService
+            ->getBool('EnderecoShopware6Client.config.enderecoAMSActive', $salesChannelId);
+
+        return $isAddressCheckActiveForThisChannel;
+    }
+
+    /**
      * Determines if street splitting feature is enabled.
      *
      * This method checks whether the Endereco plugin is active and
@@ -722,7 +830,7 @@ class EnderecoService
      *
      * The feature is considered active if both conditions are true. The method then returns this status.
      *
-     * This feature is used to decide whether or not existing customer addresses should be checked for updates.
+     * This feature is used to decide whether or not existing customer or order addresses should be checked for updates.
      * It can be controlled via the EnderecoShopware6Client configuration, providing flexibility to meet different
      * shop requirements.
      *
@@ -730,7 +838,7 @@ class EnderecoService
      *
      * @return bool Returns true if the feature is enabled, false otherwise.
      */
-    public function isExistingCustomerAddressCheckFeatureEnabled(string $salesChannelId): bool
+    public function isExistingAddressCheckFeatureEnabled(string $salesChannelId): bool
     {
         // Check if the Endereco plugin is active and ready to use for the given sales channel.
         $pluginIsReadyToUse = $this->isEnderecoPluginActive($salesChannelId);
@@ -916,7 +1024,7 @@ class EnderecoService
      * @param string $fullStreet The full street address to be split.
      * @param string $countryCode The country code related to the full street address.
      * @param Context $context The context offering details of the event triggering this method.
-     * @param string $salesChannelId The identifier of the sales channel related to the address.
+     * @param ?string $salesChannelId The identifier of the sales channel related to the address.
      *
      * @return array<string> An array containing the street name and house number.
      */
@@ -924,9 +1032,9 @@ class EnderecoService
         string $fullStreet,
         string $countryCode,
         Context $context,
-        string $salesChannelId
+        ?string $salesChannelId
     ): array {
-        // Fetch the Endereco API URL from the settings for the specific sales channel.
+        // Fetch the Endereco API URL from the settings for the specific sales channel or in general.
         $serviceUrl = $this->systemConfigService->getString(
             'EnderecoShopware6Client.config.enderecoRemoteUrl',
             $salesChannelId

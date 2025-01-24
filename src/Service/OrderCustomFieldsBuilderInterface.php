@@ -2,7 +2,9 @@
 
 namespace Endereco\Shopware6Client\Service;
 
+use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressCollection;
 use Shopware\Core\Checkout\Order\OrderEntity;
+use Shopware\Core\Framework\Context;
 
 /**
  * Interface for building custom fields containing address validation data for orders.
@@ -24,7 +26,9 @@ interface OrderCustomFieldsBuilderInterface
      * @param OrderEntity $orderEntity The order containing the billing addresses
      * @return array<string, array<string, mixed>> Formatted validation data for custom fields
      */
-    public function buildOrderBillingAddressValidationData(OrderEntity $orderEntity): array;
+    public function buildOrderBillingAddressValidationData(
+        OrderEntity $orderEntity
+    ): array;
 
     /**
      * Builds custom field data for shipping address validation.
@@ -35,5 +39,7 @@ interface OrderCustomFieldsBuilderInterface
      * @param OrderEntity $orderEntity The order containing the shipping addresses
      * @return array<string, array<string, mixed>> Formatted validation data for custom fields
      */
-    public function buildOrderShippingAddressValidationData(OrderEntity $orderEntity): array;
+    public function buildOrderShippingAddressValidationData(
+        OrderEntity $orderEntity
+    ): array;
 }
