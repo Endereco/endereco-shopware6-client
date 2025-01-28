@@ -50,7 +50,7 @@ final class OrderCustomFieldsBuilder implements OrderCustomFieldsBuilderInterfac
 
         /** @var array<int, OrderAddressEntity> $billingAddresses */
         $billingAddresses = $orderAddresses->filter(
-            function(OrderAddressEntity $address) use ($orderEntity) {
+            function (OrderAddressEntity $address) use ($orderEntity) {
                 return $address->getId() === $orderEntity->getBillingAddressId();
             }
         );

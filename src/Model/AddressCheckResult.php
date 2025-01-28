@@ -50,6 +50,17 @@ class AddressCheckResult
     }
 
     /**
+     * Checks if the address was fully correct. This method is used to trigger the logic to copy over predictions
+     * in case of fully correct address, to fix some formatting error in the API.
+     *
+     * @return bool
+     */
+    public function isFullyCorrect(): bool
+    {
+        return false;
+    }
+
+    /**
      * Converts the statuses array to a string.
      *
      * @return string A comma-separated string of statuses.

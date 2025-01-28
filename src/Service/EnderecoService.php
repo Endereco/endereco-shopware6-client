@@ -54,6 +54,7 @@ class EnderecoService
     private AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder;
 
     public bool $isImport = false;
+    public bool $isProcessingInsurances = false;
 
     protected RequestStack $requestStack;
 
@@ -221,6 +222,13 @@ class EnderecoService
     {
 
         if (!$this->session instanceof SessionInterface) {
+            return;
+        }
+
+        // It can happen, that we write to customer address while processing insurances
+        // for example for automatic corrections. To prevent restart of the sesison, we skip the
+        // accounting, until the ensurances are through.
+        if ($this->isProcessingInsurances) {
             return;
         }
 
@@ -583,6 +591,55 @@ class EnderecoService
             $addressExtension->setAmsStatus(implode(',', $newStatuses));
             $addressExtension->setAmsPredictions([]);
             $addressExtension->setAmsTimestamp(time());
+            $addressExtension->setAmsRequestPayload($addressCheckResult->getAddressSignature());
+        } elseif ($addressCheckResult->isFullyCorrect() && !empty($addressCheckResult->getPredictions())) {
+            $correction = $addressCheckResult->getPredictions()[0];
+            $updatePayload['zipcode'] = $correction['postalCode'];
+            $updatePayload['city'] = $correction['locality'];
+
+            $fullStreet = $this->buildFullStreet(
+                $correction['streetName'],
+                $correction['buildingNumber'],
+                $correction['countryCode']
+            );
+
+            $updatePayload['street'] = $fullStreet;
+
+            $addressEntity->setZipcode($correction['postalCode']);
+            $addressEntity->setCity($correction['locality']);
+            $addressEntity->setStreet($fullStreet);
+
+            // If a subdivision code exists in the correction, find the corresponding country state ID and set it
+            if (array_key_exists('subdivisionCode', $correction)) {
+                $countryStateId = $this->countryStateRepository
+                    ->searchIds(
+                        (new Criteria())->addFilter(new EqualsFilter('shortCode', $correction['subdivisionCode'])),
+                        $context
+                    )->firstId();
+                if (!is_null($countryStateId)) {
+                    $updatePayload['countryStateId'] = $countryStateId;
+
+                    $addressEntity->setCountryStateId($countryStateId);
+                }
+            }
+
+            // If there was no automatic correction, save the statuses and predictions from the address check result
+            $updatePayload['extensions']['enderecoAddress']['amsStatus'] = $addressCheckResult->getStatusesAsString();
+            $updatePayload['extensions']['enderecoAddress']['amsPredictions'] = $addressCheckResult->getPredictions();
+            $updatePayload['extensions']['enderecoAddress']['amsTimestamp'] = time();
+            $updatePayload['extensions']['enderecoAddress']['amsRequestPayload']
+                = $addressCheckResult->getAddressSignature();
+
+            /** @var EnderecoCustomerAddressExtensionEntity|null $addressExtension */
+            $addressExtension = $addressEntity->getExtension('enderecoAddress');
+            if (is_null($addressExtension)) {
+                $addressExtension = new EnderecoCustomerAddressExtensionEntity();
+                $addressEntity->addExtension('enderecoAddress', $addressExtension);
+            }
+
+            $addressExtension->setAmsStatus($addressCheckResult->getStatusesAsString());
+            $addressExtension->setAmsPredictions($addressCheckResult->getPredictions());
+            $addressExtension->setAmstimestamp(time());
             $addressExtension->setAmsRequestPayload($addressCheckResult->getAddressSignature());
         } else {
             // If there was no automatic correction, save the statuses and predictions from the address check result

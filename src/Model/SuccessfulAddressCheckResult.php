@@ -31,6 +31,16 @@ class SuccessfulAddressCheckResult extends AddressCheckResult
     }
 
     /**
+     * Returns true, if the address is perfect.
+     *
+     * @return bool
+     */
+    public function isFullyCorrect(): bool
+    {
+        return in_array('address_correct', $this->statuses);
+    }
+
+    /**
      * Generates status codes based on the correction.
      *
      * This method checks the predictions of the address check result and generates status
