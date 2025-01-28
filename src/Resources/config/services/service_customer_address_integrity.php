@@ -95,6 +95,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
      */
     $services->set(AmsStatusIsSetInsurance::class)
         ->args([
+            '$isAmsRequestPayloadIsUpToDateChecker' =>
+                service(IsAmsRequestPayloadIsUpToDateCheckerInterface::class),
             '$enderecoService' => service(EnderecoService::class),
         ]);
 

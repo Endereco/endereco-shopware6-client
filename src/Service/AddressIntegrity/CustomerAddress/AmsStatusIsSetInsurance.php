@@ -19,17 +19,24 @@ use Shopware\Core\Framework\Context;
  */
 final class AmsStatusIsSetInsurance implements IntegrityInsurance
 {
+    private const MAX_VALIDATION_ATTEMPTS = 3;
+
     private EnderecoService $enderecoService;
+    private IsAmsRequestPayloadIsUpToDateCheckerInterface $isAmsRequestPayloadIsUpToDateChecker;
 
     /**
      * AmsStatusIsSetInsurance constructor.
      *
+     * @param IsAmsRequestPayloadIsUpToDateCheckerInterface $isAmsRequestPayloadIsUpToDateChecker Checker service
      * @param EnderecoService $enderecoService Service for interacting with the Endereco API
      */
     public function __construct(
+        IsAmsRequestPayloadIsUpToDateCheckerInterface $isAmsRequestPayloadIsUpToDateChecker,
         EnderecoService $enderecoService
+
     ) {
         $this->enderecoService = $enderecoService;
+        $this->isAmsRequestPayloadIsUpToDateChecker = $isAmsRequestPayloadIsUpToDateChecker;
     }
 
     public static function getPriority(): int
@@ -75,22 +82,51 @@ final class AmsStatusIsSetInsurance implements IntegrityInsurance
             return;
         }
 
-        // Then we validate the address.
-        $addressCheckResult = $this->enderecoService->checkAddress($addressEntity, $context, $salesChannelId);
+        $attempts = 1;
+        $sessionId = '';
+        while (1) {
+            if ($attempts >= self::MAX_VALIDATION_ATTEMPTS) {
+                throw new \RuntimeException(
+                    sprintf('Address validation exceeded maximum attempts (%d)', self::MAX_VALIDATION_ATTEMPTS)
+                );
+            }
 
-        // We dont throw exceptions, we just gracefully stop here. Maybe the API will be available later again.
-        if ($addressCheckResult instanceof FailedAddressCheckResult) {
-            return;
+            // Then we validate the address.
+            $addressCheckResult = $this->enderecoService->checkAddress(
+                $addressEntity,
+                $context,
+                $salesChannelId,
+                $sessionId
+            );
+
+            // We dont throw exceptions, we just gracefully stop here. Maybe the API will be available later again.
+            if ($addressCheckResult instanceof FailedAddressCheckResult) {
+                return;
+            }
+
+            // Here we save the status codes and predictions. If it's an automatic correction, then we also save
+            // the data from the correction to customer address entity and generate a new,
+            // "virtual" address check result.
+            $this->enderecoService->applyAddressCheckResult($addressCheckResult, $addressEntity, $context);
+
+            $isRequestPayloadUpToDate = $this->isAmsRequestPayloadIsUpToDateChecker->checkIfCustomerAddressMetaIsUpToDate(
+                $addressEntity,
+                $addressExtension,
+                $context
+            );
+
+            $sessionId = $addressCheckResult->getUsedSessionId();
+            $attempts++;
+
+            // If the signature is still valid after applying the results of address check, then
+            if ($isRequestPayloadUpToDate) {
+                break;
+            }
         }
 
-        // Here we save the status codes and predictions. If it's an automatic correction, then we also save
-        // the data from the correction to customer address entity and generate a new,
-        // "virtual" address check result.
-        $this->enderecoService->applyAddressCheckResult($addressCheckResult, $addressEntity, $context);
-
         // Count the validation for accounting.
-        if (!empty($addressCheckResult->getUsedSessionId())) {
-            $this->enderecoService->addAccountableSessionIdsToStorage([$addressCheckResult->getUsedSessionId()]);
+        if (!empty($sessionId)) {
+            $this->enderecoService->addAccountableSessionIdsToStorage([$sessionId]);
         }
     }
 

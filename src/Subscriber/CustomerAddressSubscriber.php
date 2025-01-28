@@ -208,6 +208,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         }
 
         // Loop through all entities loaded in the event
+        $this->enderecoService->isProcessingInsurances = true;
         foreach ($event->getEntities() as $entity) {
             // Skip the entity if it's not a CustomerAddressEntity
             if (!$entity instanceof CustomerAddressEntity) {
@@ -216,6 +217,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
 
             $this->customerAddressIntegrityInsurance->ensure($entity, $context);
         }
+        $this->enderecoService->isProcessingInsurances = false;
 
         // Close all stored sessions after checking all addresses
         $this->enderecoService->closeStoredSessions($context, $salesChannelId);
