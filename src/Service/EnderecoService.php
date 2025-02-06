@@ -723,16 +723,33 @@ class EnderecoService
                 'DE'
             );
 
+            $additionalInfo = null;
+            if (array_key_exists('additionalAddressLine1', $addressData)) {
+                $additionalInfo = $addressData['additionalAddressLine1'];
+            } elseif (array_key_exists('additionalAddressLine2', $addressData)) {
+                $additionalInfo = $addressData['additionalAddressLine2'];
+            }
+
             // Split the full street into its constituent parts
-            list($streetName, $buildingNumber) = $this->splitStreet(
-                $fullStreet,
-                $countryCode,
-                $context,
-                $salesChannelId
-            );
+            list($normalizedStreetFull, $streetName, $buildingNumber, $normalizedAdditionalInfo) =
+                $this->splitStreet(
+                    $fullStreet,
+                    $additionalInfo,
+                    $countryCode,
+                    $context,
+                    $salesChannelId
+                );
 
             $addressData['extensions']['enderecoAddress']['street'] = $streetName;
             $addressData['extensions']['enderecoAddress']['houseNumber'] = $buildingNumber;
+
+            // Copy over corrections too
+            $addressData['street'] = $normalizedStreetFull;
+            if (array_key_exists('additionalAddressLine1', $addressData)) {
+                $addressData['additionalAddressLine1'] = $normalizedAdditionalInfo;
+            } elseif (array_key_exists('additionalAddressLine2', $addressData)) {
+                $addressData['additionalAddressLine2'] = $normalizedAdditionalInfo;
+            }
         } elseif (!$isFullStreetEmpty && !$isStreetNameEmpty) {
             if ($this->isStreetSplittingFeatureEnabled($salesChannelId)) {
                 // Fetch important parts to build a full street.
@@ -766,16 +783,33 @@ class EnderecoService
                     'DE'
                 );
 
+                $additionalInfo = null;
+                if (array_key_exists('additionalAddressLine1', $addressData)) {
+                    $additionalInfo = $addressData['additionalAddressLine1'];
+                } elseif (array_key_exists('additionalAddressLine2', $addressData)) {
+                    $additionalInfo = $addressData['additionalAddressLine2'];
+                }
+
                 // Split the full street into its constituent parts
-                list($streetName, $buildingNumber) = $this->splitStreet(
-                    $fullStreet,
-                    $countryCode,
-                    $context,
-                    $salesChannelId
-                );
+                list($normalizedStreetFull, $streetName, $buildingNumber, $normalizedAdditionalInfo) =
+                    $this->splitStreet(
+                        $fullStreet,
+                        $additionalInfo,
+                        $countryCode,
+                        $context,
+                        $salesChannelId
+                    );
 
                 $addressData['extensions']['enderecoAddress']['street'] = $streetName;
                 $addressData['extensions']['enderecoAddress']['houseNumber'] = $buildingNumber;
+
+                // Copy over corrections too
+                $addressData['street'] = $normalizedStreetFull;
+                if (array_key_exists('additionalAddressLine1', $addressData)) {
+                    $addressData['additionalAddressLine1'] = $normalizedAdditionalInfo;
+                } elseif (array_key_exists('additionalAddressLine2', $addressData)) {
+                    $addressData['additionalAddressLine2'] = $normalizedAdditionalInfo;
+                }
             }
         }
     }
@@ -1071,22 +1105,29 @@ class EnderecoService
     }
 
     /**
-     * Splits a full street address into street name and house number.
+     * Splits a full street address into its components using the Endereco API.
      *
-     * This method sends a 'splitStreet' request to the Endereco API with a payload containing the full street address,
-     * the country format, and the language. The API then returns the street name and house number separately.
-     * In case of failure, it logs an error message and returns the full street name along with an empty string
-     * as the house number.
+     * This method sends a "splitStreet" request to the Endereco API with a payload that includes the full street,
+     * the country code (as the formatCountry), a fixed language ('de'), and optionally additional address information.
+     * The API response is expected to contain the individual components: the street name, house number, and possibly
+     * updated additional info. In case of any error, the method logs the issue and falls back to returning the API's
+     * default values (with empty strings for missing components).
      *
-     * @param string $fullStreet The full street address to be split.
-     * @param string $countryCode The country code related to the full street address.
-     * @param Context $context The context offering details of the event triggering this method.
-     * @param ?string $salesChannelId The identifier of the sales channel related to the address.
+     * @param string      $fullStreet      The full street address to be split.
+     * @param ?string     $additionalInfo  Optional additional address information to be sent with the request.
+     * @param string      $countryCode     The country code corresponding to the address.
+     * @param Context     $context         The Shopware context providing details about the current execution.
+     * @param ?string     $salesChannelId  The identifier for the sales channel associated with the address.
      *
-     * @return array<string> An array containing the street name and house number.
+     * @return array{0: string, 1: string, 2: string, 3: ?string} An array with the following elements:
+     *      - [0] The street value returned from the API (may be the full street address if parsing failed),
+     *      - [1] The extracted street name,
+     *      - [2] The extracted house number,
+     *      - [3] The additional info as returned by the API, or null if not provided.
      */
     public function splitStreet(
         string $fullStreet,
+        ?string $additionalInfo,
         string $countryCode,
         Context $context,
         ?string $salesChannelId
@@ -1107,15 +1148,21 @@ class EnderecoService
                 $salesChannelId
             );
 
+            $data = [
+                'formatCountry' => $countryCode,
+                'language' => 'de',
+                'street' => $fullStreet
+            ];
+
+            if ($additionalInfo !== null) {
+                $data['additionalInfo'] = $additionalInfo;
+            }
+
             // Prepare the payload for the 'splitStreet' request.
             $payload = json_encode(
                 $this->preparePayload(
                     'splitStreet',
-                    [
-                        'formatCountry' => $countryCode,
-                        'language' => 'de',
-                        'street' => $fullStreet
-                    ]
+                    $data
                 )
             );
 
@@ -1131,8 +1178,10 @@ class EnderecoService
             // Decode the response from the API.
             $result = json_decode($response->getBody()->getContents())->result;
 
+            $fullStreet = $result->street ?? '';
             $streetName = $result->streetName ?? '';
             $houseNumber = $result->houseNumber ?? '';
+            $additionalInfo = $result->additionalInfo ?? null;
         } catch (RequestException $e) {
             // Handle and log specific HTTP request errors.
             if ($e->hasResponse()) {
@@ -1147,7 +1196,7 @@ class EnderecoService
         }
 
         // Return the original full street name and an empty string as the house number in case of failure.
-        return [$streetName, $houseNumber];
+        return [$fullStreet, $streetName, $houseNumber, $additionalInfo];
     }
 
     /**

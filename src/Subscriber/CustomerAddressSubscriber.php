@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Endereco\Shopware6Client\Subscriber;
 
+use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoBaseAddressExtensionEntity;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
@@ -326,12 +327,12 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         if (is_null($input->get('amsPredictions'))) {
             $predictions = [];
         } else {
-            $predictions = json_decode($input->get('amsPredictions'), true);
+            $predictions = json_decode($input->get('amsPredictions'), true) ?? [];
         }
 
         // Add relevant endereco data.
         $output['extensions'] = [
-            'enderecoAddress' => [
+            CustomerAddressExtension::ENDERECO_EXTENSION => [
                 'street' => $input->get('enderecoStreet', ''),
                 'houseNumber' => $input->get('enderecoHousenumber', ''),
                 'amsStatus' => $input->get('amsStatus') ?? EnderecoBaseAddressExtensionEntity::AMS_STATUS_NOT_CHECKED,
@@ -348,14 +349,17 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         $payloadBody = $this->addressCheckPayloadBuilder->buildFromArray(
             [
                 'countryId' => $output['countryId'],
-                'countryStateId' => $output['countryStateId'],
+                'countryStateId' => $output['countryStateId'] ?? null,
                 'zipcode' => $output['zipcode'],
                 'city' => $output['city'],
-                'street' => $output['street']
+                'street' => $output['street'],
+                'additionalAddressLine1' => $output['additionalAddressLine1'] ?? null,
+                'additionalAddressLine2' => $output['additionalAddressLine2'] ?? null,
             ],
             $context
         );
-        $output['extensions']['enderecoAddress']['amsRequestPayload'] = $payloadBody->toJSON();
+        $output['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsRequestPayload']
+            = $payloadBody->toJSON();
 
         // Update the output data in the event
         $event->setOutput($output);

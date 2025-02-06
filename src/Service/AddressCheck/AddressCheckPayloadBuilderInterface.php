@@ -17,7 +17,9 @@ interface AddressCheckPayloadBuilderInterface
      *   countryStateId?: string|null,
      *   zipcode: string,
      *   city: string,
-     *   street: string
+     *   street: string,
+     *   additionalAddressLine1: string|null,
+     *   additionalAddressLine2: string|null
      * } $addressData
      * @param Context $context
      * @return AddressCheckPayload
