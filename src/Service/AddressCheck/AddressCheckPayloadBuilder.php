@@ -21,7 +21,9 @@ use Shopware\Core\Framework\Context;
  *   countryStateId?: string|null,
  *   zipcode: string,
  *   city: string,
- *   street: string
+ *   street: string,
+ *   additionalAddressLine1: string|null,
+ *   additionalAddressLine2: string|null
  * }
  */
 final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInterface
@@ -41,21 +43,26 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
      */
     private CountryHasStatesCheckerInterface $countryHasStatesChecker;
 
+    private AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker;
+
     /**
      * Creates a new AddressCheckPayloadBuilder with required dependencies.
      *
      * @param CountryCodeFetcherInterface $countryCodeFetcher Service for country code lookup
      * @param SubdivisionCodeFetcherInterface $subdivisionCodeFetcher Service for subdivision code resolution
      * @param CountryHasStatesCheckerInterface $countryHasStatesChecker Service for checking country subdivision support
+     * @param AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker Checks if additional info is present
      */
     public function __construct(
         CountryCodeFetcherInterface $countryCodeFetcher,
         SubdivisionCodeFetcherInterface $subdivisionCodeFetcher,
-        CountryHasStatesCheckerInterface $countryHasStatesChecker
+        CountryHasStatesCheckerInterface $countryHasStatesChecker,
+        AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker
     ) {
         $this->countryCodeFetcher = $countryCodeFetcher;
         $this->subdivisionCodeFetcher = $subdivisionCodeFetcher;
         $this->countryHasStatesChecker = $countryHasStatesChecker;
+        $this->additionalAddressFieldChecker = $additionalAddressFieldChecker;
     }
 
     /**
@@ -77,12 +84,18 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
             $subdivisionCode = $this->getSubdivisionCodeFromArray($addressData, $context);
         }
 
+        $additionalInfo = null;
+        if ($this->additionalAddressFieldChecker->hasAdditionalAddressField($context)) {
+            $additionalInfo = $this->getAdditionalInfoFromArray($addressData, $context);
+        }
+
         return new AddressCheckPayload(
             $countryCode,
             $addressData['zipcode'],
             $addressData['city'],
             $addressData['street'],
-            $subdivisionCode
+            $subdivisionCode,
+            $additionalInfo
         );
     }
 
@@ -103,7 +116,9 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
                 'countryStateId' => $address->getCountryStateId(),
                 'zipcode' => $address->getZipcode() ?? '', // We dont support no zip code yet.
                 'city' => $address->getCity(),
-                'street' => $address->getStreet()
+                'street' => $address->getStreet(),
+                'additionalAddressLine1' => $address->getAdditionalAddressLine1(),
+                'additionalAddressLine2' => $address->getAdditionalAddressLine2(),
             ],
             $context
         );
@@ -126,7 +141,9 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
                 'countryStateId' => $address->getCountryStateId(),
                 'zipcode' => $address->getZipcode(),
                 'city' => $address->getCity(),
-                'street' => $address->getStreet()
+                'street' => $address->getStreet(),
+                'additionalAddressLine1' => $address->getAdditionalAddressLine1(),
+                'additionalAddressLine2' => $address->getAdditionalAddressLine2(),
             ],
             $context
         );
@@ -157,5 +174,18 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
         }
 
         return null;
+    }
+
+    /**
+     * Retrieves the additional address information from the provided address data array.
+     *
+     * @param AddressDataStructure $addressData The address data array containing address components.
+     * @param Context $context The Shopware context for current execution.
+     * @return string The value of the additional address information, or an empty string if not available.
+     */
+    private function getAdditionalInfoFromArray(array $addressData, Context $context): string
+    {
+        $fieldName = $this->additionalAddressFieldChecker->getAvailableAdditionalAddressFieldName($context);
+        return $addressData[$fieldName] ?? '';
     }
 }

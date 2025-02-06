@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldChecker;
+use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilder;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcher;
@@ -12,6 +14,7 @@ use Endereco\Shopware6Client\Service\AddressCheck\LocaleFetcher;
 use Endereco\Shopware6Client\Service\AddressCheck\LocaleFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\SubdivisionCodeFetcher;
 use Endereco\Shopware6Client\Service\AddressCheck\SubdivisionCodeFetcherInterface;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
@@ -33,7 +36,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->args([
             '$countryCodeFetcher' => service(CountryCodeFetcherInterface::class),
             '$subdivisionCodeFetcher' => service(SubdivisionCodeFetcherInterface::class),
-            '$countryHasStatesChecker' => service(CountryHasStatesCheckerInterface::class)
+            '$countryHasStatesChecker' => service(CountryHasStatesCheckerInterface::class),
+            '$additionalAddressFieldChecker' => service(AdditionalAddressFieldCheckerInterface::class),
         ]);
     $services->alias(AddressCheckPayloadBuilderInterface::class, AddressCheckPayloadBuilder::class);
 
@@ -75,4 +79,14 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$countryStateRepository' => service('country_state.repository')
         ]);
     $services->alias(SubdivisionCodeFetcherInterface::class, SubdivisionCodeFetcher::class);
+
+    /**
+     * Retrieves standardized codes for states/provinces.
+     * Ensures consistent subdivision identification in API requests.
+     */
+    $services->set(AdditionalAddressFieldChecker::class)
+        ->args([
+            '$systemConfigService' => service(SystemConfigService::class)
+        ]);
+    $services->alias(AdditionalAddressFieldCheckerInterface::class, AdditionalAddressFieldChecker::class);
 };

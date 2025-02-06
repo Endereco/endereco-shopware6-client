@@ -202,6 +202,12 @@
                                                 addressTimestamp: `[data-endereco-${markerValue}-form-id="${formId}"] ${amsTimestampSelector}`,
                                                 addressPredictions: `[data-endereco-${markerValue}-form-id="${formId}"] ${amsPredictionsSelector}`,
                                             };
+
+                                            if (MarkerElement.getAttribute('data-additional-info-selector')) {
+                                                var additionalInfoSelector = MarkerElement.getAttribute('data-additional-info-selector');
+                                                selectorsCollection.additionalInfo = `[data-endereco-${markerValue}-form-id="${formId}"] ${additionalInfoSelector}`;
+                                            }
+
                                             var EAO = window.EnderecoIntegrator.initAMS(
                                                 selectorsCollection,
                                                 {
