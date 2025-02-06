@@ -130,6 +130,8 @@ class AddressController extends StorefrontController
             'city' => $address['city'],
             'zipcode' => $address['zipcode'],
             'street' => $address['street'] ?? '',
+            'additionalAddressLine1' => $address['additionalAddressLine1'] ?? null,
+            'additionalAddressLine2' => $address['additionalAddressLine1'] ?? null,
             'extensions' => [
                 'enderecoAddress' => [
                     'street' => $address['enderecoStreet'] ?? '',
@@ -156,7 +158,9 @@ class AddressController extends StorefrontController
                 'countryStateId' => $updatePayload['countryStateId'],
                 'zipcode' => $updatePayload['zipcode'],
                 'city' => $updatePayload['city'],
-                'street' => $updatePayload['street']
+                'street' => $updatePayload['street'],
+                'additionalAddressLine1' => $updatePayload['additionalAddressLine1'],
+                'additionalAddressLine2' => $updatePayload['additionalAddressLine2']
             ],
             $mainContext
         );

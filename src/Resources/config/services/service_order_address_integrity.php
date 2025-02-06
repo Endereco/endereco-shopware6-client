@@ -9,7 +9,6 @@ use Endereco\Shopware6Client\Service\AddressIntegrity\Check\IsStreetSplitRequire
 use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddress\AddressExtensionExistsInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddress\AmsRequestPayloadIsUpToDateInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddress\IntegrityInsurance;
-use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddress\StreetIsSplitInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddressIntegrityInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddressIntegrityInsuranceInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\Sync\OrderAddressSyncer;
@@ -58,20 +57,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$isAmsRequestPayloadIsUpToDateChecker' =>
                 service(IsAmsRequestPayloadIsUpToDateCheckerInterface::class),
             '$enderecoService' => service(EnderecoService::class),
-        ]);
-
-    /**
-     * Ensures that there are always splitted street name and building number in the extension.
-     * Handles splitting of street addresses when required.
-     */
-    $services->set(StreetIsSplitInsurance::class)
-        ->args([
-            '$isStreetSplitRequiredChecker' => service(IsStreetSplitRequiredCheckerInterface::class),
-            '$countryCodeFetcher' => service(CountryCodeFetcherInterface::class),
-            '$enderecoService' => service(EnderecoService::class),
-            '$addressExtensionRepository' => service(
-                EnderecoOrderAddressExtensionDefinition::ENTITY_NAME . '.repository'
-            ),
         ]);
 
     /**

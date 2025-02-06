@@ -48,6 +48,13 @@ class AddressCheckPayload
     private ?string $subdivisionCode;
 
     /**
+     * Additional info found in on of the two possible fields in the address form.
+     *
+     * @var string|null
+     */
+    private ?string $additionalInfo;
+
+    /**
      * Creates a new address check payload with all required components.
      *
      * @param string $country The country code in ISO format
@@ -55,19 +62,22 @@ class AddressCheckPayload
      * @param string $cityName The city name
      * @param string $streetFull The complete street address
      * @param string|null $subdivisionCode The state/province code or null/empty string based on availability
+     * @param string|null $additionalInfo The additional info sometimes provided in the formulars
      */
     public function __construct(
         string $country,
         string $postCode,
         string $cityName,
         string $streetFull,
-        ?string $subdivisionCode
+        ?string $subdivisionCode,
+        ?string $additionalInfo
     ) {
         $this->country = $country;
         $this->postCode = $postCode;
         $this->cityName = $cityName;
         $this->streetFull = $streetFull;
         $this->subdivisionCode = $subdivisionCode;
+        $this->additionalInfo = $additionalInfo;
     }
 
     /**
@@ -82,7 +92,8 @@ class AddressCheckPayload
      *     postCode: string,
      *     cityName: string,
      *     streetFull: string,
-     *     subdivisionCode?: string
+     *     subdivisionCode?: string,
+     *     additionalInfo?: string
      * } Array representation of the payload
      */
     public function data(): array
@@ -96,6 +107,10 @@ class AddressCheckPayload
 
         if ($this->subdivisionCode !== null) {
             $data['subdivisionCode'] = $this->subdivisionCode;
+        }
+
+        if ($this->additionalInfo !== null) {
+            $data['additionalInfo'] = $this->additionalInfo;
         }
 
         // Ensure the same order of fields.

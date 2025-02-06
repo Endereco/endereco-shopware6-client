@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionDefinition;
+use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
 use Endereco\Shopware6Client\Service\CustomerAddressCacheInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\Check\IsAmsRequestPayloadIsUpToDateCheckerInterface;
@@ -75,6 +76,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$addressExtensionRepository' => service(
                 EnderecoCustomerAddressExtensionDefinition::ENTITY_NAME . '.repository'
             ),
+            '$customerAddressRepository' => service('customer_address.repository'),
+            '$additionalAddressFieldChecker' => service(AdditionalAddressFieldCheckerInterface::class),
         ]);
 
     /**
