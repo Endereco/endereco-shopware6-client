@@ -2,6 +2,7 @@
 
 namespace Endereco\Shopware6Client\Subscriber;
 
+use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -24,6 +25,7 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
     protected EntityRepository $stateRepository;
     protected EntityRepository $salutationRepository;
     protected EntityRepository $pluginRepository;
+    private AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker;
 
     public function __construct(
         SystemConfigService $systemConfigService,
@@ -31,7 +33,8 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
         EntityRepository $countryRepository,
         EntityRepository $stateRepository,
         EntityRepository $salutationRepository,
-        EntityRepository $pluginRepository
+        EntityRepository $pluginRepository,
+        AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker
     ) {
         $this->systemConfigService = $systemConfigService;
         $this->countryRepository = $countryRepository;
@@ -39,6 +42,7 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
         $this->salutationRepository = $salutationRepository;
         $this->pluginRepository = $pluginRepository;
         $this->enderecoService = $enderecoService;
+        $this->additionalAddressFieldChecker = $additionalAddressFieldChecker;
     }
 
     /** @return array<string, string> */
@@ -470,5 +474,11 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
         $configContainer->subdivisionCodeToNameMapping = $this->createSafeJsonString($statesCodeToNameMapping);
         $configContainer->subdivisionMapping = $this->createSafeJsonString($statesMapping);
         $configContainer->subdivisionMappingReverse = $this->createSafeJsonString($statesMappingReverse);
+
+        // Additional info data.
+        $configContainer->hasAnyAdditionalFields =
+            $this->additionalAddressFieldChecker->hasAdditionalAddressField($context);
+        $configContainer->additionalInfoFieldName =
+            $this->additionalAddressFieldChecker->getAvailableAdditionalAddressFieldName($context);
     }
 }

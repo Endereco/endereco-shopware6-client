@@ -61,20 +61,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ]);
 
     /**
-     * Ensures that there are always splitted street name and building number in the extension.
-     * Handles splitting of street addresses when required.
-     */
-    $services->set(StreetIsSplitInsurance::class)
-        ->args([
-            '$isStreetSplitRequiredChecker' => service(IsStreetSplitRequiredCheckerInterface::class),
-            '$countryCodeFetcher' => service(CountryCodeFetcherInterface::class),
-            '$enderecoService' => service(EnderecoService::class),
-            '$addressExtensionRepository' => service(
-                EnderecoOrderAddressExtensionDefinition::ENTITY_NAME . '.repository'
-            ),
-        ]);
-
-    /**
      * Synchronizes address data between cache and entities.
      * Optimizes performance by reducing redundant API calls.
      */

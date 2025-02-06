@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityInsuranceInterface;
@@ -36,7 +37,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$countryRepository' => service('country.repository'),
             '$stateRepository' => service('country_state.repository'),
             '$salutationRepository' => service('salutation.repository'),
-            '$pluginRepository' => service('plugin.repository')
+            '$pluginRepository' => service('plugin.repository'),
+            '$additionalAddressFieldChecker' => service(AdditionalAddressFieldCheckerInterface::class),
         ])
         ->tag('kernel.event_subscriber');
 
