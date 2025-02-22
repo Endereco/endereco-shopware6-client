@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Endereco\Shopware6Client\Service\AddressCheck;
@@ -28,4 +29,8 @@ interface AdditionalAddressFieldCheckerInterface
      * @return string The field name to use or empty string if none are enabled.
      */
     public function getAvailableAdditionalAddressFieldName(Context $context): string;
+
+    public function getAvailableAdditionalAddressFieldGetter(Context $context): ?string;
+
+    public function getAvailableAdditionalAddressFieldSetter(Context $context): ?string;
 }
