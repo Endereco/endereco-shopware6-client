@@ -1,29 +1,24 @@
 <?php
 
+/**
+ * Configures integrity checking services for order addresses.
+ */
+
 declare(strict_types=1);
 
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionDefinition;
-use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\Check\IsAmsRequestPayloadIsUpToDateCheckerInterface;
-use Endereco\Shopware6Client\Service\AddressIntegrity\Check\IsStreetSplitRequiredCheckerInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddress\AddressExtensionExistsInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddress\AmsRequestPayloadIsUpToDateInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddress\IntegrityInsurance;
-use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddress\StreetIsSplitInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddressIntegrityInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddressIntegrityInsuranceInterface;
-use Endereco\Shopware6Client\Service\AddressIntegrity\Sync\OrderAddressSyncer;
-use Endereco\Shopware6Client\Service\AddressIntegrity\Sync\OrderAddressSyncerInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
-use Endereco\Shopware6Client\Service\OrderAddressCache;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\tagged_iterator;
 
-/**
- * Configures integrity checking services for order addresses.
- */
 return static function (ContainerConfigurator $containerConfigurator): void {
     $services = $containerConfigurator->services()
         ->defaults()
@@ -61,23 +56,11 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ]);
 
     /**
-     * Synchronizes address data between cache and entities.
-     * Optimizes performance by reducing redundant API calls.
-     */
-    $services->set(OrderAddressSyncer::class)
-        ->args([
-            '$addressCache' => service(OrderAddressCache::class),
-        ]);
-    $services->alias(OrderAddressSyncerInterface::class, OrderAddressSyncer::class);
-
-    /**
      * Coordinates all integrity checks and maintenance.
      * Orchestrates the execution of individual integrity insurances.
      */
     $services->set(OrderAddressIntegrityInsurance::class)
         ->args([
-            '$addressCache' => service(OrderAddressCache::class),
-            '$addressSyncer' => service(OrderAddressSyncerInterface::class),
             '$insurances' => tagged_iterator(
                 'endereco.shopware6_client.order_address_integrity_insurance',
                 null,
