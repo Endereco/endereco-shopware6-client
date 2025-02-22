@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Address checking support service configuration
+ */
+
 declare(strict_types=1);
 
 use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldChecker;
@@ -19,9 +23,6 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
-/**
- * Address checking support service configuration
- */
 return static function (ContainerConfigurator $containerConfigurator): void {
     $services = $containerConfigurator->services()
         ->defaults()

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Endereco\Shopware6Client\Controller\Storefront;
 
+use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Exception;
@@ -130,7 +131,7 @@ class AddressController extends StorefrontController
             'additionalAddressLine1' => $address['additionalAddressLine1'] ?? null,
             'additionalAddressLine2' => $address['additionalAddressLine1'] ?? null,
             'extensions' => [
-                'enderecoAddress' => [
+                CustomerAddressExtension::ENDERECO_EXTENSION => [
                     'street' => $address['enderecoStreet'] ?? '',
                     'houseNumber' => $address['enderecoHousenumber'] ?? '',
                     'amsStatus' => $address['amsStatus'],
@@ -161,7 +162,7 @@ class AddressController extends StorefrontController
             ],
             $mainContext
         );
-        $updatePayload['extensions']['enderecoAddress']['amsRequestPayload'] = $payloadBody->toJSON();
+        $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsRequestPayload'] = $payloadBody->toJSON();
 
 
         // Update the data in the database.

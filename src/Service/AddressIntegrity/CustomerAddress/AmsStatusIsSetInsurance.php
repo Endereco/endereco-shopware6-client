@@ -5,7 +5,6 @@ namespace Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress;
 use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
 use Endereco\Shopware6Client\Model\FailedAddressCheckResult;
-use Endereco\Shopware6Client\Service\CustomerAddressCacheInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\Check\IsAmsRequestPayloadIsUpToDateCheckerInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
