@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Endereco\Shopware6Client\Service;
 
+use Endereco\Shopware6Client\DTO\CustomerAddressDTO;
+use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionEntity;
 use Endereco\Shopware6Client\Entity\OrderAddress\OrderAddressExtension;
@@ -13,6 +15,7 @@ use Endereco\Shopware6Client\Model\FailedAddressCheckResult;
 use Endereco\Shopware6Client\Model\SuccessfulAddressCheckResult;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
+use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AddressPersistenceStrategyProvider;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
@@ -53,6 +56,8 @@ class EnderecoService
 
     private AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder;
 
+    private AddressPersistenceStrategyProvider $addressPersistenceStrategyProvider;
+
     public bool $isImport = false;
     public bool $isProcessingInsurances = false;
 
@@ -66,6 +71,7 @@ class EnderecoService
         EntityRepository $orderAddressRepository,
         CountryCodeFetcherInterface $countryCodeFetcher,
         AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder,
+        AddressPersistenceStrategyProvider $addressPersistenceStrategyProvider,
         RequestStack $requestStack,
         LoggerInterface $logger
     ) {
@@ -77,6 +83,7 @@ class EnderecoService
         $this->orderAddressRepository = $orderAddressRepository;
         $this->countryCodeFetcher = $countryCodeFetcher;
         $this->addressCheckPayloadBuilder = $addressCheckPayloadBuilder;
+        $this->addressPersistenceStrategyProvider = $addressPersistenceStrategyProvider;
         $this->requestStack = $requestStack;
 
         if (!is_null($requestStack->getMasterRequest())) {
@@ -448,13 +455,16 @@ class EnderecoService
         ];
 
         $addressExtension = new EnderecoCustomerAddressExtensionEntity();
-        $addressEntity->addExtension('enderecoAddress', $addressExtension);
+        $addressEntity->addExtension(CustomerAddressExtension::ENDERECO_EXTENSION, $addressExtension);
 
-        $updatePayload['extensions']['enderecoAddress']['amsRequestPayload']
+        $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsRequestPayload']
             = $addressExtension->getAmsRequestPayload();
-        $updatePayload['extensions']['enderecoAddress']['amsStatus'] = $addressExtension->getAmsStatus();
-        $updatePayload['extensions']['enderecoAddress']['amsPredictions'] = $addressExtension->getAmsPredictions();
-        $updatePayload['extensions']['enderecoAddress']['amsTimestamp'] = $addressExtension->getAmsTimestamp();
+        $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsStatus']
+            = $addressExtension->getAmsStatus();
+        $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsPredictions']
+            = $addressExtension->getAmsPredictions();
+        $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsTimestamp']
+            = $addressExtension->getAmsTimestamp();
 
         // Update the customer address in the repository
         $this->customerAddressRepository->update([$updatePayload], $context);
@@ -528,7 +538,7 @@ class EnderecoService
             'id' => $addressId,
         ];
 
-        if ($addressCheckResult->isAutomaticCorrection()) {
+        if ($addressCheckResult->isAutomaticCorrection() && $this->isAutocorrectionAllowedInSettings($context)) {
             // In case of automatic correction, apply the first prediction to the customer address and generate
             // new virtual status codes
             $newStatuses = $addressCheckResult->generateStatusesForAutomaticCorrection();
@@ -565,20 +575,25 @@ class EnderecoService
             }
 
             // Update the endereco extension fields
-            $updatePayload['extensions']['enderecoAddress']['street'] = $correction['streetName'];
-            $updatePayload['extensions']['enderecoAddress']['houseNumber'] = $correction['buildingNumber'];
-            $updatePayload['extensions']['enderecoAddress']['amsStatus'] = implode(',', $newStatuses);
-            $updatePayload['extensions']['enderecoAddress']['amsPredictions'] = [];
-            $updatePayload['extensions']['enderecoAddress']['amsTimestamp'] = time();
-            $updatePayload['extensions']['enderecoAddress']['amsRequestPayload']
+            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['street']
+                = $correction['streetName'];
+            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['houseNumber']
+                = $correction['buildingNumber'];
+            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsStatus']
+                = implode(',', $newStatuses);
+            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsPredictions']
+                = [];
+            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsTimestamp']
+                = time();
+            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsRequestPayload']
                 = $addressCheckResult->getAddressSignature();
 
             /** @var EnderecoCustomerAddressExtensionEntity|null $addressExtension */
-            $addressExtension = $addressEntity->getExtension('enderecoAddress');
+            $addressExtension = $addressEntity->getExtension(CustomerAddressExtension::ENDERECO_EXTENSION);
 
             if (is_null($addressExtension)) {
                 $addressExtension = new EnderecoCustomerAddressExtensionEntity();
-                $addressEntity->addExtension('enderecoAddress', $addressExtension);
+                $addressEntity->addExtension(CustomerAddressExtension::ENDERECO_EXTENSION, $addressExtension);
             }
 
             // We update the entity here, before it is even saved, because this function was triggered by LoadEntity
@@ -624,17 +639,20 @@ class EnderecoService
             }
 
             // If there was no automatic correction, save the statuses and predictions from the address check result
-            $updatePayload['extensions']['enderecoAddress']['amsStatus'] = $addressCheckResult->getStatusesAsString();
-            $updatePayload['extensions']['enderecoAddress']['amsPredictions'] = $addressCheckResult->getPredictions();
-            $updatePayload['extensions']['enderecoAddress']['amsTimestamp'] = time();
-            $updatePayload['extensions']['enderecoAddress']['amsRequestPayload']
+            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsStatus']
+                = $addressCheckResult->getStatusesAsString();
+            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsPredictions']
+                = $addressCheckResult->getPredictions();
+            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsTimestamp']
+                = time();
+            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsRequestPayload']
                 = $addressCheckResult->getAddressSignature();
 
             /** @var EnderecoCustomerAddressExtensionEntity|null $addressExtension */
-            $addressExtension = $addressEntity->getExtension('enderecoAddress');
+            $addressExtension = $addressEntity->getExtension(CustomerAddressExtension::ENDERECO_EXTENSION);
             if (is_null($addressExtension)) {
                 $addressExtension = new EnderecoCustomerAddressExtensionEntity();
-                $addressEntity->addExtension('enderecoAddress', $addressExtension);
+                $addressEntity->addExtension(CustomerAddressExtension::ENDERECO_EXTENSION, $addressExtension);
             }
 
             $addressExtension->setAmsStatus($addressCheckResult->getStatusesAsString());
@@ -643,17 +661,20 @@ class EnderecoService
             $addressExtension->setAmsRequestPayload($addressCheckResult->getAddressSignature());
         } else {
             // If there was no automatic correction, save the statuses and predictions from the address check result
-            $updatePayload['extensions']['enderecoAddress']['amsStatus'] = $addressCheckResult->getStatusesAsString();
-            $updatePayload['extensions']['enderecoAddress']['amsPredictions'] = $addressCheckResult->getPredictions();
-            $updatePayload['extensions']['enderecoAddress']['amsTimestamp'] = time();
-            $updatePayload['extensions']['enderecoAddress']['amsRequestPayload']
+            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsStatus']
+                = $addressCheckResult->getStatusesAsString();
+            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsPredictions']
+                = $addressCheckResult->getPredictions();
+            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsTimestamp']
+                = time();
+            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsRequestPayload']
                 = $addressCheckResult->getAddressSignature();
 
             /** @var EnderecoCustomerAddressExtensionEntity|null $addressExtension */
-            $addressExtension = $addressEntity->getExtension('enderecoAddress');
+            $addressExtension = $addressEntity->getExtension(CustomerAddressExtension::ENDERECO_EXTENSION);
             if (is_null($addressExtension)) {
                 $addressExtension = new EnderecoCustomerAddressExtensionEntity();
-                $addressEntity->addExtension('enderecoAddress', $addressExtension);
+                $addressEntity->addExtension(CustomerAddressExtension::ENDERECO_EXTENSION, $addressExtension);
             }
 
             $addressExtension->setAmsStatus($addressCheckResult->getStatusesAsString());
@@ -664,6 +685,29 @@ class EnderecoService
 
         // Update the customer address in the repository
         $this->customerAddressRepository->update([$updatePayload], $context);
+    }
+
+    /**
+     * Returns true if the user allowed automatic correction in the advanced settings.
+     *
+     * It's allowed by default, however if it causes problems with payments or other systems, this setting can be used
+     * to provide a temporary fix.
+     *
+     * @param Context $context
+     * @return bool
+     */
+    public function isAutocorrectionAllowedInSettings(Context $context): bool
+    {
+        $salesChannelId = null;
+        $source = $context->getSource();
+        if ($source instanceof SalesChannelApiSource) {
+            $salesChannelId = $source->getSalesChannelId();
+        }
+
+        return $this->systemConfigService->getBool(
+            'EnderecoShopware6Client.config.enderecoAllowNativeAddressFieldsOverwrite',
+            $salesChannelId
+        );
     }
 
     /**
@@ -683,8 +727,9 @@ class EnderecoService
      */
     public function syncStreet(array &$addressData, Context $context, string $salesChannelId): void
     {
+        $extensionName = CustomerAddressExtension::ENDERECO_EXTENSION;
         $isFullStreetEmpty = empty($addressData['street']);
-        $isStreetNameEmpty = empty($addressData['extensions']['enderecoAddress']['street']);
+        $isStreetNameEmpty = empty($addressData['extensions'][$extensionName]['street']);
 
         // In the following we handle three expected scenatio:
         // 1. The full street is empty, but name nad housenumber not -> fill up full street
@@ -693,8 +738,8 @@ class EnderecoService
         // 4. If both are empty not filling is required. This should not happen normally.
         if ($isFullStreetEmpty && !$isStreetNameEmpty) {
             // Fetch important parts to build a full street.
-            $streetName = $addressData['extensions']['enderecoAddress']['street'];
-            $buildingNumber = $addressData['extensions']['enderecoAddress']['houseNumber'];
+            $streetName = $addressData['extensions'][$extensionName]['street'];
+            $buildingNumber = $addressData['extensions'][$extensionName]['houseNumber'];
 
             // If country is unknown, use Germany as default
             $countryCode = $this->countryCodeFetcher->fetchCountryCodeByCountryIdAndContext(
@@ -740,21 +785,29 @@ class EnderecoService
                     $salesChannelId
                 );
 
-            $addressData['extensions']['enderecoAddress']['street'] = $streetName;
-            $addressData['extensions']['enderecoAddress']['houseNumber'] = $buildingNumber;
+            $customerAddressDTO = new CustomerAddressDTO(
+                null,
+                null,
+                $addressData
+            );
 
-            // Copy over corrections too
-            $addressData['street'] = $normalizedStreetFull;
-            if (array_key_exists('additionalAddressLine1', $addressData)) {
-                $addressData['additionalAddressLine1'] = $normalizedAdditionalInfo;
-            } elseif (array_key_exists('additionalAddressLine2', $addressData)) {
-                $addressData['additionalAddressLine2'] = $normalizedAdditionalInfo;
-            }
+            $addressPersistenceStrategy = $this->addressPersistenceStrategyProvider->getStrategy(
+                $customerAddressDTO,
+                $context
+            );
+
+            $addressPersistenceStrategy->execute(
+                $normalizedStreetFull,
+                $normalizedAdditionalInfo,
+                $streetName,
+                $buildingNumber,
+                $customerAddressDTO
+            );
         } elseif (!$isFullStreetEmpty && !$isStreetNameEmpty) {
             if ($this->isStreetSplittingFeatureEnabled($salesChannelId)) {
                 // Fetch important parts to build a full street.
-                $streetName = $addressData['extensions']['enderecoAddress']['street'];
-                $buildingNumber = $addressData['extensions']['enderecoAddress']['houseNumber'];
+                $streetName = $addressData['extensions'][$extensionName]['street'];
+                $buildingNumber = $addressData['extensions'][$extensionName]['houseNumber'];
 
                 // If country is unknown, use Germany as default
                 $countryCode = $this->countryCodeFetcher->fetchCountryCodeByCountryIdAndContext(
@@ -800,16 +853,24 @@ class EnderecoService
                         $salesChannelId
                     );
 
-                $addressData['extensions']['enderecoAddress']['street'] = $streetName;
-                $addressData['extensions']['enderecoAddress']['houseNumber'] = $buildingNumber;
+                $customerAddressDTO = new CustomerAddressDTO(
+                    null,
+                    null,
+                    $addressData
+                );
 
-                // Copy over corrections too
-                $addressData['street'] = $normalizedStreetFull;
-                if (array_key_exists('additionalAddressLine1', $addressData)) {
-                    $addressData['additionalAddressLine1'] = $normalizedAdditionalInfo;
-                } elseif (array_key_exists('additionalAddressLine2', $addressData)) {
-                    $addressData['additionalAddressLine2'] = $normalizedAdditionalInfo;
-                }
+                $addressPersistenceStrategy = $this->addressPersistenceStrategyProvider->getStrategy(
+                    $customerAddressDTO,
+                    $context
+                );
+
+                $addressPersistenceStrategy->execute(
+                    $normalizedStreetFull,
+                    $normalizedAdditionalInfo,
+                    $streetName,
+                    $buildingNumber,
+                    $customerAddressDTO
+                );
             }
         }
     }
@@ -995,7 +1056,7 @@ class EnderecoService
     public function isAddressFromRemote(CustomerAddressEntity $addressEntity): bool
     {
         /** @var EnderecoCustomerAddressExtensionEntity $addressExtension */
-        $addressExtension = $addressEntity->getExtension('enderecoAddress');
+        $addressExtension = $addressEntity->getExtension(CustomerAddressExtension::ENDERECO_EXTENSION);
 
         $isFromPayPal = $addressExtension->isPayPalAddress();
         $isFromAmazonPay = $addressExtension->isAmazonPayAddress();
@@ -1044,7 +1105,7 @@ class EnderecoService
     public function isAddressFromPayPal(CustomerAddressEntity $addressEntity): bool
     {
         /** @var EnderecoCustomerAddressExtensionEntity $addressExtension */
-        $addressExtension = $addressEntity->getExtension('enderecoAddress');
+        $addressExtension = $addressEntity->getExtension(CustomerAddressExtension::ENDERECO_EXTENSION);
 
         $isFromPayPal = $addressExtension->isPayPalAddress();
 
@@ -1068,7 +1129,7 @@ class EnderecoService
     public function isAddressFromAmazonPay(CustomerAddressEntity $addressEntity): bool
     {
         /** @var EnderecoCustomerAddressExtensionEntity $addressExtension */
-        $addressExtension = $addressEntity->getExtension('enderecoAddress');
+        $addressExtension = $addressEntity->getExtension(CustomerAddressExtension::ENDERECO_EXTENSION);
 
         $isFromAmazonPay = $addressExtension->isAmazonPayAddress();
 

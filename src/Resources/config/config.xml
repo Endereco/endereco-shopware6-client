@@ -598,6 +598,23 @@
             </helpText>
         </input-field>
 
+        <input-field type="bool">
+            <name>enderecoAllowNativeAddressFieldsOverwrite</name>
+            <label>Allow overwriting the native Shopware address fields</label>
+            <label lang="de-DE">Überschreiben der nativen Shopware-Adressfelder erlauben</label>
+            <defaultValue>true</defaultValue>
+            <helpText>
+                If this function is active, the native Shopware address fields are overwritten with the corrected address
+                data. There is an exception: if a payment is made via AmazonPay, the native Shopware address fields are
+                not overwritten.
+            </helpText>
+            <helpText lang="de-DE">
+                Ist diese Funktion aktiv, werden die nativen Shopware-Adressfelder mit den korrigierten Adressdaten
+                überschrieben. Es gibt einen Sonderfall: wird eine Zahlung per AmazonPay vorgenommen, werden die
+                nativen Shopware-Adressfelder nicht überschrieben.
+            </helpText>
+        </input-field>
+
         <input-field type="text">
             <name>enderecoPathToIOPhp</name>
             <label>Input the path to proxy file "io.php" manually (optional)</label>

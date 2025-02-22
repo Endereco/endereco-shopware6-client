@@ -1,64 +1,76 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress;
 
+use Endereco\Shopware6Client\DTO\CustomerAddressDTO;
 use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
 use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
-use Endereco\Shopware6Client\Service\AddressIntegrity\Check\IsStreetSplitRequiredCheckerInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 
 /**
  * Ensures street addresses are properly split into street name and building number
+ *
+ * This insurance class is responsible for taking full street addresses and splitting them
+ * into their component parts (street name and building number) for more structured data storage
+ * and better address validation.
  */
 final class StreetIsSplitInsurance implements IntegrityInsurance
 {
-    private EntityRepository $addressExtensionRepository;
-    private IsStreetSplitRequiredCheckerInterface $isStreetSplitRequiredChecker;
     private CountryCodeFetcherInterface $countryCodeFetcher;
     private EnderecoService $enderecoService;
-    private EntityRepository $customerAddressRepository;
+    private AddressPersistenceStrategyProviderInterface $addressPersistenceStrategyProvider;
     private AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker;
 
+    /**
+     * Constructor for the StreetIsSplitInsurance class
+     *
+     * @param CountryCodeFetcherInterface $countryCodeFetcher Service to retrieve country codes
+     * @param EnderecoService $enderecoService Service to handle address processing via Endereco API
+     * @param AddressPersistenceStrategyProviderInterface $addressPersistenceStrategyProvider Provider for address persistence strategies
+     * @param AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker Service to check additional address fields availability
+     */
     public function __construct(
-        IsStreetSplitRequiredCheckerInterface $isStreetSplitRequiredChecker,
         CountryCodeFetcherInterface $countryCodeFetcher,
         EnderecoService $enderecoService,
-        EntityRepository $addressExtensionRepository,
-        EntityRepository $customerAddressRepository,
+        AddressPersistenceStrategyProviderInterface $addressPersistenceStrategyProvider,
         AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker
     ) {
-        $this->isStreetSplitRequiredChecker = $isStreetSplitRequiredChecker;
         $this->countryCodeFetcher = $countryCodeFetcher;
         $this->enderecoService = $enderecoService;
-        $this->addressExtensionRepository = $addressExtensionRepository;
-        $this->customerAddressRepository = $customerAddressRepository;
+        $this->addressPersistenceStrategyProvider = $addressPersistenceStrategyProvider;
         $this->additionalAddressFieldChecker = $additionalAddressFieldChecker;
     }
 
+    /**
+     * Defines the execution priority of this insurance
+     *
+     * A lower value means higher priority. This insurance runs at a high priority (-10)
+     * to ensure address components are available for other services that might need them.
+     *
+     * @return int The priority value
+     */
     public static function getPriority(): int
     {
         return -10;
     }
 
     /**
-     * Ensures that the full street address of a given address entity is properly split into street name and building
-     * number.
+     * Splits a customer's full street address into components using Endereco service and saves the result.
      *
-     * This method accepts an AddressEntity. It retrieves the corresponding EnderecoAddressExtension for the address
-     * and the full street address stored in the AddressEntity.
-     * It checks whether a street splitting operation is needed by comparing the expected full street (constructed using
-     * data from the EnderecoAddressExtensionEntity) with the current full street.
+     * Retrieves the address extension, extracts relevant data (country code, full street,
+     * additional info), and if a street is not empty, splits it into normalized components.
+     * Then applies the appropriate persistence strategy to save these components based on
+     * system configuration.
      *
-     * If the street address is not empty and street splitting is needed, the method splits the full street address into
-     * street name and building number using the 'splitStreet' method of the Endereco service. The country code for
-     * splitting the street is retrieved using the 'getCountryCodeById' method (defaulting to 'DE' if unknown). The
-     * split street name and building number are then saved back into the EnderecoAddressExtension for the
-     * address.
+     * @param CustomerAddressEntity $addressEntity The address to process
+     * @param Context $context The current context
+     * @throws \RuntimeException If required address extension is missing
      */
     public function ensure(CustomerAddressEntity $addressEntity, Context $context): void
     {
@@ -67,43 +79,10 @@ final class StreetIsSplitInsurance implements IntegrityInsurance
             throw new \RuntimeException('The address extension should be set at this point');
         }
 
-        $fullStreet = $addressEntity->getStreet();
+        list($countryCode, $fullStreet, $additionalInfo) = $this->getRelevantData($addressEntity, $context);
+
         if (empty($fullStreet)) {
             return;
-        }
-
-        $isStreetSplitRequired = $this->isStreetSplitRequiredChecker->checkIfStreetSplitIsRequired(
-            $addressEntity,
-            $addressExtension,
-            $context
-        );
-
-        if (!$isStreetSplitRequired) {
-            return;
-        }
-
-        // If country is unknown, use Germany as default
-        $countryCode = $this->countryCodeFetcher->fetchCountryCodeByCountryIdAndContext(
-            $addressEntity->getCountryId(),
-            $context,
-            'DE'
-        );
-
-        $additionalInfo = null;
-        $additionalFieldName = null;
-        if ($this->additionalAddressFieldChecker->hasAdditionalAddressField($context)) {
-            $additionalFieldName = $this->additionalAddressFieldChecker->getAvailableAdditionalAddressFieldName($context);
-            switch ($additionalFieldName) {
-                case 'additionalAddressLine1':
-                    $additionalInfo = $addressEntity->getAdditionalAddressLine1();
-                    break;
-                case 'additionalAddressLine2':
-                    $additionalInfo = $addressEntity->getAdditionalAddressLine2();
-                    break;
-                default:
-                    $additionalInfo = '';
-                    break;
-            }
         }
 
         list($normalizedFullStreet, $streetName, $buildingNumber, $normalizedAdditionalInfo) = $this->enderecoService->splitStreet(
@@ -114,46 +93,58 @@ final class StreetIsSplitInsurance implements IntegrityInsurance
             $this->enderecoService->fetchSalesChannelId($context)
         );
 
-        $this->addressExtensionRepository->upsert(
-            [
-                [
-                    'addressId' => $addressEntity->getId(),
-                    'street' => $streetName,
-                    'houseNumber' => $buildingNumber
-                ]
-            ],
+        $addressDTO = new CustomerAddressDTO(
+            $addressEntity,
+            $addressExtension
+        );
+
+        $addressPersistenceStrategy = $this->addressPersistenceStrategyProvider->getStrategy(
+            $addressDTO,
             $context
         );
 
-        $addressExtension->setStreet($streetName);
-        $addressExtension->setHouseNumber($buildingNumber);
+        $addressPersistenceStrategy->execute(
+            $normalizedFullStreet,
+            $normalizedAdditionalInfo,
+            $streetName,
+            $buildingNumber,
+            $addressDTO
+        );
+    }
 
+    /**
+     * Extracts relevant address data needed for street splitting
+     *
+     * This method gathers the country code, full street address, and any additional address information
+     * from the customer address entity. If the country is unknown, it defaults to Germany ('DE').
+     * It also checks for and retrieves any additional address lines based on system configuration.
+     *
+     * @param CustomerAddressEntity $addressEntity The address entity to extract data from
+     * @param Context $context The current context
+     *
+     * @return array{0: string, 1: string, 2: string|null} Array containing [countryCode, fullStreet, additionalInfo]
+     */
+    private function getRelevantData(CustomerAddressEntity $addressEntity, Context $context): array
+    {
+        // If country is unknown, use Germany as default
+        $countryCode = $this->countryCodeFetcher->fetchCountryCodeByCountryIdAndContext(
+            $addressEntity->getCountryId(),
+            $context,
+            'DE'
+        );
 
-        // We update the address entity and persist the full street and additional info in the database to ensure
-        // integrity between the full street and splitted parts. streetSplit sometimes normalizes the data therefore,
-        // we need to overwrite the original input or the split will be triggered endlessly in some cases.
-        $updateData = [
-            'id'     => $addressEntity->getId(),
-            'street' => $normalizedFullStreet,
-        ];
-        if ($this->additionalAddressFieldChecker->hasAdditionalAddressField($context) && $additionalFieldName !== null) {
-            $updateData[$additionalFieldName] = $normalizedAdditionalInfo;
-        }
+        $fullStreet = $addressEntity->getStreet();
 
-        $this->customerAddressRepository->upsert([$updateData], $context);
-
-        $addressEntity->setStreet($normalizedFullStreet);
-
+        $additionalInfo = null;
         if ($this->additionalAddressFieldChecker->hasAdditionalAddressField($context)) {
             $fieldName = $this->additionalAddressFieldChecker->getAvailableAdditionalAddressFieldName($context);
-            switch ($fieldName) {
-                case 'additionalAddressLine1':
-                    $addressEntity->setAdditionalAddressLine1($normalizedAdditionalInfo ?? '');
-                    break;
-                case 'additionalAddressLine2':
-                    $addressEntity->setAdditionalAddressLine2($normalizedAdditionalInfo ?? '');
-                    break;
-            }
+            $additionalFields = [
+                'additionalAddressLine1' => $addressEntity->getAdditionalAddressLine1(),
+                'additionalAddressLine2' => $addressEntity->getAdditionalAddressLine2(),
+            ];
+            $additionalInfo = $additionalFields[$fieldName] ?? '';
         }
+
+        return [$countryCode, $fullStreet, $additionalInfo];
     }
 }

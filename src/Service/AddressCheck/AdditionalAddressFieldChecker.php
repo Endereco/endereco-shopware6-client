@@ -56,4 +56,27 @@ class AdditionalAddressFieldChecker implements AdditionalAddressFieldCheckerInte
 
         return '';
     }
+
+    public function getAvailableAdditionalAddressFieldGetter(Context $context): ?string
+    {
+        $fieldName = $this->getAvailableAdditionalAddressFieldName($context);
+
+        if (!$fieldName) {
+            return null;
+        }
+
+        return 'get' . ucfirst($fieldName);
+    }
+
+    public function getAvailableAdditionalAddressFieldSetter(Context $context): ?string
+    {
+        $fieldName = $this->getAvailableAdditionalAddressFieldName($context);
+
+        if (!$fieldName) {
+            return null;
+        }
+
+        return 'set' . ucfirst($fieldName);
+    }
+
 }
