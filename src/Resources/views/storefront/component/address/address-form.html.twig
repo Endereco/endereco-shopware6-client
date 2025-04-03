@@ -36,6 +36,7 @@
                         data-street-selector="[name='{{ prefix }}[enderecoStreet]']"
                         data-house-number-selector="[name='{{ prefix }}[enderecoHousenumber]']"
                         data-address-type="{{ addressType }}"
+                        data-intent="{{ enderecoIntent is defined ? enderecoIntent : 'edit' }}"
                 >
 
                 <input

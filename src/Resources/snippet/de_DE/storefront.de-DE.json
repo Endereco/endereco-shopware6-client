@@ -33,6 +33,13 @@
             "phone_should_be_fixed": "Bitte eine Festnetznummer eingeben.",
             "phone_should_be_mobile": "Bitte eine Mobilfunknummer eingeben."
         },
+        "errorMessages": {
+            "address_has_missing_building_number_content": "Die Hausnummer fehlt in der Eingabe.",
+            "address_has_unresolvable_building_number_content": "Mit der eingegebenen Hausnummer konnte die Adresse nicht verifiziert werden.",
+            "packstation_has_unresolvable_address": "Die Packstation-Adresse konnte nicht gefunden werden.",
+            "postoffice_has_unresolvable_address": "Die Postfilialen-Adresse konnte nicht gefunden werden.",
+            "packstation_has_unresolvable_postnummer": "Die Postnummer ist ungültig."
+        },
         "requiredFormat": {
             "hintFormatE164": "Bitte schreiben Sie die Nummer im E.164 Format, z.B. +4917678134170",
             "hintFormatInternational": "Bitte schreiben Sie die Nummer im internationalen Format, z.B. +49 176 78134170",

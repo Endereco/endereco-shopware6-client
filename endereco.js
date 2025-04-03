@@ -23,19 +23,6 @@ if (css) {
 }
 
 EnderecoIntegrator.postfix = {
-    ams: {
-        countryCode: '[country]',
-        subdivisionCode: '[countryStateId]',
-        postalCode: '[zipcode]',
-        locality: '[city]',
-        streetFull: '[street]',
-        streetName: '',
-        buildingNumber: '',
-        addressStatus: '',
-        addressTimestamp: '',
-        addressPredictions: '',
-        additionalInfo: '',
-    },
     personServices: {
         salutation: '[salutation]',
         firstName: '[firstname]'
@@ -45,24 +32,33 @@ EnderecoIntegrator.postfix = {
     }
 };
 
-
-EnderecoIntegrator.resolvers.countryCodeSetValue = function (subscriber, value) {
-    var functionsExist = (typeof jQuery !== 'undefined') && jQuery.fn.val && jQuery.fn.trigger;
-
-    if (functionsExist) {
-        jQuery(subscriber.object).val(value).trigger('change');
-    } else {
-        subscriber.object.value = value;
+EnderecoIntegrator.resolvers.countryCodeSetValue = (subscriber, value) => {
+    const functionsExist = (typeof jQuery !== 'undefined') && jQuery.fn.val && jQuery.fn.trigger;
+    if (subscriber.dispatchEvent('endereco-change')) {
+        subscriber._allowFieldInspection = false;
+        if (functionsExist) {
+            jQuery(subscriber.object).val(value).trigger('change');
+        } else {
+            subscriber.object.value = value;
+        }
+        subscriber.lastValue = value
+        subscriber._allowFieldInspection = true;
+        subscriber.dispatchEvent('endereco-blur');
     }
 }
 
-EnderecoIntegrator.resolvers.subdivisionCodeSetValue = function (subscriber, value) {
-    var functionsExist = (typeof jQuery !== 'undefined') && jQuery.fn.val && jQuery.fn.trigger;
-
-    if (functionsExist) {
-        jQuery(subscriber.object).val(value).trigger('change');
-    } else {
-        subscriber.object.value = value;
+EnderecoIntegrator.resolvers.subdivisionCodeSetValue = (subscriber, value) => {
+    const functionsExist = (typeof jQuery !== 'undefined') && jQuery.fn.val && jQuery.fn.trigger;
+    if (subscriber.dispatchEvent('endereco-change')) {
+        subscriber._allowFieldInspection = false;
+        if (functionsExist) {
+            jQuery(subscriber.object).val(value).trigger('change');
+        } else {
+            subscriber.object.value = value;
+        }
+        subscriber.lastValue = value
+        subscriber._allowFieldInspection = true;
+        subscriber.dispatchEvent('endereco-blur');
     }
 }
 
@@ -140,241 +136,154 @@ EnderecoIntegrator.resolvers.salutationRead = function (value) {
     });
 }
 
-// Main function attached to EnderecoIntegrator for handling Ajax form events
-EnderecoIntegrator.onAjaxFormHandler.push(function (EAO) {
-    let addressCheckTimeout; // Timeout for delaying the address check
-
-    // Attaching event listeners to each form
-    EAO.forms.forEach(form => {
-        attachEventListenersToForm(form);
-    });
-
-    // Function to attach event listeners to the form's elements
-    function attachEventListenersToForm(form) {
-        // Attach to submit buttons
-        form.querySelectorAll('[type="submit"]').forEach(button => {
-            button.addEventListener('click', handleEvent);
-        });
-
-        // Attach to input elements
-        form.querySelectorAll('input').forEach(input => {
-            input.addEventListener('keydown', handleEvent);
-        });
+const editAddressHandler = async (EAO) => {
+    const form = EAO.forms[0];
+    if (!form) {
+        return Promise.resolve();
     }
 
-    // Handles click and keydown events
-    function handleEvent(e) {
-        const isClickedOnButton = e.type === 'click';
-        const isEnterKeyPressed = e.type === 'keydown' && e.key === 'Enter';
-
-        // Return early if the event isn't a relevant one
-        if (!isClickedOnButton && !isEnterKeyPressed) {
-            return true;
-        }
-
-        // Check if onsubmit trigger is disabled
-        if (!EAO.config.trigger.onsubmit) {
-            return true;
-        }
-
-        // Prevent default action and initiate address check if required
-        if (EAO.util.shouldBeChecked() || EAO._addressIsBeingChecked) {
-            e.preventDefault();
-            if (!EAO._addressIsBeingChecked && !(isEnterKeyPressed && EAO.hasOpenDropdowns())) {
-                e.stopPropagation();
-                initiateAddressCheck(e);
-            }
-        } else {
-            return true;
-        }
-    }
-
-    // Initiates the address checking process
-    function initiateAddressCheck(e) {
-        // Clear existing timeout
-        if (addressCheckTimeout) {
-            clearTimeout(addressCheckTimeout);
-        }
-
-        // Delay execution to debounce rapid requests
-        addressCheckTimeout = setTimeout(() => {
-            if (EAO.util.shouldBeChecked() && !EAO._addressIsBeingChecked) {
-                // Setup for resuming submission if not already set
-                if (window.EnderecoIntegrator && !window.EnderecoIntegrator.submitResume) {
-                    setupSubmitResume(e);
-                }
-
-                // Mark that a submission is in progress and perform the address check
-                window.EnderecoIntegrator.hasSubmit = true;
-                EAO.util.checkAddress()
-                    .catch(error => console.error("Address check failed:", error))
-                    .finally(() => window.EnderecoIntegrator.hasSubmit = false);
-            }
-        }, 300);
-    }
-
-    // Sets up the mechanism to resume form submission
-    function setupSubmitResume(e) {
-        let buttonElement;
-
-        if (e.target.tagName.toLowerCase() === 'input' && e.key === 'Enter') {
-            let form = e.target.form;
-            buttonElement = form.querySelector('[type="submit"]');
-        } else {
-            buttonElement = e.target;
-        }
-
-        window.EnderecoIntegrator.submitResume = () => {
-            window.EnderecoIntegrator.submitResume = undefined;
-            if (EAO.config.ux.resumeSubmit) {
-                simulateButtonClick(buttonElement);
-            }
-        };
-    }
-
-    // Simulates a button click
-    function simulateButtonClick(buttonElement) {
-        setTimeout( function() {
-            // Creating and dispatching a custom 'click' event
-            if (buttonElement.dispatchEvent(new EAO.util.CustomEvent('click', { bubbles: true, cancelable: true }))) {
-                buttonElement.click();
-            }
-        }, 1000);
-    }
-});
-
-
-const editAddressHandler = (e) => {
-    const targetFormLinkSelector = e.forms[0].getAttribute('data-end-target-link-selector');
+    const targetFormLinkSelector = form.getAttribute('data-end-target-link-selector');
     if (!targetFormLinkSelector) {
-        return;
+        return Promise.resolve();
     }
 
     const targetLink = document.querySelector(targetFormLinkSelector);
     if (!targetLink) {
-        return;
+        return Promise.resolve();
     }
 
     targetLink.click();
+
     const addressEditorPlugin = window.PluginManager.getPluginInstanceFromElement(targetLink, 'AddressEditor');
     if (!addressEditorPlugin) {
-        return;
+        return Promise.resolve();
     }
 
-    window.EnderecoIntegrator.editingIntent = true;
-    window.EnderecoIntegrator.thirdPartyModals = 1;
+    return new Promise((resolve) => {
+        const timeoutId = setTimeout(() => {
+            console.warn('Timed out waiting for modal to open');
+            resolve();
+        }, 10000);
 
-    addressEditorPlugin.$emitter.subscribe('onOpen', ({detail: {pseudoModal}}) => {
-        const modalElement = pseudoModal._modal;
-        let addressEditButton;
-        if (modalElement.querySelector('[data-bs-target="#billing-address-create-edit"]')) {
-            addressEditButton = modalElement.querySelector('[data-bs-target="#billing-address-create-edit"]');
-        } else if (modalElement.querySelector('[data-bs-target="#shipping-address-create-edit"]')) {
-            addressEditButton = modalElement.querySelector('[data-bs-target="#shipping-address-create-edit"]');
-        } else {
-            addressEditButton = modalElement.querySelector('[data-target="#address-create-edit"]');
-        }
+        addressEditorPlugin.$emitter.subscribe('onOpen', ({detail: {pseudoModal}}) => {
+            const modalElement = pseudoModal._modal;
 
-        if (!addressEditButton) {
-            return;
-        }
-        addressEditButton.click();
-
-        var itnrvl = setInterval( function() {
-            if (!document.querySelector('.address-editor-modal')) {
-                window.EnderecoIntegrator.editingIntent = false;
-                window.EnderecoIntegrator.thirdPartyModals = 0;
-                clearInterval(itnrvl);
+            let addressEditButton;
+            if (modalElement.querySelector('[data-bs-target="#billing-address-create-edit"]')) {
+                addressEditButton = modalElement.querySelector('[data-bs-target="#billing-address-create-edit"]');
+            } else if (modalElement.querySelector('[data-bs-target="#shipping-address-create-edit"]')) {
+                addressEditButton = modalElement.querySelector('[data-bs-target="#shipping-address-create-edit"]');
+            } else {
+                addressEditButton = modalElement.querySelector('[data-target="#address-create-edit"]');
             }
-        }, 50);
-    })
-}
 
-const addressCheckSelectedHandler = (EAO, e) => {
-    const form = e.forms[0];
+            if (!addressEditButton) {
+                console.warn("Modal opened but edit button not found");
+                clearTimeout(timeoutId);
+                return resolve();
+            }
+
+            // Add a small timeout to ensure the button is clickable
+            setTimeout(() => {
+                try {
+                    addressEditButton.click();
+                    clearTimeout(timeoutId);
+                    return resolve();
+                } catch (err) {
+                    // Handle potential navigation or other errors
+                    console.warn("Error clicking edit button:", {
+                        error: err
+                    });
+                    clearTimeout(timeoutId);
+                    return resolve();
+                }
+            }, 50);
+        });
+    });
+};
+
+const addressSelectedOrConfirmHandler = async (EAO) => {
+    const form = EAO.forms[0];
     if (!form) {
-        return;
+        return Promise.resolve();
     }
 
     const targetForm = form.getAttribute('data-end-target-link-selector');
-    const ajaxPlugin = window.PluginManager.getPluginInstanceFromElement(form, 'FormAjaxSubmit')
+    const ajaxPlugin = window.PluginManager.getPluginInstanceFromElement(form, 'FormAjaxSubmit');
+
     if (!targetForm || !ajaxPlugin) {
-        return;
+        return Promise.resolve();
     }
 
-    ajaxPlugin.$emitter.subscribe('onAfterAjaxSubmit', ({detail: {response}}) => {
-        try {
-            window.ajaxSubmitRequestPending = false;
-            const {addressSaved} = JSON.parse(response);
-            if (addressSaved) {
-                const reloadHandler = () => {
-                    EAO.waitForAllPopupsToClose().then(() => {
-                        window.setTimeout(() => {
-                            if (!window.ajaxSubmitRequestPending) {
-                                if(window.EnderecoIntegrator.popupQueue > 0) {
-                                    //we are still waiting for all popups to close
-                                   reloadHandler();
-                                   return;
-                                }
-                                window.location.reload();
-                            }
-                        }, 100);
-                    });
-                }
-                reloadHandler();
+    return new Promise((resolve) => {
+        // Set a timeout to prevent hanging indefinitely
+        const timeoutId = setTimeout(() => {
+            console.warn('[ENDERECO] Form submission timed out');
+            resolve();
+        }, 15000); // 15 second timeout
+
+        ajaxPlugin.$emitter.subscribe('onAfterAjaxSubmit', () => {
+            console.log("Response", window.EnderecoIntegrator.processQueue.size)
+            clearTimeout(timeoutId);
+            resolve();
+
+            // If there is only one process, it means it's the last one we are in, so reload is ok.
+            if (window.EnderecoIntegrator.processQueue.size === 1) {
+                window.location.reload();
             }
-        } catch (e) {
-            console.warn('[ENDERECO] Failed to save new address', e);
-        }
+        });
+
+        // Also handle potential errors
+        ajaxPlugin.$emitter.subscribe('onError', () => {
+            console.warn('[ENDERECO] Error during form submission');
+            clearTimeout(timeoutId);
+            resolve();
+        });
+
+        ajaxPlugin._fireRequest();
     });
+};
 
-    window.ajaxSubmitRequestPending = true;
-    ajaxPlugin._fireRequest();
-}
-
-EnderecoIntegrator.afterAMSActivation.push(function (EAO) {
-
+EnderecoIntegrator.afterAMSActivation.push((EAO) => {
     EAO.onEditAddress.push((e) => {
-        editAddressHandler(e);
+        return editAddressHandler(e);
     })
 
-    EAO.onAfterAddressCheckSelected.push((e) => {
-        addressCheckSelectedHandler(EAO, e)
-    })
-
-    EAO.onConfirmAddress.push((e) => {
-        addressCheckSelectedHandler(EAO, e);
-    })
-
-    /**
-     * If its one of the existing customer check modals, competing with shopware modals,
-     * then rewrite their waitForPopupAreaToBeFree logic
-     */
-    if (!document.querySelector('.address-editor-modal')) {
-        EAO.waitForPopupAreaToBeFree = function() {
-            return new EAO.util.Promise(function(resolve, reject) {
-                var waitForFreePlace = setInterval(function() {
-                    var isAreaFree = !document.querySelector('[endereco-popup]');
-
-                    // No modals from shopware should be open.
-                    isAreaFree = isAreaFree && (window.EnderecoIntegrator.thirdPartyModals < 1);
-
-                    // Some global filters, in case in the future we have third party plugins, who want to override this logic.
-                    if (!!window.EnderecoIntegrator.$globalFilters && !!window.EnderecoIntegrator.$globalFilters.isModalAreaFree) {
-                        window.EnderecoIntegrator.$globalFilters.isModalAreaFree.forEach( function(callback) {
-                            isAreaFree = callback(isAreaFree, EAO);
-                        });
-                    }
-
-                    if(isAreaFree) {
-                        clearInterval(waitForFreePlace);
-                        resolve();
-                    }
-                }, 100);
-            })
+    EAO.onAfterAddressPersisted.push((e, result) => {
+        if (result.processStatus === 'finished') {
+            return addressSelectedOrConfirmHandler(e)
         }
-    }
+
+        return Promise.resolve();
+    })
 });
+
+/**
+ * Determines if the popup area is free for rendering Endereco modals
+ *
+ * This function extends the logic of modal rendering in JS_SDK providing additional context
+ * about shopware address book modals. For address forms outside of the address book modal,
+ * the modal area is not free (therefore they have to wait for it to disappear). But for forms
+ * inside the address book modal, the area is free - they can render the endereco modal on top of it.
+ *
+ * @param {Object} EAO - Endereco Address Object containing form references
+ * @returns {boolean} - Returns true if popup area is free, false otherwise
+ */
+EnderecoIntegrator.isPopupAreaFree = (EAO) => {
+    const shopwareModal = document.querySelector('.address-editor-modal');
+    if (!shopwareModal) {
+        return true;
+    }
+
+    const form = EAO.forms[0];
+    if (!form) {
+        // TODO: revisit in the future. Currently this case is impossible.
+        return false;
+    }
+
+    // Check if the form is inside the shopwareModal
+    return shopwareModal.contains(form);
+}
 
 if (window.EnderecoIntegrator) {
     window.EnderecoIntegrator = merge(window.EnderecoIntegrator, EnderecoIntegrator);
@@ -387,30 +296,9 @@ window.EnderecoIntegrator.asyncCallbacks.forEach(function (cb) {
 });
 window.EnderecoIntegrator.asyncCallbacks = [];
 
-window.EnderecoIntegrator.waitUntilReady().then(function () {
-    //
-});
-
-var $waitForConfig = setInterval(function () {
+const waitForConfig = setInterval(() => {
     if (typeof enderecoLoadAMSConfig === 'function') {
         enderecoLoadAMSConfig();
-        clearInterval($waitForConfig);
+        clearInterval(waitForConfig);
     }
-}, 1);
-
-
-window.swModalOpened = false;
-
-const swModalListener = () => {
-    const shopwareModal = document.querySelector('.modal-backdrop');
-    if (shopwareModal && !window.swModalOpened) {
-        window.swModalOpened = true;
-        window.EnderecoIntegrator.popupQueue++;
-    }
-    if(!shopwareModal && window.swModalOpened) {
-        window.swModalOpened = false;
-        window.EnderecoIntegrator.popupQueue--;
-    }
-};
-
-(new MutationObserver(swModalListener)).observe(document.querySelector('body'), {childList: true, subtree: true});
+}, 10);

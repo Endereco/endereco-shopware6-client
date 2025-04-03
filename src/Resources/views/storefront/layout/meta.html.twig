@@ -102,43 +102,50 @@
                     window.EnderecoIntegrator.config.templates.primaryButtonClasses = 'btn btn-primary btn-lg';
                     window.EnderecoIntegrator.config.templates.secondaryButtonClasses = 'btn btn-secondary btn-lg';
                     window.EnderecoIntegrator.config.texts = {
-                        popUpHeadline: '{{ "enderecoshopware6client.texts.popUpHeadline"|trans|sw_sanitize|escape }}',
-                        popUpSubline: '{{ "enderecoshopware6client.texts.popUpSubline"|trans|sw_sanitize|escape }}',
-                        mistakeNoPredictionSubline: '{{ "enderecoshopware6client.texts.mistakeNoPredictionSubline"|trans|sw_sanitize|escape }}',
-                        confirmMyAddressCheckbox: '{{ "enderecoshopware6client.texts.confirmMyAddressCheckbox"|trans|sw_sanitize|escape }}',
-                        notFoundSubline: '{{ "enderecoshopware6client.texts.notFoundSubline"|trans|sw_sanitize|escape }}',
-                        yourInput: '{{ "enderecoshopware6client.texts.yourInput"|trans|sw_sanitize|escape }}',
-                        editYourInput: '{{ "enderecoshopware6client.texts.editYourInput"|trans|sw_sanitize|escape }}',
-                        ourSuggestions: '{{ "enderecoshopware6client.texts.ourSuggestions"|trans|sw_sanitize|escape }}',
-                        useSelected: '{{ "enderecoshopware6client.texts.useSelected"|trans|sw_sanitize|escape }}',
-                        confirmAddress: '{{ "enderecoshopware6client.texts.confirmAddress"|trans|sw_sanitize|escape }}',
-                        editAddress: '{{ "enderecoshopware6client.texts.editAddress"|trans|sw_sanitize|escape }}',
-                        warningText: '{{ "enderecoshopware6client.texts.warningText"|trans|sw_sanitize|escape }}',
+                        popUpHeadline: '{{ "enderecoshopware6client.texts.popUpHeadline"|trans|sw_sanitize|escape|escape('js') }}',
+                        popUpSubline: '{{ "enderecoshopware6client.texts.popUpSubline"|trans|sw_sanitize|escape|escape('js') }}',
+                        mistakeNoPredictionSubline: '{{ "enderecoshopware6client.texts.mistakeNoPredictionSubline"|trans|sw_sanitize|escape|escape('js') }}',
+                        confirmMyAddressCheckbox: '{{ "enderecoshopware6client.texts.confirmMyAddressCheckbox"|trans|sw_sanitize|escape|escape('js') }}',
+                        notFoundSubline: '{{ "enderecoshopware6client.texts.notFoundSubline"|trans|sw_sanitize|escape|escape('js') }}',
+                        yourInput: '{{ "enderecoshopware6client.texts.yourInput"|trans|sw_sanitize|escape|escape('js') }}',
+                        editYourInput: '{{ "enderecoshopware6client.texts.editYourInput"|trans|sw_sanitize|escape|escape('js') }}',
+                        ourSuggestions: '{{ "enderecoshopware6client.texts.ourSuggestions"|trans|sw_sanitize|escape|escape('js') }}',
+                        useSelected: '{{ "enderecoshopware6client.texts.useSelected"|trans|sw_sanitize|escape|escape('js') }}',
+                        confirmAddress: '{{ "enderecoshopware6client.texts.confirmAddress"|trans|sw_sanitize|escape|escape('js') }}',
+                        editAddress: '{{ "enderecoshopware6client.texts.editAddress"|trans|sw_sanitize|escape|escape('js') }}',
+                        warningText: '{{ "enderecoshopware6client.texts.warningText"|trans|sw_sanitize|escape|escape('js') }}',
                         popupHeadlines: {
-                            general_address: '{{ "enderecoshopware6client.texts.general_address"|trans|sw_sanitize|escape }}',
-                            billing_address: '{{ "enderecoshopware6client.texts.billing_address"|trans|sw_sanitize|escape }}',
-                            shipping_address: '{{ "enderecoshopware6client.texts.shipping_address"|trans|sw_sanitize|escape }}',
+                            general_address: '{{ "enderecoshopware6client.texts.general_address"|trans|sw_sanitize|escape|escape('js') }}',
+                            billing_address: '{{ "enderecoshopware6client.texts.billing_address"|trans|sw_sanitize|escape|escape('js') }}',
+                            shipping_address: '{{ "enderecoshopware6client.texts.shipping_address"|trans|sw_sanitize|escape|escape('js') }}',
+                        },
+                        errorMessages: {
+                            address_has_missing_building_number_content: '{{ "enderecoshopware6client.errorMessages.address_has_missing_building_number_content"|trans|sw_sanitize|escape|escape('js') }}',
+                            address_has_unresolvable_building_number_content: '{{ "enderecoshopware6client.errorMessages.address_has_unresolvable_building_number_content"|trans|sw_sanitize|escape|escape('js') }}',
+                            packstation_has_unresolvable_address: '{{ "enderecoshopware6client.errorMessages.packstation_has_unresolvable_address"|trans|sw_sanitize|escape|escape('js') }}',
+                            postoffice_has_unresolvable_address: '{{ "enderecoshopware6client.errorMessages.postoffice_has_unresolvable_address"|trans|sw_sanitize|escape|escape('js') }}',
+                            packstation_has_unresolvable_postnummer: '{{ "enderecoshopware6client.errorMessages.packstation_has_unresolvable_postnummer"|trans|sw_sanitize|escape|escape('js') }}'
                         },
                         statuses: {
-                            email_not_correct: '{{ "enderecoshopware6client.statuses.email_not_correct"|trans|sw_sanitize|escape }}',
-                            email_cant_receive: '{{ "enderecoshopware6client.statuses.email_cant_receive"|trans|sw_sanitize|escape }}',
-                            email_syntax_error: '{{ "enderecoshopware6client.statuses.email_syntax_error"|trans|sw_sanitize|escape }}',
-                            email_no_mx: '{{ "enderecoshopware6client.statuses.email_no_mx"|trans|sw_sanitize|escape }}',
-                            building_number_is_missing: '{{ "enderecoshopware6client.statuses.building_number_is_missing"|trans|sw_sanitize|escape }}',
-                            building_number_not_found: '{{ "enderecoshopware6client.statuses.building_number_not_found"|trans|sw_sanitize|escape }}',
-                            street_name_needs_correction: '{{ "enderecoshopware6client.statuses.street_name_needs_correction"|trans|sw_sanitize|escape }}',
-                            locality_needs_correction: '{{ "enderecoshopware6client.statuses.locality_needs_correction"|trans|sw_sanitize|escape }}',
-                            postal_code_needs_correction: '{{ "enderecoshopware6client.statuses.postal_code_needs_correction"|trans|sw_sanitize|escape }}',
-                            country_code_needs_correction: '{{ "enderecoshopware6client.statuses.country_code_needs_correction"|trans|sw_sanitize|escape }}',
-                            phone_invalid: '{{ "enderecoshopware6client.statuses.phone_invalid"|trans|sw_sanitize|escape }}',
-                            phone_format_needs_correction: '{{ "enderecoshopware6client.statuses.phone_format_needs_correction"|trans|sw_sanitize|escape }}',
-                            phone_should_be_fixed: '{{ "enderecoshopware6client.statuses.phone_should_be_fixed"|trans|sw_sanitize|escape }}',
-                            phone_should_be_mobile: '{{ "enderecoshopware6client.statuses.phone_should_be_mobile"|trans|sw_sanitize|escape }}',
+                            email_not_correct: '{{ "enderecoshopware6client.statuses.email_not_correct"|trans|sw_sanitize|escape|escape('js') }}',
+                            email_cant_receive: '{{ "enderecoshopware6client.statuses.email_cant_receive"|trans|sw_sanitize|escape|escape('js') }}',
+                            email_syntax_error: '{{ "enderecoshopware6client.statuses.email_syntax_error"|trans|sw_sanitize|escape|escape('js') }}',
+                            email_no_mx: '{{ "enderecoshopware6client.statuses.email_no_mx"|trans|sw_sanitize|escape|escape('js') }}',
+                            building_number_is_missing: '{{ "enderecoshopware6client.statuses.building_number_is_missing"|trans|sw_sanitize|escape|escape('js') }}',
+                            building_number_not_found: '{{ "enderecoshopware6client.statuses.building_number_not_found"|trans|sw_sanitize|escape|escape('js') }}',
+                            street_name_needs_correction: '{{ "enderecoshopware6client.statuses.street_name_needs_correction"|trans|sw_sanitize|escape|escape('js') }}',
+                            locality_needs_correction: '{{ "enderecoshopware6client.statuses.locality_needs_correction"|trans|sw_sanitize|escape|escape('js') }}',
+                            postal_code_needs_correction: '{{ "enderecoshopware6client.statuses.postal_code_needs_correction"|trans|sw_sanitize|escape|escape('js') }}',
+                            country_code_needs_correction: '{{ "enderecoshopware6client.statuses.country_code_needs_correction"|trans|sw_sanitize|escape|escape('js') }}',
+                            phone_invalid: '{{ "enderecoshopware6client.statuses.phone_invalid"|trans|sw_sanitize|escape|escape('js') }}',
+                            phone_format_needs_correction: '{{ "enderecoshopware6client.statuses.phone_format_needs_correction"|trans|sw_sanitize|escape|escape('js') }}',
+                            phone_should_be_fixed: '{{ "enderecoshopware6client.statuses.phone_should_be_fixed"|trans|sw_sanitize|escape|escape('js') }}',
+                            phone_should_be_mobile: '{{ "enderecoshopware6client.statuses.phone_should_be_mobile"|trans|sw_sanitize|escape|escape('js') }}',
                         },
                         requiredFormat: {
-                            E164: '{{ "enderecoshopware6client.requiredFormat.hintFormatE164"|trans|sw_sanitize|escape }}',
-                            INTERNATIONAL: '{{ "enderecoshopware6client.requiredFormat.hintFormatInternational"|trans|sw_sanitize|escape }}',
-                            NATIONAL: '{{ "enderecoshopware6client.requiredFormat.hintFormatNational"|trans|sw_sanitize|escape }}',
+                            E164: '{{ "enderecoshopware6client.requiredFormat.hintFormatE164"|trans|sw_sanitize|escape|escape('js') }}',
+                            INTERNATIONAL: '{{ "enderecoshopware6client.requiredFormat.hintFormatInternational"|trans|sw_sanitize|escape|escape('js') }}',
+                            NATIONAL: '{{ "enderecoshopware6client.requiredFormat.hintFormatNational"|trans|sw_sanitize|escape|escape('js') }}',
                         }
                     };
                     window.EnderecoIntegrator.activeServices = {
@@ -174,6 +181,8 @@
                                             formElement.setAttribute(`data-endereco-${markerValue}-form-id`, formId);
                                         }
                                         var prefix = MarkerElement.getAttribute('data-used-prefix');
+                                        const intent = MarkerElement.getAttribute('data-intent') ?? 'edit';
+                                        console.log("Recognizes intent", intent)
                                         if ('ams' === markerValue) {
                                             var countryCodeSelector = MarkerElement.getAttribute('data-country-code-selector');
                                             var postalCodeSelector = MarkerElement.getAttribute('data-postal-code-selector');
@@ -213,10 +222,10 @@
                                                 {
                                                     name: objectName,
                                                     addressType: addressType,
-                                                    ajaxForm: isAjax
+                                                    ajaxForm: isAjax,
+                                                    intent: intent
                                                 }
                                             );
-                                            setBlurListener(EAO, selectorsCollection);
                                         } else if ('phoneServices' === markerValue) {
                                             var countryCodeSelector = MarkerElement.getAttribute('data-country-code-selector');
                                             var phoneSelector = MarkerElement.getAttribute('data-phone-selector');
@@ -264,55 +273,24 @@
                     })();
                 }
 
-                function shouldBlockFormSubmission(EAO) {
-                    return EAO.util.shouldBeChecked() || EAO._awaits > 0;
-                }
 
                 function enderecoLoadAMSConfig() {
                     if (window.EnderecoIntegrator.configScannerStarted) {
                         return;
                     }
-
-                    var $interval = setInterval(function () {
-                        if (!!window.EnderecoIntegrator.config) {
-                            enderecoSetConfigValues();
-                            clearInterval($interval);
-                        }
-                    }, 1);
                     window.EnderecoIntegrator.configScannerStarted = true;
-                }
 
-                /**
-                 * Sets up a custom blur event listener on specified elements.
-                 *
-                 * This function iterates over a collection of elements, identified by their selectors,
-                 * and attaches a custom event listener for the 'endereco-blur' event. When the 'endereco-blur'
-                 * event is triggered on any of these elements, two custom events ('focus' and 'blur') are dispatched
-                 * on the target element. This can be useful for triggering custom logic on focus and blur events.
-                 *
-                 * @param {Object} EAO - The object containing utility functions, including CustomEvent.
-                 * @param {Object} elements - An object containing key-value pairs where the key is a unique identifier
-                 *                            and the value is a CSS selector for the DOM element.
-                 */
-                function setBlurListener(EAO, elements) {
-                    for (const key in elements) {
-                        if (Object.prototype.hasOwnProperty.call(elements, key)) {
-                            const selector = elements[key];
-                            if (!selector) {
-                                continue;
-                            }
-                            const element = document.querySelector(selector);
-
-                            if (element) {
-                                element.addEventListener('endereco-blur', function(e) {
-                                    // Dispatch 'focus', 'change' and 'blur' events on the target element
-                                    e.target.dispatchEvent(new EAO.util.CustomEvent('focus', { bubbles: true, cancelable: true }));
-                                    e.target.dispatchEvent(new EAO.util.CustomEvent('change', { bubbles: true, cancelable: true }));
-                                    e.target.dispatchEvent(new EAO.util.CustomEvent('blur', { bubbles: true, cancelable: true }));
-                                });
-                            }
-                        }
+                    if (window.EnderecoIntegrator.config) {
+                        enderecoSetConfigValues();
+                        return;
                     }
+
+                    const interval = setInterval(() => {
+                        if (window.EnderecoIntegrator.config) {
+                            enderecoSetConfigValues();
+                            clearInterval(interval);
+                        }
+                    }, 50);
                 }
             </script>
         {% endif %}
