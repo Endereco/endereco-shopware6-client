@@ -382,9 +382,28 @@
 
         <input-field type="bool">
             <name>enderecoAMSActive</name>
-            <label>AdressCheck and InputAssistant are active</label>
-            <label lang="de-DE">Adressprüfung und Eingabe-Assistent aktivieren</label>
+            <label>AddressCheck is active</label>
+            <label lang="de-DE">Adressprüfung aktivieren</label>
             <defaultValue>true</defaultValue>
+            <helpText>
+                If this feature is activated, endereco will integrate itself in address formulars and validated entered addresses before submit. In case the address has issues, the user will be prompted to correct the address, which will ensure, that the address is manually reviewed and confirmed by user. In case the address is good or has minor issues, that can be corrected automatically, endereco Plugin will do it for the user and confirm the address automatically.
+            </helpText>
+            <helpText lang="de-DE">
+                Wenn diese Funktion aktiviert ist, wird endereco in Adressformulare integriert und prüft eingegebene Adressen vor dem Absenden. Falls die Adresse Probleme aufweist, wird der Nutzer aufgefordert, die Adresse zu korrigieren, wodurch sichergestellt wird, dass die Adresse manuell überprüft und vom Nutzer bestätigt wird. Falls die Adresse korrekt ist oder nur geringfügige Probleme hat, die automatisch behoben werden können, erledigt endereco Plugin dies für den Nutzer und bestätigt die Adresse automatisch.
+            </helpText>
+        </input-field>
+
+        <input-field type="bool">
+            <name>enderecoAddressInputAssistantActive</name>
+            <label>InputAssistant (Autocomplete) is active</label>
+            <label lang="de-DE">Eingabe-Assistent (Autocomplete) aktivieren</label>
+            <defaultValue>true</defaultValue>
+            <helpText>
+                If input-assistant is activated, then endereco will disable default browser autocomplete for the relevant fields, optimize (change) the field order for top-to-bottom address entry and display autocomplete dropdowns for address fields that can be autocompleted (zip code, locality, street at the moment)
+            </helpText>
+            <helpText lang="de-DE">
+                Wenn der Eingabe-Assistent aktiviert ist, deaktiviert endereco die Standard-Browser-Autovervollständigung für die relevanten Felder, optimiert (ändert) die Feldreihenfolge für die Adresseingabe und zeigt Autocomplete-Dropdowns für Adressfelder an, die automatisch vervollständigt werden können (derzeit Postleitzahl, Ort, Straße)
+            </helpText>
         </input-field>
 
         <input-field type="bool">

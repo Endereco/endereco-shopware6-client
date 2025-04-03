@@ -399,6 +399,12 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
         $configContainer->enderecoAMSActive =
             $this->systemConfigService
                 ->get('EnderecoShopware6Client.config.enderecoAMSActive', $salesChannelId);
+        $configContainer->enderecoAddressInputAssistantActive =
+            $this->systemConfigService
+                ->get(
+                    'EnderecoShopware6Client.config.enderecoAddressInputAssistantActive',
+                    $salesChannelId
+                );
         $configContainer->enderecoTriggerOnBlur =
             $this->systemConfigService
                 ->get('EnderecoShopware6Client.config.enderecoTriggerOnBlur', $salesChannelId);
