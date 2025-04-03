@@ -33,6 +33,13 @@
             "phone_should_be_fixed": "A fixed line number is expected here.",
             "phone_should_be_mobile": "A mobile phone number is expected here."
         },
+        "errorMessages": {
+            "address_has_missing_building_number_content": "The house number is missing in the input.",
+            "address_has_unresolvable_building_number_content": "The address could not be verified with the entered house number.",
+            "packstation_has_unresolvable_address": "The Packstation address could not be found.",
+            "postoffice_has_unresolvable_address": "The post office address could not be found.",
+            "packstation_has_unresolvable_postnummer": "The post number is invalid."
+        },
         "requiredFormat": {
             "hintFormatE164": "Please write your number in E.164 format, e.g. +4917678134170",
             "hintFormatInternational": "Please write your number in international format, e.g. +49 176 78134170",
