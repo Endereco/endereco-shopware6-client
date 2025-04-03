@@ -1,5 +1,5 @@
-var path = require('path');
-var TerserPlugin = require('terser-webpack-plugin');
+const path = require('path');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
     mode: process.env.NODE_ENV,
@@ -12,9 +12,8 @@ module.exports = {
         filename: 'endereco.min.js'
     },
     optimization: {
-        minimize: false,
+        minimize: true,
         minimizer: [new TerserPlugin({
-            sourceMap: false,
             terserOptions: {
                 output: {
                     comments: false,
@@ -78,6 +77,6 @@ module.exports = {
     performance: {
         hints: false
     },
-    devtool: '',
+    devtool: false,
     plugins: []
 };

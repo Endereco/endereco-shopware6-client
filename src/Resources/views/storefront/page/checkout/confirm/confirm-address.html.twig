@@ -25,6 +25,7 @@
                 {% sw_include '@EnderecoShopware6Client/storefront/component/address/hidden-address-form.html.twig' with {
                     'prefix': 'billingAddress',
                     'data': billingAddress,
+                    'enderecoIntent': 'review'
                 } %}
 
                 <button type="submit">
@@ -49,6 +50,7 @@
                 {% sw_include '@EnderecoShopware6Client/storefront/component/address/hidden-address-form.html.twig' with {
                     'prefix': 'shippingAddress',
                     'data': shippingAddress,
+                    'enderecoIntent': 'review'
                 } %}
 
                 <button type="submit">
