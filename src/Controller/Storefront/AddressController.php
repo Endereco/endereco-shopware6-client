@@ -124,7 +124,7 @@ class AddressController extends StorefrontController
         $updatePayload = [
             'id' => $addressId,
             'countryId' => $address['countryId'],
-            'countryStateId' => $address['countryStateId'] ?? null,
+            'countryStateId' => !empty($address['countryStateId']) ? $address['countryStateId'] : null,
             'city' => $address['city'],
             'zipcode' => $address['zipcode'],
             'street' => $address['street'] ?? '',
@@ -140,11 +140,6 @@ class AddressController extends StorefrontController
                 ]
             ]
         ];
-
-        // Quickfix for missing country state id.
-        if (empty($updatePayload['countryStateId'])) {
-            unset($updatePayload['countryStateId']);
-        }
 
         // Make sure that custom "street name" and "house number" are filled or the default "street" is filled.
         $this->enderecoService->syncStreet($updatePayload, $mainContext, $salesChannelId);
@@ -163,7 +158,6 @@ class AddressController extends StorefrontController
             $mainContext
         );
         $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsRequestPayload'] = $payloadBody->toJSON();
-
 
         // Update the data in the database.
         $this->addressRepository->update([$updatePayload], $mainContext);
