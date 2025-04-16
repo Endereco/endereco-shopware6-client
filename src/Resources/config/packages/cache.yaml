@@ -1,0 +1,6 @@
+framework:
+    cache:
+        pools:
+            endereco_service_cache:
+                adapter: cache.adapter.filesystem
+                tags: true

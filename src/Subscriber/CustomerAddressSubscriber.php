@@ -87,7 +87,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
      * The purpose of these events range from loading addresses, validating form submissions,
      * manipulating address data before writing to the database, and performing actions after the address is written.
      *
-     * @return array<string, array<array<string>|string>> The array of subscribed events.
+     * @return array<string, array<array<string>|string|int>> The array of subscribed events.
      */
     public static function getSubscribedEvents(): array
     {
