@@ -16,6 +16,10 @@ use Endereco\Shopware6Client\Model\SuccessfulAddressCheckResult;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AddressPersistenceStrategyProvider;
+use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterInterface;
+use Endereco\Shopware6Client\Service\EnderecoService\AgentInfoGeneratorInterface;
+use Endereco\Shopware6Client\Service\EnderecoService\PayloadPreparatorInterface;
+use Endereco\Shopware6Client\Service\EnderecoService\RequestHeadersGeneratorInterface;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
@@ -28,7 +32,6 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
-use Shopware\Core\Framework\Plugin\PluginEntity as Plugin;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -37,8 +40,6 @@ use Throwable;
 class EnderecoService
 {
     private Client $httpClient;
-
-    private EntityRepository $pluginRepository;
 
     private EntityRepository $countryStateRepository;
 
@@ -58,6 +59,14 @@ class EnderecoService
 
     private AddressPersistenceStrategyProvider $addressPersistenceStrategyProvider;
 
+    private AgentInfoGeneratorInterface $agentInfoGenerator;
+
+    private RequestHeadersGeneratorInterface $requestHeadersGenerator;
+
+    private PayloadPreparatorInterface $payloadPreparator;
+
+    private StreetSplitterInterface $streetSplitter;
+
     public bool $isImport = false;
     public bool $isProcessingInsurances = false;
 
@@ -65,25 +74,31 @@ class EnderecoService
 
     public function __construct(
         SystemConfigService $systemConfigService,
-        EntityRepository $pluginRepository,
         EntityRepository $countryStateRepository,
         EntityRepository $customerAddressRepository,
         EntityRepository $orderAddressRepository,
         CountryCodeFetcherInterface $countryCodeFetcher,
         AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder,
         AddressPersistenceStrategyProvider $addressPersistenceStrategyProvider,
+        AgentInfoGeneratorInterface $agentInfoGenerator,
+        RequestHeadersGeneratorInterface $requestHeadersGenerator,
+        PayloadPreparatorInterface $payloadPreparator,
+        StreetSplitterInterface $streetSplitter,
         RequestStack $requestStack,
         LoggerInterface $logger
     ) {
         $this->httpClient = new Client(['timeout' => 3.0, 'connection_timeout' => 2.0]);
         $this->systemConfigService = $systemConfigService;
-        $this->pluginRepository = $pluginRepository;
         $this->countryStateRepository = $countryStateRepository;
         $this->customerAddressRepository = $customerAddressRepository;
         $this->orderAddressRepository = $orderAddressRepository;
         $this->countryCodeFetcher = $countryCodeFetcher;
         $this->addressCheckPayloadBuilder = $addressCheckPayloadBuilder;
         $this->addressPersistenceStrategyProvider = $addressPersistenceStrategyProvider;
+        $this->agentInfoGenerator = $agentInfoGenerator;
+        $this->requestHeadersGenerator = $requestHeadersGenerator;
+        $this->payloadPreparator = $payloadPreparator;
+        $this->streetSplitter = $streetSplitter;
         $this->requestStack = $requestStack;
 
         if (!is_null($requestStack->getMainRequest())) {
@@ -130,14 +145,14 @@ class EnderecoService
         foreach ($sessionIds as $sessionId) {
             try {
                 // Generate request headers from context, sales channel settings, and optional session id
-                $headers = $this->generateRequestHeaders(
+                $headers = $this->requestHeadersGenerator->generateRequestHeaders(
                     $context,
                     $salesChannelId,
                     $sessionId
                 );
 
                 $payload = json_encode(
-                    $this->preparePayload(
+                    $this->payloadPreparator->preparePayload(
                         'doAccounting',
                         [
                             'sessionId' => $sessionId
@@ -174,14 +189,14 @@ class EnderecoService
         if ($anyDoAccounting) {
             try {
                 // Generate request headers from context, sales channel settings, and optional session id
-                $headers = $this->generateRequestHeaders(
+                $headers = $this->requestHeadersGenerator->generateRequestHeaders(
                     $context,
                     $salesChannelId,
                     'not_required'
                 );
 
                 $payload = json_encode(
-                    $this->preparePayload(
+                    $this->payloadPreparator->preparePayload(
                         'doConversion'
                     )
                 );
@@ -298,38 +313,6 @@ class EnderecoService
     }
 
     /**
-     * Generates headers for an API request.
-     *
-     * The headers include the 'Content-Type', 'X-Auth-Key', 'X-Transaction-Id', 'X-Transaction-Referer',
-     * and 'X-Agent'. The 'X-Auth-Key' is retrieved from the system configuration service using the provided
-     * sales channel ID. The 'X-Transaction-Id' is the provided session ID. The 'X-Transaction-Referer' is
-     * retrieved from the server's HTTP_REFERER variable, defaulting to __FILE__ if it's not set. The 'X-Agent'
-     * is retrieved using the provided context.
-     *
-     * @param Context $context The context.
-     * @param ?string $salesChannelId The sales channel ID.
-     * @param string|null $sessionId The session ID, defaulting to 'not_required'.
-     *
-     * @return array<string, string> The generated headers.
-     */
-    public function generateRequestHeaders(Context $context, ?string $salesChannelId, $sessionId = 'not_required')
-    {
-        $appName = $this->getAgentInfo($context);
-        $apiKey = $this->systemConfigService
-            ->getString('EnderecoShopware6Client.config.enderecoApiKey', $salesChannelId);
-
-        $headers = [
-            'Content-Type' => 'application/json',
-            'X-Auth-Key' => $apiKey,
-            'X-Transaction-Id' => $sessionId,
-            'X-Transaction-Referer' => $_SERVER['HTTP_REFERER'] ?? __FILE__,
-            'X-Agent' => $appName,
-        ];
-
-        return $headers;
-    }
-
-    /**
      * Validates a given address using the Endereco API.
      *
      * This method uses the provided customer address and sales channel ID to prepare a set of headers and a payload for
@@ -373,7 +356,7 @@ class EnderecoService
         );
 
         // Generate request headers from context, sales channel settings, and optional session id
-        $headers = $this->generateRequestHeaders(
+        $headers = $this->requestHeadersGenerator->generateRequestHeaders(
             $context,
             $salesChannelId,
             $sessionId
@@ -392,7 +375,7 @@ class EnderecoService
             $data['language'] = 'de'; // Its just 'de' at this point. We'll remove this param in the future.
 
             $payload = json_encode(
-                $this->preparePayload(
+                $this->payloadPreparator->preparePayload(
                     'addressCheck',
                     $data
                 )
@@ -776,14 +759,13 @@ class EnderecoService
             }
 
             // Split the full street into its constituent parts
-            list($normalizedStreetFull, $streetName, $buildingNumber, $normalizedAdditionalInfo) =
-                $this->splitStreet(
-                    $fullStreet,
-                    $additionalInfo,
-                    $countryCode,
-                    $context,
-                    $salesChannelId
-                );
+            $streetSplitResult = $this->streetSplitter->splitStreet(
+                $fullStreet,
+                $additionalInfo,
+                $countryCode,
+                $context,
+                $salesChannelId
+            );
 
             $customerAddressDTO = new CustomerAddressDTO(
                 null,
@@ -797,10 +779,10 @@ class EnderecoService
             );
 
             $addressPersistenceStrategy->execute(
-                $normalizedStreetFull,
-                $normalizedAdditionalInfo,
-                $streetName,
-                $buildingNumber,
+                $streetSplitResult->getFullStreet(),
+                $streetSplitResult->getAdditionalInfo(),
+                $streetSplitResult->getStreetName(),
+                $streetSplitResult->getBuildingNumber(),
                 $customerAddressDTO
             );
         } elseif (!$isFullStreetEmpty && !$isStreetNameEmpty) {
@@ -844,14 +826,13 @@ class EnderecoService
                 }
 
                 // Split the full street into its constituent parts
-                list($normalizedStreetFull, $streetName, $buildingNumber, $normalizedAdditionalInfo) =
-                    $this->splitStreet(
-                        $fullStreet,
-                        $additionalInfo,
-                        $countryCode,
-                        $context,
-                        $salesChannelId
-                    );
+                $splitStreetResult = $this->streetSplitter->splitStreet(
+                    $fullStreet,
+                    $additionalInfo,
+                    $countryCode,
+                    $context,
+                    $salesChannelId
+                );
 
                 $customerAddressDTO = new CustomerAddressDTO(
                     null,
@@ -865,10 +846,10 @@ class EnderecoService
                 );
 
                 $addressPersistenceStrategy->execute(
-                    $normalizedStreetFull,
-                    $normalizedAdditionalInfo,
-                    $streetName,
-                    $buildingNumber,
+                    $splitStreetResult->getFullStreet(),
+                    $splitStreetResult->getAdditionalInfo(),
+                    $splitStreetResult->getStreetName(),
+                    $splitStreetResult->getBuildingNumber(),
                     $customerAddressDTO
                 );
             }
@@ -1166,101 +1147,6 @@ class EnderecoService
     }
 
     /**
-     * Splits a full street address into its components using the Endereco API.
-     *
-     * This method sends a "splitStreet" request to the Endereco API with a payload that includes the full street,
-     * the country code (as the formatCountry), a fixed language ('de'), and optionally additional address information.
-     * The API response is expected to contain the individual components: the street name, house number, and possibly
-     * updated additional info. In case of any error, the method logs the issue and falls back to returning the API's
-     * default values (with empty strings for missing components).
-     *
-     * @param string      $fullStreet      The full street address to be split.
-     * @param ?string     $additionalInfo  Optional additional address information to be sent with the request.
-     * @param string      $countryCode     The country code corresponding to the address.
-     * @param Context     $context         The Shopware context providing details about the current execution.
-     * @param ?string     $salesChannelId  The identifier for the sales channel associated with the address.
-     *
-     * @return array{0: string, 1: string, 2: string, 3: ?string} An array with the following elements:
-     *      - [0] The street value returned from the API (may be the full street address if parsing failed),
-     *      - [1] The extracted street name,
-     *      - [2] The extracted house number,
-     *      - [3] The additional info as returned by the API, or null if not provided.
-     */
-    public function splitStreet(
-        string $fullStreet,
-        ?string $additionalInfo,
-        string $countryCode,
-        Context $context,
-        ?string $salesChannelId
-    ): array {
-        // Fetch the Endereco API URL from the settings for the specific sales channel or in general.
-        $serviceUrl = $this->systemConfigService->getString(
-            'EnderecoShopware6Client.config.enderecoRemoteUrl',
-            $salesChannelId
-        );
-
-        $streetName = $fullStreet;
-        $houseNumber = '';
-
-        try {
-            // Generate request headers from context and sales channel settings.
-            $headers = $this->generateRequestHeaders(
-                $context,
-                $salesChannelId
-            );
-
-            $data = [
-                'formatCountry' => $countryCode,
-                'language' => 'de',
-                'street' => $fullStreet
-            ];
-
-            if ($additionalInfo !== null) {
-                $data['additionalInfo'] = $additionalInfo;
-            }
-
-            // Prepare the payload for the 'splitStreet' request.
-            $payload = json_encode(
-                $this->preparePayload(
-                    'splitStreet',
-                    $data
-                )
-            );
-
-            // Send the 'splitStreet' request to the Endereco API.
-            $response = $this->httpClient->post(
-                $serviceUrl,
-                [
-                    'headers' => $headers,
-                    'body' => $payload
-                ]
-            );
-
-            // Decode the response from the API.
-            $result = json_decode($response->getBody()->getContents())->result;
-
-            $fullStreet = $result->street ?? '';
-            $streetName = $result->streetName ?? '';
-            $houseNumber = $result->houseNumber ?? '';
-            $additionalInfo = $result->additionalInfo ?? null;
-        } catch (RequestException $e) {
-            // Handle and log specific HTTP request errors.
-            if ($e->hasResponse()) {
-                $response = $e->getResponse();
-                if ($response && 500 <= $response->getStatusCode()) {
-                    $this->logger->error('Serverside splitStreet failed', ['error' => $e->getMessage()]);
-                }
-            }
-        } catch (Throwable $e) {
-            // Handle and log any other types of errors.
-            $this->logger->error('Serverside splitStreet failed', ['error' => $e->getMessage()]);
-        }
-
-        // Return the original full street name and an empty string as the house number in case of failure.
-        return [$fullStreet, $streetName, $houseNumber, $additionalInfo];
-    }
-
-    /**
      * Checks the API credentials by sending a 'readinessCheck' request to the Endereco API.
      *
      * This method sends a 'readinessCheck' request to the API using the provided API key and endpoint URL.
@@ -1278,7 +1164,7 @@ class EnderecoService
     {
         try {
             // Get the name of the plugin and its version.
-            $appName = $this->getAgentInfo($context);
+            $appName = $this->agentInfoGenerator->getAgentInfo($context);
 
             // Generate request headers from context and sales channel settings.
             $headers = [
@@ -1291,7 +1177,7 @@ class EnderecoService
 
             // Prepare the payload for the 'readinessCheck' request.
             $payload = json_encode(
-                $this->preparePayload(
+                $this->payloadPreparator->preparePayload(
                     'readinessCheck'
                 )
             );
@@ -1348,83 +1234,6 @@ class EnderecoService
         return $order === EnderecoConstants::STREET_ORDER_HOUSE_FIRST ?
             sprintf('%s %s', $buildingNumber, $streetName) :
             sprintf('%s %s', $streetName, $buildingNumber);
-    }
-
-    /**
-     * Prepares a payload for an API request in the JSON-RPC 2.0 format.
-     *
-     * This method prepares a payload array containing the JSON-RPC version, a default ID, the request method,
-     * and an optional params array. The params array can be used to include any additional data that the API request
-     * might require.
-     *
-     * @param string $method The name of the method for the API request.
-     * @param array<string, string> $params Additional parameters to include in the API request (optional).
-     *
-     * @return array<string, string|int|array<string, string>> The prepared payload for the API request.
-     */
-    public function preparePayload(string $method, array $params = []): array
-    {
-        // Prepare the payload array.
-        return [
-            'jsonrpc' => '2.0',  // The JSON-RPC version.
-            'id' => 1,           // A default ID.
-            'method' => $method, // The name of the method for the API request.
-            'params' => $params  // Any additional parameters for the API request.
-        ];
-    }
-
-    /**
-     * Fetches the version of the 'EnderecoShopware6Client' plugin and formats it along with the plugin name.
-     *
-     * This method calls the getPluginVersion method to fetch the version of the 'EnderecoShopware6Client' plugin.
-     * The fetched version is then appended to the formatted plugin name string.
-     *
-     * The returned string is in the format 'Endereco Shopware6 Client (Download) vX.X.X',
-     * where 'X.X.X' is the version number of the plugin.
-     *
-     * @param Context $context The context which includes details of the event triggering this method.
-     *
-     * @return string The formatted string containing the name and version of the plugin.
-     */
-    public function getAgentInfo(Context $context): string
-    {
-        $versionTag = $this->getPluginVersion($context);
-
-        return sprintf(
-            'Endereco Shopware6 Client (Download) v%s',
-            $versionTag
-        );
-    }
-
-    /**
-     * Retrieves the version of the 'EnderecoShopware6Client' plugin.
-     *
-     * This method constructs a criteria object and applies a filter to it to target the plugin
-     * with the name 'EnderecoShopware6Client'.
-     * This criteria object is then used to perform a search within the plugin repository.
-     * The version of the first matching plugin is retrieved.
-     *
-     * The returned value is the version number (X.X.X) of the 'EnderecoShopware6Client' plugin.
-     *
-     * @param Context $context The context which includes details of the event triggering this method.
-     *
-     * @return string The version number of the 'EnderecoShopware6Client' plugin.
-     */
-    public function getPluginVersion(Context $context): string
-    {
-        $criteria = (new Criteria())
-            ->addFilter(new EqualsFilter('name', 'EnderecoShopware6Client'));
-
-        /** @var Plugin|null $plugin */
-        $plugin = $this->pluginRepository->search($criteria, $context)->first();
-
-        if ($plugin !== null) {
-            $versionTag = $plugin->getVersion();
-        } else {
-            $versionTag = 'unknown';
-        }
-
-        return $versionTag;
     }
 
     /**

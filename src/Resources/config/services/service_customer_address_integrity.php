@@ -15,6 +15,7 @@ use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\End
 use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressCorrection\AddressCorrectionScopeBuilderInterface;
+use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\Check\IsAmsRequestPayloadIsUpToDateCheckerInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AddressExtensionExistsInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AddressPersistenceStrategyProvider;
@@ -67,6 +68,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services->set(StreetIsSplitInsurance::class)
         ->args([
             '$countryCodeFetcher' => service(CountryCodeFetcherInterface::class),
+            '$streetSplitter' => service(StreetSplitterInterface::class),
             '$enderecoService' => service(EnderecoService::class),
             '$addressPersistenceStrategyProvider' => service(AddressPersistenceStrategyProviderInterface::class),
             '$additionalAddressFieldChecker' => service(AdditionalAddressFieldCheckerInterface::class),

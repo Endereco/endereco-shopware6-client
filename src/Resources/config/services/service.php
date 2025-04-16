@@ -8,10 +8,15 @@ declare(strict_types=1);
 
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
+use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AddressPersistenceStrategyProviderInterface;
+use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitter;
 use Endereco\Shopware6Client\Service\BySystemConfigFilter;
 use Endereco\Shopware6Client\Service\BySystemConfigFilterInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
+use Endereco\Shopware6Client\Service\EnderecoService\AgentInfoGeneratorInterface;
+use Endereco\Shopware6Client\Service\EnderecoService\PayloadPreparatorInterface;
+use Endereco\Shopware6Client\Service\EnderecoService\RequestHeadersGeneratorInterface;
 use Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcher;
 use Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcherInterface;
 use Endereco\Shopware6Client\Service\OrderCustomFieldsBuilder;
@@ -41,13 +46,16 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services->set(EnderecoService::class)
         ->args([
             '$systemConfigService' => service(SystemConfigService::class),
-            '$pluginRepository' => service('plugin.repository'),
             '$countryStateRepository' => service('country_state.repository'),
             '$customerAddressRepository' => service('customer_address.repository'),
             '$orderAddressRepository' => service('order_address.repository'),
             '$countryCodeFetcher' => service(CountryCodeFetcherInterface::class),
             '$addressCheckPayloadBuilder' => service(AddressCheckPayloadBuilderInterface::class),
             '$addressPersistenceStrategyProvider' => service(AddressPersistenceStrategyProviderInterface::class),
+            '$agentInfoGenerator' => service(AgentInfoGeneratorInterface::class),
+            '$requestHeadersGenerator' => service(RequestHeadersGeneratorInterface::class),
+            '$payloadPreparator' => service(PayloadPreparatorInterface::class),
+            '$streetSplitter' => service(StreetSplitterInterface::class),
             '$requestStack' => service('request_stack'),
             '$logger' => service('Endereco\Shopware6Client\Run\Logger'),
         ])
