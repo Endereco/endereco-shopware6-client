@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Event subscriber configuration
+ */
+
 declare(strict_types=1);
 
 use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
@@ -9,6 +13,8 @@ use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityIn
 use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddressIntegrityInsuranceInterface;
 use Endereco\Shopware6Client\Service\BySystemConfigFilterInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
+use Endereco\Shopware6Client\Service\EnderecoService\AgentInfoGeneratorInterface;
+use Endereco\Shopware6Client\Service\EnderecoService\PluginVersionFetcherInterface;
 use Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcherInterface;
 use Endereco\Shopware6Client\Service\OrdersCustomFieldsUpdaterInterface;
 use Endereco\Shopware6Client\Service\ProcessContextService;
@@ -22,9 +28,6 @@ use Endereco\Shopware6Client\Subscriber\AddDataToPageSubscriber;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
-/**
- * Event subscriber configuration
- */
 return static function (ContainerConfigurator $containerConfigurator): void {
     $services = $containerConfigurator->services()
         ->defaults()
@@ -35,6 +38,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->args([
             '$systemConfigService' => service(SystemConfigService::class),
             '$enderecoService' => service(EnderecoService::class),
+            '$agentInfoGenerator' => service(AgentInfoGeneratorInterface::class),
+            '$pluginVersionFetcher' => service(PluginVersionFetcherInterface::class),
             '$countryRepository' => service('country.repository'),
             '$stateRepository' => service('country_state.repository'),
             '$salutationRepository' => service('salutation.repository'),

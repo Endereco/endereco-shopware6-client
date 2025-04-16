@@ -6,21 +6,14 @@
 
 declare(strict_types=1);
 
-use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldChecker;
-use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
-use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilder;
-use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
-use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcher;
-use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
-use Endereco\Shopware6Client\Service\AddressCheck\CountryHasStatesChecker;
-use Endereco\Shopware6Client\Service\AddressCheck\CountryHasStatesCheckerInterface;
-use Endereco\Shopware6Client\Service\AddressCheck\LocaleFetcher;
-use Endereco\Shopware6Client\Service\AddressCheck\LocaleFetcherInterface;
-use Endereco\Shopware6Client\Service\AddressCheck\SubdivisionCodeFetcher;
-use Endereco\Shopware6Client\Service\AddressCheck\SubdivisionCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressCorrection\AddressCorrectionScopeBuilder;
 use Endereco\Shopware6Client\Service\AddressCorrection\AddressCorrectionScopeBuilderInterface;
+use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitter;
+use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterInterface;
+use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterWithCache;
 use Endereco\Shopware6Client\Service\EnderecoService;
+use Endereco\Shopware6Client\Service\EnderecoService\PayloadPreparatorInterface;
+use Endereco\Shopware6Client\Service\EnderecoService\RequestHeadersGeneratorInterface;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
@@ -41,4 +34,18 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$systemConfigService' => service(SystemConfigService::class),
         ]);
     $services->alias(AddressCorrectionScopeBuilderInterface::class, AddressCorrectionScopeBuilder::class);
+
+    $services->set(StreetSplitter::class)
+        ->args([
+            '$systemConfigService' => service(SystemConfigService::class),
+            '$requestHeadersGenerator' => service(RequestHeadersGeneratorInterface::class),
+            '$payloadPreparator' => service(PayloadPreparatorInterface::class),
+            '$logger' => service('Endereco\Shopware6Client\Run\Logger'),
+        ]);
+    $services->set(StreetSplitterWithCache::class)
+        ->args([
+            '$cache' => service('endereco_service_cache'),
+            '$streetSplitter' => service(StreetSplitter::class),
+        ]);
+    $services->alias(StreetSplitterInterface::class, StreetSplitterWithCache::class);
 };

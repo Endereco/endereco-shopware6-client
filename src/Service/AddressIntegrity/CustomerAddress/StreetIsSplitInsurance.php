@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress;
 
 use Endereco\Shopware6Client\DTO\CustomerAddressDTO;
+use Endereco\Shopware6Client\DTO\SplitStreetResultDto;
 use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
 use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
+use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\ProcessContextService;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
@@ -24,6 +26,7 @@ use Shopware\Core\Framework\Context;
 final class StreetIsSplitInsurance implements IntegrityInsurance
 {
     private CountryCodeFetcherInterface $countryCodeFetcher;
+    private StreetSplitterInterface $streetSplitter;
     private EnderecoService $enderecoService;
     private AddressPersistenceStrategyProviderInterface $addressPersistenceStrategyProvider;
     private AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker;
@@ -39,12 +42,14 @@ final class StreetIsSplitInsurance implements IntegrityInsurance
      */
     public function __construct(
         CountryCodeFetcherInterface $countryCodeFetcher,
+        StreetSplitterInterface $streetSplitter,
         EnderecoService $enderecoService,
         AddressPersistenceStrategyProviderInterface $addressPersistenceStrategyProvider,
         AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker,
         ProcessContextService $processContext,
     ) {
         $this->countryCodeFetcher = $countryCodeFetcher;
+        $this->streetSplitter = $streetSplitter;
         $this->enderecoService = $enderecoService;
         $this->addressPersistenceStrategyProvider = $addressPersistenceStrategyProvider;
         $this->additionalAddressFieldChecker = $additionalAddressFieldChecker;
@@ -93,7 +98,8 @@ final class StreetIsSplitInsurance implements IntegrityInsurance
             return;
         }
 
-        list($normalizedFullStreet, $streetName, $buildingNumber, $normalizedAdditionalInfo) = $this->enderecoService->splitStreet(
+        /** @var SplitStreetResultDto $streetSplitResult Result of street parsing. */
+        $streetSplitResult = $this->streetSplitter->splitStreet(
             $fullStreet,
             $additionalInfo,
             $countryCode,
@@ -112,10 +118,10 @@ final class StreetIsSplitInsurance implements IntegrityInsurance
         );
 
         $addressPersistenceStrategy->execute(
-            $normalizedFullStreet,
-            $normalizedAdditionalInfo,
-            $streetName,
-            $buildingNumber,
+            $streetSplitResult->getFullStreet(),
+            $streetSplitResult->getAdditionalInfo(),
+            $streetSplitResult->getStreetName(),
+            $streetSplitResult->getBuildingNumber(),
             $addressDTO
         );
     }

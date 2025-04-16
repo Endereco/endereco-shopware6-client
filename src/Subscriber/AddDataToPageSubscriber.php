@@ -4,6 +4,8 @@ namespace Endereco\Shopware6Client\Subscriber;
 
 use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
+use Endereco\Shopware6Client\Service\EnderecoService\AgentInfoGeneratorInterface;
+use Endereco\Shopware6Client\Service\EnderecoService\PluginVersionFetcher;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -21,6 +23,8 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
 {
     protected SystemConfigService $systemConfigService;
     protected EnderecoService $enderecoService;
+    protected AgentInfoGeneratorInterface $agentInfoGenerator;
+    protected PluginVersionFetcher $pluginVersionFetcher;
     protected EntityRepository $countryRepository;
     protected EntityRepository $stateRepository;
     protected EntityRepository $salutationRepository;
@@ -30,6 +34,8 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
     public function __construct(
         SystemConfigService $systemConfigService,
         EnderecoService $enderecoService,
+        AgentInfoGeneratorInterface $agentInfoGenerator,
+        PluginVersionFetcher $pluginVersionFetcher,
         EntityRepository $countryRepository,
         EntityRepository $stateRepository,
         EntityRepository $salutationRepository,
@@ -42,6 +48,8 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
         $this->salutationRepository = $salutationRepository;
         $this->pluginRepository = $pluginRepository;
         $this->enderecoService = $enderecoService;
+        $this->agentInfoGenerator = $agentInfoGenerator;
+        $this->pluginVersionFetcher = $pluginVersionFetcher;
         $this->additionalAddressFieldChecker = $additionalAddressFieldChecker;
     }
 
@@ -106,8 +114,8 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
 
         if ($loadEnderecoSettings) {
             // Retrieve and assign agent information and plugin version.
-            $configContainer->enderecoAgentInfo = $this->enderecoService->getAgentInfo($context);
-            $configContainer->enderecoVersion = $this->enderecoService->getPluginVersion($context);
+            $configContainer->enderecoAgentInfo = $this->agentInfoGenerator->getAgentInfo($context);
+            $configContainer->enderecoVersion = $this->pluginVersionFetcher->getPluginVersion($context);
 
             // Enrich the structure with email check settings.
             $this->addEmailCheckData($configContainer, $salesChannelId);
