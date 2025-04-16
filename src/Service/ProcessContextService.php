@@ -1,4 +1,5 @@
 <?php
+
 namespace Endereco\Shopware6Client\Service;
 
 class ProcessContextService
