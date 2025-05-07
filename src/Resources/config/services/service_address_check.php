@@ -8,6 +8,9 @@ declare(strict_types=1);
 
 use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldChecker;
 use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
+use Endereco\Shopware6Client\Service\AddressCheck\AddressChecker;
+use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckerInterface;
+use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckerWithCache;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilder;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcher;
@@ -18,6 +21,8 @@ use Endereco\Shopware6Client\Service\AddressCheck\LocaleFetcher;
 use Endereco\Shopware6Client\Service\AddressCheck\LocaleFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\SubdivisionCodeFetcher;
 use Endereco\Shopware6Client\Service\AddressCheck\SubdivisionCodeFetcherInterface;
+use Endereco\Shopware6Client\Service\EnderecoService\PayloadPreparatorInterface;
+use Endereco\Shopware6Client\Service\EnderecoService\RequestHeadersGeneratorInterface;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
@@ -28,6 +33,22 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->defaults()
         ->autowire()
         ->autoconfigure();
+
+    $services->set(AddressChecker::class)
+        ->args([
+            '$systemConfigService' => service(SystemConfigService::class),
+            '$requestHeadersGenerator' => service(RequestHeadersGeneratorInterface::class),
+            '$addressCheckPayloadBuilder' => service(AddressCheckPayloadBuilderInterface::class),
+            '$payloadPreparator' => service(PayloadPreparatorInterface::class),
+            '$logger' => service('Endereco\Shopware6Client\Run\Logger'),
+        ]);
+    $services->set(AddressCheckerWithCache::class)
+        ->args([
+            '$cache' => service('endereco_service_cache'),
+            '$addressCheckPayloadBuilder' => service(AddressCheckPayloadBuilderInterface::class),
+            '$addressChecker' => service(AddressChecker::class)
+        ]);
+    $services->alias(AddressCheckerInterface::class, AddressCheckerWithCache::class);
 
     /**
      * Builds API payloads for address validation requests and for address "hashing"
