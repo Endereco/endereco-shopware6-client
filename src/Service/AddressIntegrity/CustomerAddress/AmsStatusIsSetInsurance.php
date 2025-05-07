@@ -7,6 +7,7 @@ use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\End
 use Endereco\Shopware6Client\Model\FailedAddressCheckResult;
 use Endereco\Shopware6Client\Service\AddressIntegrity\Check\IsAmsRequestPayloadIsUpToDateCheckerInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
+use Endereco\Shopware6Client\Service\ProcessContextService;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Framework\Context;
 
@@ -22,6 +23,7 @@ final class AmsStatusIsSetInsurance implements IntegrityInsurance
 
     private EnderecoService $enderecoService;
     private IsAmsRequestPayloadIsUpToDateCheckerInterface $isAmsRequestPayloadIsUpToDateChecker;
+    private ProcessContextService $processContext;
 
     /**
      * AmsStatusIsSetInsurance constructor.
@@ -31,11 +33,12 @@ final class AmsStatusIsSetInsurance implements IntegrityInsurance
      */
     public function __construct(
         IsAmsRequestPayloadIsUpToDateCheckerInterface $isAmsRequestPayloadIsUpToDateChecker,
-        EnderecoService $enderecoService
-
+        EnderecoService $enderecoService,
+        ProcessContextService $processContext,
     ) {
         $this->enderecoService = $enderecoService;
         $this->isAmsRequestPayloadIsUpToDateChecker = $isAmsRequestPayloadIsUpToDateChecker;
+        $this->processContext = $processContext;
     }
 
     public static function getPriority(): int
@@ -143,11 +146,13 @@ final class AmsStatusIsSetInsurance implements IntegrityInsurance
         $existingCustomerCheckIsRelevant =
             $this->enderecoService->isExistingAddressCheckFeatureEnabled($salesChannelId)
             && !$this->enderecoService->isAddressFromRemote($addressEntity)
-            && !$this->enderecoService->isAddressRecent($addressEntity);
+            && !$this->enderecoService->isAddressRecent($addressEntity)
+            && $this->processContext->isStorefront();
 
         $paypalExpressCheckoutCheckIsRelevant =
             $this->enderecoService->isPayPalCheckoutAddressCheckFeatureEnabled($salesChannelId)
-            && $this->enderecoService->isAddressFromPayPal($addressEntity);
+            && $this->enderecoService->isAddressFromPayPal($addressEntity)
+            && $this->processContext->isStorefront();
 
         // Determine if check for freshly imported/updated through import customer address is required
         $importFileCheckIsRelevant =

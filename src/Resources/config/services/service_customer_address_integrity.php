@@ -28,6 +28,7 @@ use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\StreetIsSp
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityInsuranceInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
+use Endereco\Shopware6Client\Service\ProcessContextService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\tagged_iterator;
@@ -69,6 +70,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$enderecoService' => service(EnderecoService::class),
             '$addressPersistenceStrategyProvider' => service(AddressPersistenceStrategyProviderInterface::class),
             '$additionalAddressFieldChecker' => service(AdditionalAddressFieldCheckerInterface::class),
+            '$processContext' => service(ProcessContextService::class),
         ]);
 
 
@@ -108,6 +110,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$isAmsRequestPayloadIsUpToDateChecker' =>
                 service(IsAmsRequestPayloadIsUpToDateCheckerInterface::class),
             '$enderecoService' => service(EnderecoService::class),
+            '$processContext' => service(ProcessContextService::class),
         ]);
 
     /**

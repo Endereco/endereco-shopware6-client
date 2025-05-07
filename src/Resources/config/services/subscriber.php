@@ -11,6 +11,7 @@ use Endereco\Shopware6Client\Service\BySystemConfigFilterInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcherInterface;
 use Endereco\Shopware6Client\Service\OrdersCustomFieldsUpdaterInterface;
+use Endereco\Shopware6Client\Service\ProcessContextService;
 use Endereco\Shopware6Client\Subscriber\ConvertCartToOrderSubscriber;
 use Endereco\Shopware6Client\Subscriber\CustomerAddressSubscriber;
 use Endereco\Shopware6Client\Subscriber\OrderSubscriber;
@@ -51,6 +52,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
     $services->set(CustomerAddressSubscriber::class)
         ->args([
+            '$processContext' => service(ProcessContextService::class),
             '$addressCheckPayloadBuilder' => service(AddressCheckPayloadBuilderInterface::class),
             '$systemConfigService' => service(SystemConfigService::class),
             '$enderecoService' => service(EnderecoService::class),

@@ -10,6 +10,7 @@ use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInte
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityInsuranceInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
+use Endereco\Shopware6Client\Service\ProcessContextService;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Checkout\Customer\CustomerEvents;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -19,8 +20,13 @@ use Shopware\Core\Framework\Event\DataMappingEvent;
 use Shopware\Core\Framework\Validation\BuildValidationEvent;
 use Shopware\Core\Framework\Validation\DataBag\DataBag;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
+use Shopware\Storefront\Controller\StorefrontController;
+use Shopware\Storefront\Event\StorefrontRenderEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpKernel\Event\ControllerEvent;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Optional;
 use Shopware\Core\Content\ImportExport\Event\ImportExportBeforeImportRecordEvent;
@@ -42,8 +48,10 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
     private CustomerAddressIntegrityInsuranceInterface $customerAddressIntegrityInsurance;
     protected RequestStack $requestStack;
     private AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder;
+    private ProcessContextService $processContext;
 
     public function __construct(
+        ProcessContextService $processContext,
         AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder,
         SystemConfigService $systemConfigService,
         EnderecoService $enderecoService,
@@ -56,6 +64,8 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         CustomerAddressIntegrityInsuranceInterface $customerAddressIntegrityInsurance,
         RequestStack $requestStack
     ) {
+        // Other assignments...
+        $this->processContext = $processContext;
         $this->addressCheckPayloadBuilder = $addressCheckPayloadBuilder;
         $this->enderecoService = $enderecoService;
         $this->systemConfigService = $systemConfigService;
@@ -77,10 +87,15 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
      * The purpose of these events range from loading addresses, validating form submissions,
      * manipulating address data before writing to the database, and performing actions after the address is written.
      *
-     * @return array<string, array<array<string>|string>> The array of subscribed events.
+     * @return array<string, array<array<string>|string|int>> The array of subscribed events.
      */
     public static function getSubscribedEvents(): array
     {
+        // Add this to your events array
+        $storefrontEvents = [
+            KernelEvents::CONTROLLER => ['markStorefrontContext', 1000], // High priority to ensure it runs early
+        ];
+
         // This event is triggered when the address is loaded from the database.
         // You can add logic to ensure certain data in the address are properly set.
         $loadAddressEvents = [
@@ -127,8 +142,33 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
             $formValidationEvents,
             $beforeAddressWritingEvents,
             $afterAddressWritingEvents,
-            $importExportEvents
+            $importExportEvents,
+            $storefrontEvents
         );
+    }
+
+    /**
+     * Marks the process as storefront process, which is important to skip some insurance strategies.
+     *
+     * @param ControllerEvent $event
+     * @return void
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    public function markStorefrontContext(ControllerEvent $event): void
+    {
+        // Only act on the main request
+        if (!$event->isMainRequest()) {
+            return;
+        }
+
+        $controller = $event->getController();
+
+        if (is_array($controller) && $controller[0] instanceof StorefrontController) {
+            $this->processContext->setIsStorefront(true);
+        } else {
+            $this->processContext->setIsStorefront(false);
+        }
     }
 
     /**
