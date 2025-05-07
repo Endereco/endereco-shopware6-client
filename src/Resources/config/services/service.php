@@ -18,6 +18,7 @@ use Endereco\Shopware6Client\Service\OrderCustomFieldsBuilder;
 use Endereco\Shopware6Client\Service\OrderCustomFieldsBuilderInterface;
 use Endereco\Shopware6Client\Service\OrdersCustomFieldsUpdater;
 use Endereco\Shopware6Client\Service\OrdersCustomFieldsUpdaterInterface;
+use Endereco\Shopware6Client\Service\ProcessContextService;
 use Shopware\Core\Framework\Api\Sync\SyncService;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -28,6 +29,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->defaults()
         ->autowire()
         ->autoconfigure();
+
+    $services->set(ProcessContextService::class);
 
     $services->set(BySystemConfigFilter::class)
         ->args([

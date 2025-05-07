@@ -10,6 +10,7 @@ use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\End
 use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
+use Endereco\Shopware6Client\Service\ProcessContextService;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Framework\Context;
 
@@ -26,6 +27,7 @@ final class StreetIsSplitInsurance implements IntegrityInsurance
     private EnderecoService $enderecoService;
     private AddressPersistenceStrategyProviderInterface $addressPersistenceStrategyProvider;
     private AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker;
+    private ProcessContextService $processContext;
 
     /**
      * Constructor for the StreetIsSplitInsurance class
@@ -39,12 +41,14 @@ final class StreetIsSplitInsurance implements IntegrityInsurance
         CountryCodeFetcherInterface $countryCodeFetcher,
         EnderecoService $enderecoService,
         AddressPersistenceStrategyProviderInterface $addressPersistenceStrategyProvider,
-        AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker
+        AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker,
+        ProcessContextService $processContext,
     ) {
         $this->countryCodeFetcher = $countryCodeFetcher;
         $this->enderecoService = $enderecoService;
         $this->addressPersistenceStrategyProvider = $addressPersistenceStrategyProvider;
         $this->additionalAddressFieldChecker = $additionalAddressFieldChecker;
+        $this->processContext = $processContext;
     }
 
     /**
@@ -74,6 +78,10 @@ final class StreetIsSplitInsurance implements IntegrityInsurance
      */
     public function ensure(CustomerAddressEntity $addressEntity, Context $context): void
     {
+        if (!$this->processContext->isStorefront()) {
+            return;
+        }
+
         $addressExtension = $addressEntity->getExtension(CustomerAddressExtension::ENDERECO_EXTENSION);
         if (!$addressExtension instanceof EnderecoCustomerAddressExtensionEntity) {
             throw new \RuntimeException('The address extension should be set at this point');
