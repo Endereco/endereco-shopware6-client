@@ -11,16 +11,12 @@ use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\Endere
 use Endereco\Shopware6Client\Entity\OrderAddress\OrderAddressExtension;
 use Endereco\Shopware6Client\Misc\EnderecoConstants;
 use Endereco\Shopware6Client\Model\AddressCheckResult;
-use Endereco\Shopware6Client\Model\FailedAddressCheckResult;
-use Endereco\Shopware6Client\Model\SuccessfulAddressCheckResult;
-use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AddressPersistenceStrategyProvider;
 use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\AgentInfoGeneratorInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\PayloadPreparatorInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\RequestHeadersGeneratorInterface;
-use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
@@ -55,8 +51,6 @@ class EnderecoService
 
     private CountryCodeFetcherInterface $countryCodeFetcher;
 
-    private AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder;
-
     private AddressPersistenceStrategyProvider $addressPersistenceStrategyProvider;
 
     private AgentInfoGeneratorInterface $agentInfoGenerator;
@@ -78,7 +72,6 @@ class EnderecoService
         EntityRepository $customerAddressRepository,
         EntityRepository $orderAddressRepository,
         CountryCodeFetcherInterface $countryCodeFetcher,
-        AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder,
         AddressPersistenceStrategyProvider $addressPersistenceStrategyProvider,
         AgentInfoGeneratorInterface $agentInfoGenerator,
         RequestHeadersGeneratorInterface $requestHeadersGenerator,
@@ -93,7 +86,6 @@ class EnderecoService
         $this->customerAddressRepository = $customerAddressRepository;
         $this->orderAddressRepository = $orderAddressRepository;
         $this->countryCodeFetcher = $countryCodeFetcher;
-        $this->addressCheckPayloadBuilder = $addressCheckPayloadBuilder;
         $this->addressPersistenceStrategyProvider = $addressPersistenceStrategyProvider;
         $this->agentInfoGenerator = $agentInfoGenerator;
         $this->requestHeadersGenerator = $requestHeadersGenerator;
@@ -310,109 +302,6 @@ class EnderecoService
 
         // Store the resulting array back into the 'enderecoAccountableSessions' session storage
         $this->session->set('enderecoAccountableSessions', $allSessions);
-    }
-
-    /**
-     * Validates a given address using the Endereco API.
-     *
-     * This method uses the provided customer address and sales channel ID to prepare a set of headers and a payload for
-     * an address check request. The headers are generated using the sales channel settings and context, and the payload
-     * is constructed using data from the address.
-     *
-     * The method then sends a request to the Endereco API and interprets the response. It can handle scenarios
-     * where the street address is split into separate fields and where the country of the address has subdivisions.
-     *
-     * In case of any errors during the address check request, this method falls back to returning
-     * a FailedAddressCheckResult.
-     *
-     * @param CustomerAddressEntity $addressEntity The customer address to be checked.
-     * @param Context $context The context which includes details of the event triggering this method.
-     * @param string $salesChannelId The ID of the sales channel the address is associated with.
-     * @param string $sessionId (optional) The session ID. If not provided, a new one will be generated.
-     *
-     * @return AddressCheckResult The result of the address check operation.
-     */
-    public function checkAddress(
-        CustomerAddressEntity $addressEntity,
-        Context $context,
-        string $salesChannelId,
-        string $sessionId = ''
-    ): AddressCheckResult {
-        // Generate a new session id if none was provided
-        if (empty($sessionId)) {
-            try {
-                $sessionId = $this->generateSessionId();
-            } catch (Exception $e) {
-                // Skip session id generation if it fails. It's worse to break the check
-                // functionality than to have bad accounting.
-                $sessionId = 'not_required';
-            }
-        }
-
-        // Retrieve the Endereco API url from settings for the specific sales channel
-        $serviceUrl = $this->systemConfigService->getString(
-            'EnderecoShopware6Client.config.enderecoRemoteUrl',
-            $salesChannelId
-        );
-
-        // Generate request headers from context, sales channel settings, and optional session id
-        $headers = $this->requestHeadersGenerator->generateRequestHeaders(
-            $context,
-            $salesChannelId,
-            $sessionId
-        );
-
-        $payloadBody = $this->addressCheckPayloadBuilder->buildFromCustomerAddress(
-            $addressEntity,
-            $context
-        );
-
-
-
-        // Send the headers and payload to endereco api for valdiation.
-        try {
-            $data = $payloadBody->data();
-            $data['language'] = 'de'; // Its just 'de' at this point. We'll remove this param in the future.
-
-            $payload = json_encode(
-                $this->payloadPreparator->preparePayload(
-                    'addressCheck',
-                    $data
-                )
-            );
-
-            // Send to endereco api.
-            $response = $this->httpClient->post(
-                $serviceUrl,
-                array(
-                    'headers' => $headers,
-                    'body' => $payload
-                )
-            );
-
-            $resultJSON = $response->getBody()->getContents();
-
-            /* @var $addressCheckResult FailedAddressCheckResult|SuccessfulAddressCheckResult */
-            $addressCheckResult = AddressCheckResult::createFromJSON($resultJSON);
-        } catch (RequestException $e) {
-            if ($e->hasResponse()) {
-                $response = $e->getResponse();
-                if ($response && 500 <= $response->getStatusCode()) {
-                    $this->logger->error('Serverside checkAddress failed', ['error' => $e->getMessage()]);
-                }
-            }
-
-            $addressCheckResult = new FailedAddressCheckResult();
-        } catch (Throwable $e) {
-            $this->logger->error('Serverside checkAddress failed', ['error' => $e->getMessage()]);
-
-            $addressCheckResult = new FailedAddressCheckResult();
-        }
-
-        $addressCheckResult->setUsedSessionId($sessionId);
-        $addressCheckResult->setAddressSignature($payloadBody->toJSON());
-
-        return $addressCheckResult;
     }
 
     /**
@@ -1234,27 +1123,6 @@ class EnderecoService
         return $order === EnderecoConstants::STREET_ORDER_HOUSE_FIRST ?
             sprintf('%s %s', $buildingNumber, $streetName) :
             sprintf('%s %s', $streetName, $buildingNumber);
-    }
-
-    /**
-     * Generates a version 4 UUID (Universally Unique Identifier) as a session ID.
-     *
-     * The method uses the random_bytes function to generate 16 random bytes. Then it modifies bits
-     * in the 7th and 9th bytes to comply with the version 4 UUID specification.
-     * This version of UUID is used because it's based on random (or pseudo-random) numbers.
-     * The final UUID has 32 characters separated by hyphens in the format:
-     * 8-4-4-4-12 for a total of 36 characters including hyphens.
-     *
-     * @return string The generated version 4 UUID.
-     *
-     * @throws \Exception If it was not possible to gather sufficient random data.
-     */
-    public function generateSessionId(): string
-    {
-        $data = random_bytes(16);
-        $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
-        $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
-        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 
     /**
