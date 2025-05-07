@@ -79,10 +79,7 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
             $context
         );
 
-        $subdivisionCode = null;
-        if (isset($addressData['countryStateId'])) {
-            $subdivisionCode = $this->getSubdivisionCodeFromArray($addressData, $context);
-        }
+        $subdivisionCode = $this->getSubdivisionCodeFromArray($addressData, $context);
 
         $additionalInfo = null;
         if ($this->additionalAddressFieldChecker->hasAdditionalAddressField($context)) {
