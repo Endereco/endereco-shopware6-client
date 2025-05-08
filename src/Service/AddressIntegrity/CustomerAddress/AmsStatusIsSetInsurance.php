@@ -41,7 +41,7 @@ final class AmsStatusIsSetInsurance implements IntegrityInsurance
         IsAmsRequestPayloadIsUpToDateCheckerInterface $isAmsRequestPayloadIsUpToDateChecker,
         AddressCheckerInterface $addressChecker,
         EnderecoService $enderecoService,
-        ProcessContextService $processContext,
+        ProcessContextService $processContext
     ) {
         $this->enderecoService = $enderecoService;
         $this->addressChecker = $addressChecker;

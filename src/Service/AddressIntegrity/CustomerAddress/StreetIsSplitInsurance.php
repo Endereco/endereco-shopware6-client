@@ -46,7 +46,7 @@ final class StreetIsSplitInsurance implements IntegrityInsurance
         EnderecoService $enderecoService,
         AddressPersistenceStrategyProviderInterface $addressPersistenceStrategyProvider,
         AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker,
-        ProcessContextService $processContext,
+        ProcessContextService $processContext
     ) {
         $this->countryCodeFetcher = $countryCodeFetcher;
         $this->streetSplitter = $streetSplitter;
