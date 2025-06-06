@@ -135,7 +135,7 @@ final class AmsStatusIsSetInsurance implements IntegrityInsurance
         }
 
         // Count the validation for accounting.
-        if (!empty($sessionId)) {
+        if ($sessionId !== '') {
             $this->enderecoService->addAccountableSessionIdsToStorage([$sessionId]);
         }
     }
