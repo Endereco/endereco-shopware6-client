@@ -3,7 +3,7 @@ parameters:
 		-
 			message: '#^Usage of unlink is forbidden to local files\. Use temporary directory with sys_get_temp_dir\(\) if needed\.$#'
 			identifier: shopware.forbidLocalDiskWrite
-			count: 1
+			count: 2
 			path: src/Installer/PluginLifecycle.php
 
 		-

@@ -343,7 +343,7 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
 
     /**
      * Enriches the given configContainer object with advanced settings fetched from the system config.
-     * These settings include loading CSS, defining controller whitelists, and the path to an IO PHP file.
+     * These settings include loading CSS and defining controller whitelists.
      *
      * @param stdClass $configContainer The object that holds the configuration settings. Passed by reference.
      * @param string $salesChannelId The ID of the sales channel from which the settings are fetched.
@@ -352,7 +352,6 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
      * - 'EnderecoShopware6Client.config.enderecoLoadCss': Determines whether and how to load CSS.
      * - 'EnderecoShopware6Client.config.enderecoWhitelistControllerList': Additional controllers to be whitelisted.
      * - 'EnderecoShopware6Client.config.enderecoWhitelistController': Determines whether to whitelist controllers.
-     * - 'EnderecoShopware6Client.config.enderecoPathToIOPhp': Path to IO PHP file.
      *
      * Additionally, a default list of controllers to be whitelisted is defined and may be extended by the
      * fetched whitelist.
@@ -390,14 +389,6 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
         $configContainer->controllerOnlyWhitelist =
             $this->systemConfigService
                 ->get('EnderecoShopware6Client.config.enderecoWhitelistController', $salesChannelId);
-
-        $ioPathFile = $this->systemConfigService->get(
-            'EnderecoShopware6Client.config.enderecoPathToIOPhp',
-            $salesChannelId
-        );
-
-        // Calculate path to file.
-        $configContainer->pathToIoPhp = !empty($ioPathFile) ? $ioPathFile : '';
     }
 
     /**

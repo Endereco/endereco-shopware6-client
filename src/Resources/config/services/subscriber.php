@@ -19,14 +19,13 @@ use Endereco\Shopware6Client\Service\EnderecoService\PluginVersionFetcherInterfa
 use Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcherInterface;
 use Endereco\Shopware6Client\Service\OrdersCustomFieldsUpdaterInterface;
 use Endereco\Shopware6Client\Service\ProcessContextService;
+use Endereco\Shopware6Client\Subscriber\AddDataToPageSubscriber;
 use Endereco\Shopware6Client\Subscriber\ConvertCartToOrderSubscriber;
 use Endereco\Shopware6Client\Subscriber\CustomerAddressSubscriber;
-use Endereco\Shopware6Client\Subscriber\OrderSubscriber;
 use Endereco\Shopware6Client\Subscriber\OrderAddressSubscriber;
+use Endereco\Shopware6Client\Subscriber\OrderSubscriber;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
-use Endereco\Shopware6Client\Subscriber\AddDataToPageSubscriber;
-
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $containerConfigurator): void {
