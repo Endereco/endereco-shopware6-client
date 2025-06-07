@@ -1,5 +1,6 @@
 <?php
 
+use Endereco\Shopware6Client\Controller\Storefront\AddressCheckProxyController;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -44,6 +45,19 @@ $routeForAjaxAddressSaving = new Route(
 $routeForAjaxAddressSaving->setOptions(['seo' => false]);
 $routeForAjaxAddressSaving->setMethods(['POST']); // Only allow POST.
 $routes->add('frontend.endereco.account.address.edit.save', $routeForAjaxAddressSaving);
+
+$addressCheckProxyRoute = new Route(
+    '/endereco/address-check',
+    [
+        '_controller' => AddressCheckProxyController::class,
+        'XmlHttpRequest' => true,
+        'csrf_protected' => false,
+        '_routeScope' => ['storefront'],
+    ]
+);
+$addressCheckProxyRoute->setOptions(['seo' => false]);
+$addressCheckProxyRoute->setMethods(['POST']); // Only allow POST.
+$routes->add('frontend.endereco.address.check', $addressCheckProxyRoute);
 
 /**
  * Return the collection of routes

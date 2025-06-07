@@ -64,11 +64,7 @@
                     window.EnderecoIntegrator.defaultCountry = '{{ page.endereco_config.defaultCountry }}';
                     window.EnderecoIntegrator.config.agentName = '{{ page.endereco_config.enderecoAgentInfo }}';
 
-                    if ('{{ page.endereco_config.pathToIoPhp }}' !== '') {
-                        window.EnderecoIntegrator.config.apiUrl = '{{ page.endereco_config.pathToIoPhp }}';
-                    } else {
-                        window.EnderecoIntegrator.config.apiUrl = '{{ asset('bundles/enderecoshopware6client/io.php') }}';
-                    }
+                    window.EnderecoIntegrator.config.apiUrl = '{{ path('frontend.endereco.address.check') }}';
 
                     {% set cssPath = asset('bundles/enderecoshopware6client/endereco.min.css') ~ '?var=' ~ page.endereco_config.enderecoVersion %}
 

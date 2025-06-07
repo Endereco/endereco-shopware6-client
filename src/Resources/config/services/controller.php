@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use Endereco\Shopware6Client\Controller\Api\ApiTestController;
+use Endereco\Shopware6Client\Controller\Storefront\AddressCheckProxyController;
 use Endereco\Shopware6Client\Controller\Storefront\AddressController;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
+use Endereco\Shopware6Client\Service\ApiConfiguration\ApiConfigurationFetcherInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
-
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 /**
@@ -36,5 +38,13 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->call('setContainer', [
             service('service_container')
         ])
+        ->public();
+    
+    $services->set(AddressCheckProxyController::class)
+        ->args([
+            '$httpClient' => service(HttpClientInterface::class),
+            '$apiConfigurationFetcher' => service(ApiConfigurationFetcherInterface::class),
+        ])
+        ->tag('controller.service_arguments')
         ->public();
 };

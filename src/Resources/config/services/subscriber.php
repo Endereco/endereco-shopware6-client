@@ -18,14 +18,14 @@ use Endereco\Shopware6Client\Service\EnderecoService\PluginVersionFetcherInterfa
 use Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcherInterface;
 use Endereco\Shopware6Client\Service\OrdersCustomFieldsUpdaterInterface;
 use Endereco\Shopware6Client\Service\ProcessContextService;
+use Endereco\Shopware6Client\Subscriber\AddDataToPageSubscriber;
+use Endereco\Shopware6Client\Subscriber\ConfigurationCacheInvalidationSubscriber;
 use Endereco\Shopware6Client\Subscriber\ConvertCartToOrderSubscriber;
 use Endereco\Shopware6Client\Subscriber\CustomerAddressSubscriber;
-use Endereco\Shopware6Client\Subscriber\OrderSubscriber;
 use Endereco\Shopware6Client\Subscriber\OrderAddressSubscriber;
+use Endereco\Shopware6Client\Subscriber\OrderSubscriber;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
-use Endereco\Shopware6Client\Subscriber\AddDataToPageSubscriber;
-
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $containerConfigurator): void {
@@ -83,6 +83,12 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$orderAddressRepository' => service('order_address.repository'),
             '$bySystemConfigFilter' => service(BySystemConfigFilterInterface::class),
             '$ordersCustomFieldsUpdater' => service(OrdersCustomFieldsUpdaterInterface::class),
+        ])
+        ->tag('kernel.event_subscriber');
+    
+    $services->set(ConfigurationCacheInvalidationSubscriber::class)
+        ->args([
+            '$cache' => service('endereco.filesystem_tag_aware_adapter'),
         ])
         ->tag('kernel.event_subscriber');
 };
