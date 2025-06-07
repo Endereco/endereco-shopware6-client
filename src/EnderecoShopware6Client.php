@@ -3,6 +3,7 @@
 namespace Endereco\Shopware6Client;
 
 use Doctrine\DBAL\Exception;
+use Endereco\Shopware6Client\DependencyInjection\ReplaceContextResolverListenerPass;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Shopware\Core\Framework\Plugin\Context\InstallContext;
@@ -44,6 +45,8 @@ class EnderecoShopware6Client extends Plugin
         $confDir = \rtrim($this->getPath(), '/') . '/Resources/config';
 
         $configLoader->load($confDir . '/{packages}/*.yaml', 'glob');
+
+        $container->addCompilerPass(new ReplaceContextResolverListenerPass());
     }
 
     /**

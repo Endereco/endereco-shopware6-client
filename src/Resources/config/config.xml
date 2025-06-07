@@ -634,25 +634,6 @@
             </helpText>
         </input-field>
 
-        <input-field type="text">
-            <name>enderecoPathToIOPhp</name>
-            <label>Input the path to proxy file "io.php" manually (optional)</label>
-            <label lang="de-DE">Standard-Pfad zur Proxydatei "io.php" anpassen (optional)</label>
-            <defaultValue></defaultValue>
-            <placeholder>%SHOP_URL%/io.php</placeholder>
-            <helpText>
-                If there are problems with the proxy file "io.php" (e.g. when using AMAZON AWS) or plugin bundles are
-                stored in another folder, the path to the "io.php" file can be defined manually. A copy of the io.php
-                should be in the "/public" folder. Thus, "%SHOP_URL%/io.php" can be entered as the path.
-            </helpText>
-            <helpText lang="de-DE">
-                Wenn Probleme bei der Ausführung der Proxy-Datei "io.php" bestehen (z.B. beim Einsatz von AMAZON AWS,
-                oder wenn Plugin-Bundles in einem anderen Ordner gespeichert werden), kann der Pfad zur "io.php" Datei
-                manuell hinterlegt werden. Eine Kopie der io.php Datei kann im "/public" Ordner erstellt werden. Dann
-                kann z.B.  der Pfad "%SHOP_URL%/io.php" eingetragen werden.
-            </helpText>
-        </input-field>
-
         <input-field type="single-select">
             <name>enderecoLoadCss</name>
             <options>

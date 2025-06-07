@@ -16,7 +16,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Class PluginLifecycle
  *
- * This class is used to manage the life-cycle of the plugin.
+ * This class manages the lifecycle of the plugin including installation,
+ * updates, and uninstallation. It handles database schema changes and
+ * cleanup of legacy files from previous versions.
  *
  * @package Endereco\Shopware6Client\Installer
  */
@@ -52,12 +54,11 @@ class PluginLifecycle
             return;
         }
 
-        // The path where io.php has been copied
-        $pathToCopyIoPhp = dirname(__FILE__, 6) . '/public/io.php';
+        // Clean up any legacy io.php file from previous versions
+        $pathToLegacyIoPhp = dirname(__FILE__, 6) . '/public/io.php';
 
-        // Delete the copied io.php file.
-        if (file_exists($pathToCopyIoPhp)) {
-            unlink($pathToCopyIoPhp);
+        if (file_exists($pathToLegacyIoPhp)) {
+            unlink($pathToLegacyIoPhp);
         }
 
         // The tables to be dropped during uninstallation
@@ -95,14 +96,6 @@ class PluginLifecycle
      */
     public function install(): void
     {
-        // The original path of io.php
-        $pathToOriginIoPhp = dirname(__FILE__, 2) . '/Resources/public/io.php';
-
-        // The path where io.php will be copied
-        $pathToCopyIoPhp = dirname(__FILE__, 6) . '/public/io.php';
-
-        // Copy io.php to the public directory
-        copy($pathToOriginIoPhp, $pathToCopyIoPhp);
     }
 
     /**
@@ -112,16 +105,11 @@ class PluginLifecycle
      */
     public function update(): void
     {
-        // The original path of io.php
-        $pathToOriginIoPhp = dirname(__FILE__, 2) . '/Resources/public/io.php';
+        // Clean up any legacy io.php file that might exist from previous versions
+        $pathToLegacyIoPhp = dirname(__FILE__, 6) . '/public/io.php';
 
-        // The path where io.php will be copied
-        $pathToCopyIoPhp = dirname(__FILE__, 6) . '/public/io.php';
-
-        // Check if io.php already exists in the public directory
-        if (!file_exists($pathToCopyIoPhp)) {
-            // If not, copy it
-            copy($pathToOriginIoPhp, $pathToCopyIoPhp);
+        if (file_exists($pathToLegacyIoPhp)) {
+            unlink($pathToLegacyIoPhp);
         }
     }
 
