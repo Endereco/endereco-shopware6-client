@@ -17,6 +17,9 @@ printf " - %s\n" "${versions[@]}"
 # Ask the user for the desired version
 read -p "Enter the version of Shopware 6 you want to use: " version
 
+# Ask if user wants to enable XDebug
+read -p "Enable XDebug for debugging? (y/N): " enable_xdebug
+
 # Check if the version is valid
 if containsElement "$version" "${versions[@]}"; then
     echo "Preparing to start Shopware 6 in Dockware container with version $version"
@@ -26,14 +29,29 @@ if containsElement "$version" "${versions[@]}"; then
         echo "Removing existing container named shopware-$version"
         docker rm -f shopware-$version
     fi
-
+    
+    # Prepare Docker run options
+    docker_options="-d --name shopware-$version -v $(pwd):/var/www/html/custom/plugins/EnderecoShopware6Client -p 80:80"
+    sleep_time=10
+    
+    # Add XDebug options if requested
+    if [[ "$enable_xdebug" =~ ^[Yy]$ ]]; then
+        docker_options="$docker_options --add-host host.docker.internal=host-gateway --env=XDEBUG_ENABLED=1"
+        sleep_time=15
+        echo "XDebug enabled - container will take longer to start"
+    fi
+    
     # Start the Docker container
-    docker run -d --name shopware-$version -v $(pwd):/var/www/html/custom/plugins/EnderecoShopware6Client -p 80:80 dockware/dev:$version
+    docker run $docker_options dockware/dev:$version
 
-    sleep 10
+    sleep $sleep_time
     
     echo "Container started, Shopware 6 is available at http://localhost"
     echo "Your plugin is mounted at /var/www/html/custom/plugins/EnderecoShopware6Client"
+    
+    if [[ "$enable_xdebug" =~ ^[Yy]$ ]]; then
+        echo "XDebug is enabled and ready for debugging"
+    fi
 
     # Activate the plugin
     docker exec shopware-$version bash -c "cd /var/www/html && ./bin/console plugin:refresh && ./bin/console plugin:install --activate EnderecoShopware6Client"
