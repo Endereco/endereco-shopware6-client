@@ -14,6 +14,7 @@ use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddressIntegrityInsur
 use Endereco\Shopware6Client\Service\BySystemConfigFilterInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\EnderecoService\AgentInfoGeneratorInterface;
+use Endereco\Shopware6Client\Service\SessionManagementService;
 use Endereco\Shopware6Client\Service\EnderecoService\PluginVersionFetcherInterface;
 use Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcherInterface;
 use Endereco\Shopware6Client\Service\OrdersCustomFieldsUpdaterInterface;
@@ -61,6 +62,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$addressCheckPayloadBuilder' => service(AddressCheckPayloadBuilderInterface::class),
             '$systemConfigService' => service(SystemConfigService::class),
             '$enderecoService' => service(EnderecoService::class),
+            '$sessionManagementService' => service(SessionManagementService::class),
             '$customerRepository' => service('customer.repository'),
             '$customerAddressRepository' => service('customer_address.repository'),
             '$enderecoAddressExtensionRepository' => service('endereco_customer_address_ext_gh.repository'),

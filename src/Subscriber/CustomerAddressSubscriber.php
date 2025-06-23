@@ -11,6 +11,7 @@ use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityInsuranceInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\ProcessContextService;
+use Endereco\Shopware6Client\Service\SessionManagementService;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Checkout\Customer\CustomerEvents;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -39,6 +40,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
 {
     protected SystemConfigService $systemConfigService;
     protected EnderecoService $enderecoService;
+    protected SessionManagementService $sessionManagementService;
     protected EntityRepository $customerRepository;
     protected EntityRepository $customerAddressRepository;
     protected EntityRepository $enderecoAddressExtensionRepository;
@@ -55,6 +57,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder,
         SystemConfigService $systemConfigService,
         EnderecoService $enderecoService,
+        SessionManagementService $sessionManagementService,
         EntityRepository $customerRepository,
         EntityRepository $customerAddressRepository,
         EntityRepository $enderecoAddressExtensionRepository,
@@ -68,6 +71,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         $this->processContext = $processContext;
         $this->addressCheckPayloadBuilder = $addressCheckPayloadBuilder;
         $this->enderecoService = $enderecoService;
+        $this->sessionManagementService = $sessionManagementService;
         $this->systemConfigService = $systemConfigService;
         $this->customerRepository = $customerRepository;
         $this->customerAddressRepository = $customerAddressRepository;
@@ -249,7 +253,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         }
 
         // Loop through all entities loaded in the event
-        $this->enderecoService->isProcessingInsurances = true;
+        $this->sessionManagementService->setIsProcessingInsurances(true);
         foreach ($event->getEntities() as $entity) {
             // Skip the entity if it's not a CustomerAddressEntity
             if (!$entity instanceof CustomerAddressEntity) {
@@ -258,7 +262,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
 
             $this->customerAddressIntegrityInsurance->ensure($entity, $context);
         }
-        $this->enderecoService->isProcessingInsurances = false;
+        $this->sessionManagementService->setIsProcessingInsurances(false);
 
         // Close all stored sessions after checking all addresses
         $this->enderecoService->closeStoredSessions($context, $salesChannelId);

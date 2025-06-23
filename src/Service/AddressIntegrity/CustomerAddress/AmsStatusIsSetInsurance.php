@@ -134,9 +134,13 @@ final class AmsStatusIsSetInsurance implements IntegrityInsurance
             }
         }
 
-        // Count the validation for accounting.
+        // Count the validation for accounting only if address check is complete (address was selected automatically).
+        // If status doesn't contain "address_selected_automatically", the address check will be resumed in frontend.
         if ($sessionId !== '') {
-            $this->enderecoService->addAccountableSessionIdsToStorage([$sessionId]);
+            $amsStatus = $addressExtension->getAmsStatus();
+            if ($amsStatus && strpos($amsStatus, 'address_selected_automatically') !== false) {
+                $this->enderecoService->addAccountableSessionIdsToStorage([$sessionId]);
+            }
         }
     }
 

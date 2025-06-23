@@ -7,6 +7,7 @@ namespace Endereco\Shopware6Client\Controller\Storefront;
 use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
+use Endereco\Shopware6Client\Service\SessionManagementService;
 use Exception;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Checkout\Customer\Exception\AddressNotFoundException;
@@ -37,13 +38,16 @@ class AddressController extends StorefrontController
     protected EntityRepository $addressRepository;
     protected AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder;
     protected EnderecoService $enderecoService;
+    protected SessionManagementService $sessionManagementService;
 
     public function __construct(
         EnderecoService $enderecoService,
+        SessionManagementService $sessionManagementService,
         EntityRepository $addressRepository,
         AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder
     ) {
         $this->enderecoService = $enderecoService;
+        $this->sessionManagementService = $sessionManagementService;
         $this->addressRepository = $addressRepository;
         $this->addressCheckPayloadBuilder = $addressCheckPayloadBuilder;
     }
@@ -87,6 +91,12 @@ class AddressController extends StorefrontController
 
         /** @var \Symfony\Component\HttpFoundation\InputBag $requestInputBag */
         $requestInputBag = $request->request;
+
+        // Recognize and store accountable session IDs at the beginning of the address save process
+        $accountableSessionIds = $this->sessionManagementService->findAccountableSessionIds($requestInputBag->all());
+        if (!empty($accountableSessionIds)) {
+            $this->sessionManagementService->addAccountableSessionIdsToStorage($accountableSessionIds);
+        }
 
         /** @var array<string, string> $billingAddress */
         $billingAddress = $requestInputBag->has('billingAddress')
