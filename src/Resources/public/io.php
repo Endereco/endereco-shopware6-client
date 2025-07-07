@@ -56,9 +56,31 @@ try {
         throw new Exception('Request body is empty. We expect a valid JSON.');
     }
 
+    if (empty($_SERVER['HTTP_X_REMOTE_API_URL'])) {
+        http_response_code(400);
+        throw new Exception('Missing or blank remote API URL header.');
+    }
+    $remote_url = trim($_SERVER['HTTP_X_REMOTE_API_URL']);
+
+    // Protocol, path and query parameters are removed for the domain check.
+    $remote_domain = preg_replace('#^https?://#', '', $remote_url);
+    if ($remote_domain === null) {
+        header($http[400]);
+        throw new Exception('Invalid URL format.');
+    }
+    $remote_domain = explode('/', $remote_domain)[0];
+    $remote_domain = explode('?', $remote_domain)[0];
+    $remote_domain = trim(strtolower($remote_domain));
+
+    $allowed_remote_domain_pattern = '/^(([a-z0-9]([a-z0-9\-]{0,61}[a-z0-9])?\.)+)?endereco-service\.de$/';
+    if (!preg_match($allowed_remote_domain_pattern, $remote_domain)) {
+        header($http[400]);
+        throw new Exception('Invalid remote API url.');
+    }
+
     $api_key     = trim($_SERVER['HTTP_X_AUTH_KEY']);
     $data_string = $raw_json;
-    $ch          = curl_init(trim($_SERVER['HTTP_X_REMOTE_API_URL']));
+    $ch          = curl_init($remote_url);
     if (!$ch) {
         header($http[500]);
         throw new Exception('Could not initiate a curl client.');
