@@ -156,70 +156,85 @@ EnderecoIntegrator.hasActiveSubscriber = (fieldName, domElement, dataObject) => 
     }
 };
 
-const editAddressHandler = async (EAO) => {
-    const form = EAO.forms[0];
-    if (!form) {
-        return Promise.resolve();
-    }
+/**
+ * Wait until an element matching `selector` appears inside `root`
+ * (defaults to document) or until `timeout` ms elapse.
+ * Resolves with the element or rejects on timeout.
+ */
+function waitForElement(
+    selector,
+    { root = document, timeout = 5000 } = {},
+) {
+    return new Promise((resolve, reject) => {
+        const existing = root.querySelector(selector);
+        if (existing) return resolve(existing);
 
-    const targetFormLinkSelector = form.getAttribute('data-end-target-link-selector');
-    if (!targetFormLinkSelector) {
-        return Promise.resolve();
-    }
-
-    const targetLink = document.querySelector(targetFormLinkSelector);
-    if (!targetLink) {
-        return Promise.resolve();
-    }
-
-    targetLink.click();
-
-    const addressEditorPlugin = window.PluginManager.getPluginInstanceFromElement(targetLink, 'AddressEditor');
-    if (!addressEditorPlugin) {
-        return Promise.resolve();
-    }
-
-    return new Promise((resolve) => {
-        const timeoutId = setTimeout(() => {
-            console.warn('Timed out waiting for modal to open');
-            resolve();
-        }, 10000);
-
-        addressEditorPlugin.$emitter.subscribe('onOpen', ({detail: {pseudoModal}}) => {
-            const modalElement = pseudoModal._modal;
-
-            let addressEditButton;
-            if (modalElement.querySelector('[data-bs-target="#billing-address-create-edit"]')) {
-                addressEditButton = modalElement.querySelector('[data-bs-target="#billing-address-create-edit"]');
-            } else if (modalElement.querySelector('[data-bs-target="#shipping-address-create-edit"]')) {
-                addressEditButton = modalElement.querySelector('[data-bs-target="#shipping-address-create-edit"]');
-            } else {
-                addressEditButton = modalElement.querySelector('[data-target="#address-create-edit"]');
+        const observer = new MutationObserver(() => {
+            const found = root.querySelector(selector);
+            if (found) {
+                observer.disconnect();
+                clearTimeout(timer);
+                resolve(found);
             }
-
-            if (!addressEditButton) {
-                console.warn("Modal opened but edit button not found");
-                clearTimeout(timeoutId);
-                return resolve();
-            }
-
-            // Add a small timeout to ensure the button is clickable
-            setTimeout(() => {
-                try {
-                    addressEditButton.click();
-                    clearTimeout(timeoutId);
-                    return resolve();
-                } catch (err) {
-                    // Handle potential navigation or other errors
-                    console.warn("Error clicking edit button:", {
-                        error: err
-                    });
-                    clearTimeout(timeoutId);
-                    return resolve();
-                }
-            }, 50);
         });
+
+        observer.observe(root, { childList: true, subtree: true });
+
+        const timer = setTimeout(() => {
+            observer.disconnect();
+            reject(new Error(`Timed out waiting for: ${selector}`));
+        }, timeout);
     });
+}
+
+/**
+ * Opens the address-manager modal and switches it into
+ * "edit address" mode. Silent no-ops when something is missing.
+ */
+const editAddressHandler = async (EAO) => {
+    const form = EAO?.forms?.[0];
+    if (!form) return;
+
+    const linkSelector = form.getAttribute('data-end-target-link-selector');
+    if (!linkSelector) return;
+
+    const link = document.querySelector(linkSelector);
+    if (!link) return;
+
+    link.click();
+
+    try {
+        const modal = await waitForElement('.address-manager-modal', {
+            timeout: 10_000,
+        });
+
+        // Give the plugin a couple of ticks to render.
+        await new Promise(r => setTimeout(r, 200));
+
+        // Determine address type from the link selector to target the correct edit button
+        const isShippingAddress = linkSelector.includes('confirm-shipping-address');
+        const isBillingAddress = linkSelector.includes('confirm-billing-address');
+        
+        let editBtn;
+        if (isShippingAddress) {
+            editBtn = modal.querySelector('.address-manager-modal-address-form[data-address-type="shipping"]');
+        } else if (isBillingAddress) {
+            editBtn = modal.querySelector('.address-manager-modal-address-form[data-address-type="billing"]');
+        }
+        
+        if (!editBtn) {
+            console.warn('Edit-address button not found inside modal');
+            return;
+        }
+        editBtn.click();
+
+        await waitForElement(
+            '.address-manager-modal form, .address-manager-modal .address-form',
+            { root: modal, timeout: 5_000 },
+        );
+    } catch (err) {
+        console.warn(err.message);
+    }
 };
 
 const addressSelectedOrConfirmHandler = async (EAO) => {
@@ -289,7 +304,7 @@ EnderecoIntegrator.afterAMSActivation.push((EAO) => {
  * @returns {boolean} - Returns true if popup area is free, false otherwise
  */
 EnderecoIntegrator.isPopupAreaFree = (EAO) => {
-    const shopwareModal = document.querySelector('.address-editor-modal');
+    const shopwareModal = document.querySelector('.address-manager-modal');
     if (!shopwareModal) {
         return true;
     }
