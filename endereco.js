@@ -317,9 +317,11 @@ window.EnderecoIntegrator.prepareDOMElement = (DOMElement) => {
     }
 
     const enderecoBlurListener = (e) => {
-        // Dispatch 'focus', 'change' and 'blur' events on the target element
+        // Dispatch 'focus', 'input', 'change' and 'blur' events on the target element
+        // The 'input' event is required for Shopware 6.7 to reset error states
         let prevActiveElement = document.activeElement;
         e.target.dispatchEvent(new CustomEvent('focus', { bubbles: true, cancelable: true }));
+        e.target.dispatchEvent(new CustomEvent('input', { bubbles: true, cancelable: true }));
         e.target.dispatchEvent(new CustomEvent('change', { bubbles: true, cancelable: true }));
         e.target.dispatchEvent(new CustomEvent('blur', { bubbles: true, cancelable: true }));
         prevActiveElement.dispatchEvent(new CustomEvent('focus', { bubbles: true, cancelable: true }));
