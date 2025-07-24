@@ -1,1 +1,10 @@
 @use './node_modules/@endereco/js-sdk/themes/default-theme.scss';
+
+// Fix for wrong display of flag icon in Shopware 6.7
+// The icon shifts to the bottom and looks broken, probably because 
+// Shopware 6.7 changed their styles in a way that's not compatible with us
+.endereco-flag {
+  > svg {
+    vertical-align: baseline;
+  }
+}
