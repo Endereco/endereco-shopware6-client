@@ -8,6 +8,7 @@ use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoBaseAddress
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionEntity;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
+use Shopware\Core\Framework\Uuid\Uuid;
 
 /**
  * Class EnderecoCustomerAddressExtensionEntity
@@ -70,6 +71,8 @@ class EnderecoCustomerAddressExtensionEntity extends EnderecoBaseAddressExtensio
     public function createOrderAddressExtension(string $orderAddressId): EnderecoOrderAddressExtensionEntity
     {
         $entity = new EnderecoOrderAddressExtensionEntity();
+        $entity->setId(Uuid::randomHex());
+        $entity->setUniqueIdentifier($entity->getId());
         $entity->setAddressId($orderAddressId);
         $entity->setAmsStatus($this->getAmsStatus());
         $entity->setAmsTimestamp($this->getAmsTimestamp());

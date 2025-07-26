@@ -7,6 +7,7 @@ namespace Endereco\Shopware6Client\Entity\OrderAddress;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionDefinition;
 use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityExtension;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\CascadeDelete;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToOneAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
 
@@ -21,15 +22,18 @@ class OrderAddressExtension extends EntityExtension
      */
     public function extendFields(FieldCollection $collection): void
     {
-        $collection->add(
-            new OneToOneAssociationField(
-                self::ENDERECO_EXTENSION,
-                'id',
-                'address_id',
-                EnderecoOrderAddressExtensionDefinition::class,
-                true
-            )
+        $associationField = new OneToOneAssociationField(
+            self::ENDERECO_EXTENSION,
+            'id',
+            'address_id',
+            EnderecoOrderAddressExtensionDefinition::class,
+            true // This is marked as bad practise by Shopware and should be replaced with conditional loading.
         );
+        // The CascadeDelete flag tells Shopware that this extension is marked as cascade delete in the database.
+        // Shopware will only version-copy extensions that are flagged like this during it's merge process.
+        // This prevents the loss of this data in process.
+        $associationField->addFlags(new CascadeDelete());
+        $collection->add($associationField);
     }
 
     /**

@@ -16,22 +16,21 @@ use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AddressPer
 use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\AgentInfoGeneratorInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\PayloadPreparatorInterface;
-use Endereco\Shopware6Client\Service\SessionManagementService;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressCollection;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressEntity;
 use Shopware\Core\Framework\Api\Context\SalesChannelApiSource;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\System\Country\Aggregate\CountryState\CountryStateCollection;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Throwable;
 
 class EnderecoService
 {
@@ -63,6 +62,11 @@ class EnderecoService
 
     protected RequestStack $requestStack;
 
+    /**
+     * @param EntityRepository<CountryStateCollection> $countryStateRepository
+     * @param EntityRepository<CustomerAddressCollection> $customerAddressRepository
+     * @param EntityRepository<OrderAddressCollection> $orderAddressRepository
+     */
     public function __construct(
         SystemConfigService $systemConfigService,
         EntityRepository $countryStateRepository,
@@ -189,10 +193,13 @@ class EnderecoService
 
         $updatePayload = [
             'id' => $addressId,
+            'versionId' => $addressEntity->getVersionId()
         ];
 
-        $addressExtension = new EnderecoOrderAddressExtensionEntity();
-        $addressEntity->addExtension(OrderAddressExtension::ENDERECO_EXTENSION, $addressExtension);
+        $addressExtension = EnderecoOrderAddressExtensionEntity::createWithDefaultValues(
+            $addressEntity->getId(),
+            $addressEntity->getVersionId()
+        );
 
         $updatePayload['extensions'][OrderAddressExtension::ENDERECO_EXTENSION]['amsRequestPayload']
             = $addressExtension->getAmsRequestPayload();
@@ -204,6 +211,8 @@ class EnderecoService
             = $addressExtension->getAmsTimestamp();
 
         // Update the customer address in the repository
+        // The update payload doesn't require an ID (and version ID) because it is persisted via the one-to-one
+        // relationship with the order address, which is unique.
         $this->orderAddressRepository->update([$updatePayload], $context);
     }
 

@@ -131,6 +131,8 @@ class ConvertCartToOrderSubscriber implements EventSubscriberInterface
             if ($customerAddressExtension instanceof EnderecoCustomerAddressExtensionEntity) {
                 /** @var string $orderAddressId */
                 $orderAddressId = $address['id'];
+                // The address version ID is not yet set at this point.
+                // Shopware will automatically do that and use the relation to set it in the extension as well.
 
                 $orderAddressExtensionEntity = $customerAddressExtension->createOrderAddressExtension($orderAddressId);
                 $orderAddressExtensionData = $orderAddressExtensionEntity->buildCartToOrderConversionData();

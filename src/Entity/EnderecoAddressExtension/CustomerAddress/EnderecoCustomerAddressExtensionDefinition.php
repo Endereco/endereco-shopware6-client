@@ -7,6 +7,8 @@ namespace Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddre
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoBaseAddressExtensionDefinition;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\FkField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\PrimaryKey;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToOneAssociationField;
 
 class EnderecoCustomerAddressExtensionDefinition extends EnderecoBaseAddressExtensionDefinition
@@ -41,7 +43,10 @@ class EnderecoCustomerAddressExtensionDefinition extends EnderecoBaseAddressExte
      */
     protected function addressAssociationForeignKeyField(): FkField
     {
-        return new FkField('address_id', 'addressId', CustomerAddressDefinition::class);
+        $field = new FkField('address_id', 'addressId', CustomerAddressDefinition::class);
+        $field->addFlags(new Required(), new PrimaryKey());
+
+        return $field;
     }
 
     /**

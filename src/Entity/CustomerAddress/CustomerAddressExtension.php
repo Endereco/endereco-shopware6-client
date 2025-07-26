@@ -28,7 +28,7 @@ class CustomerAddressExtension extends EntityExtension
                 'id',
                 'address_id',
                 EnderecoCustomerAddressExtensionDefinition::class,
-                true
+                true // This is marked as bad practise by Shopware and should be replaced with conditional loading.
             )
         );
     }

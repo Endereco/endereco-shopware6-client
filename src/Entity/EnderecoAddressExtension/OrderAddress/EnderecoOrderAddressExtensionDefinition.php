@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress;
 
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoBaseAddressExtensionDefinition;
-use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressDefinition;
 use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\FkField;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\ManyToOneAssociationField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\ApiAware;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\PrimaryKey;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\IdField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToOneAssociationField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\ReferenceVersionField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\VersionField;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
 
 /**
@@ -62,6 +66,39 @@ class EnderecoOrderAddressExtensionDefinition extends EnderecoBaseAddressExtensi
         return EnderecoOrderAddressExtensionCollection::class;
     }
 
+    /**
+     * Adds the following fields to the base AddressExtension definition:
+     * - id
+     * - versionId
+     * - addressVersionId
+     *
+     * The order address entity of Shopware is versioned as are all entities that are (closely) related to the
+     * order entity. Adding the address version id (of the order address) is necessary to precisely identify the linked
+     * address entity.
+     *
+     * An ID and a version ID are required to keep this data during order changes. Shopware creates versions and merges
+     * them on every order change. This leads to the deletion of all related entities that doesn't support versioning.
+     *
+     * @return FieldCollection
+     */
+    protected function defineFields(): FieldCollection
+    {
+        $fields = parent::defineFields();
+
+        $idField = new IdField('id', 'id');
+        $idField->addFlags(new ApiAware(), new PrimaryKey(), new Required());
+        $fields->add($idField);
+        $idVersionField = new VersionField();
+        $idVersionField->addFlags(new ApiAware());
+        $fields->add($idVersionField);
+
+        // The version id field linked to the version of the address.
+        $referenceVersionField = new ReferenceVersionField(OrderAddressDefinition::class, 'address_version_id');
+        $referenceVersionField->addFlags(new Required());
+        $fields->add($referenceVersionField);
+
+        return $fields;
+    }
 
     /**
      * Creates the foreign key field for the address association.
@@ -71,11 +108,10 @@ class EnderecoOrderAddressExtensionDefinition extends EnderecoBaseAddressExtensi
      */
     protected function addressAssociationForeignKeyField(): FkField
     {
-        return new FkField(
-            'address_id',
-            'addressId',
-            OrderAddressDefinition::class
-        );
+        $field = new FkField('address_id', 'addressId', OrderAddressDefinition::class);
+        $field->addFlags(new Required());
+
+        return $field;
     }
 
     /**

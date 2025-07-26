@@ -6,9 +6,10 @@ namespace Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress;
 
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoBaseAddressExtensionEntity;
 use Endereco\Shopware6Client\Model\AddressCheckData;
-use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressEntity;
+use Shopware\Core\Defaults;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
+use Shopware\Core\Framework\Uuid\Uuid;
 
 /**
  * Class EnderecoOrderAddressExtensionEntity
@@ -23,8 +24,80 @@ use Shopware\Core\Framework\DataAbstractionLayer\Entity;
  */
 class EnderecoOrderAddressExtensionEntity extends EnderecoBaseAddressExtensionEntity
 {
+    /** @var string The ID of this entity. */
+    protected string $id;
+
+    // The version ID of this entity is defined in the base entity class of Shopware.
+
+    /** @var string The version ID of the associated address. */
+    protected string $addressVersionId;
+
     /** @var ?OrderAddressEntity The associated order address entity. */
     protected ?OrderAddressEntity $address = null;
+
+    /**
+     * Creates an order address extension instance with a random UUID and the default AMS data.
+     * An order address ID is mandatory. An order address version ID is optional.
+     *
+     * @param string $addressId
+     * @param string|null $addressVersionId
+     * @return EnderecoOrderAddressExtensionEntity
+     */
+    public static function createWithDefaultValues(
+        string $addressId,
+        ?string $addressVersionId
+    ): EnderecoOrderAddressExtensionEntity {
+        $addressExtension = new EnderecoOrderAddressExtensionEntity();
+        $addressExtension->setId(Uuid::randomHex());
+        $addressExtension->setUniqueIdentifier($addressExtension->getId());
+        $addressExtension->setVersionId(Defaults::LIVE_VERSION);
+        $addressExtension->setAddressId($addressId);
+        if (is_string($addressVersionId)) {
+            $addressExtension->setAddressVersionId($addressVersionId);
+        }
+
+        return $addressExtension;
+    }
+
+    /**
+     * Get the ID.
+     *
+     * @return string
+     */
+    public function getId(): string
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set ID.
+     *
+     * @param string $id
+     */
+    public function setId(string $id): void
+    {
+        $this->id = $id;
+    }
+
+    /**
+     * Get address version ID.
+     *
+     * @return string The version ID of the associated address.
+     */
+    public function getAddressVersionId(): string
+    {
+        return $this->addressVersionId;
+    }
+
+    /**
+     * Set address version ID.
+     *
+     * @param string $addressId The version ID of the associated address.
+     */
+    public function setAddressVersionId(string $addressId): void
+    {
+        $this->addressVersionId = $addressId;
+    }
 
     /**
      * Gets the associated order address entity.

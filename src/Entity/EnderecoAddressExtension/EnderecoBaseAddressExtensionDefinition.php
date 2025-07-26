@@ -31,7 +31,7 @@ abstract class EnderecoBaseAddressExtensionDefinition extends EntityDefinition
     {
         return new FieldCollection([
             // The primary key field linked to the address.
-            $this->addressAssociationForeignKeyField()->addFlags(new Required(), new PrimaryKey()),
+            $this->addressAssociationForeignKeyField(),
 
             // A field that contains a JSON array of predictions for possible address corrections.
             (new LongTextField('ams_request_payload', 'amsRequestPayload')),
@@ -63,7 +63,9 @@ abstract class EnderecoBaseAddressExtensionDefinition extends EntityDefinition
     }
 
     /**
-     * Creates FK field for address association
+     * Creates FK field for address association.
+     *
+     * The returned FKField must be flagged inside the method. No flags will be added in the base class.
      *
      * @return FkField Foreign key field configuration
      */
