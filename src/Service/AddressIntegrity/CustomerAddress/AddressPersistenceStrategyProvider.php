@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress;
 
 use Endereco\Shopware6Client\DTO\CustomerAddressDTO;
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionCollection;
 use Endereco\Shopware6Client\Model\AddressPersistenceStrategy\DoNothing;
 use Endereco\Shopware6Client\Model\AddressPersistenceStrategy\OverwriteNativeAndExtensionPostData;
 use Endereco\Shopware6Client\Model\AddressPersistenceStrategy\PersistNativeAndExtensionFields;
@@ -12,16 +13,26 @@ use Endereco\Shopware6Client\Model\AddressPersistenceStrategy\PersistOnlyExtensi
 use Endereco\Shopware6Client\Model\CustomerAddressPersistenceStrategy;
 use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
 use Endereco\Shopware6Client\Service\AddressCorrection\AddressCorrectionScopeBuilderInterface;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressCollection;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 
 final class AddressPersistenceStrategyProvider implements AddressPersistenceStrategyProviderInterface
 {
     private AddressCorrectionScopeBuilderInterface $addressCorrectionScopeBuilder;
+
     private AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker;
+
+    /** @var EntityRepository<EnderecoCustomerAddressExtensionCollection>  */
     private EntityRepository $customerAddressExtensionRepository;
+
+    /** @var EntityRepository<CustomerAddressCollection>  */
     private EntityRepository $customerAddressRepository;
 
+    /**
+     * @param EntityRepository<CustomerAddressCollection> $customerAddressRepository
+     * @param EntityRepository<EnderecoCustomerAddressExtensionCollection> $customerAddressExtensionRepository
+     */
     public function __construct(
         AddressCorrectionScopeBuilderInterface $addressCorrectionScopeBuilder,
         AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker,

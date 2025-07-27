@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Endereco\Shopware6Client\Model\AddressPersistenceStrategy;
 
 use Endereco\Shopware6Client\DTO\CustomerAddressDTO;
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionCollection;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
 use Endereco\Shopware6Client\Model\CustomerAddressPersistenceStrategy;
 use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressCollection;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Context;
@@ -20,10 +22,18 @@ final class PersistNativeAndExtensionFields implements CustomerAddressPersistenc
     use CustomerAddressExtensionPersistenceStrategyTrait;
 
     private AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker;
-    private EntityRepository $extensionRepository;
+
+    /** @var EntityRepository<CustomerAddressCollection>  */
     private EntityRepository $addressRepository;
+
     private Context $context;
 
+    /**
+     * @param AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker
+     * @param EntityRepository<CustomerAddressCollection> $customerAddressRepository
+     * @param EntityRepository<EnderecoCustomerAddressExtensionCollection> $customerAddressExtensionRepository
+     * @param Context $context
+     */
     public function __construct(
         AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker,
         EntityRepository $customerAddressRepository,

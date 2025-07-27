@@ -12,12 +12,12 @@ class CustomerAddressDTO
      *
      * @param CustomerAddressEntity|null $customerAddress
      * @param EnderecoCustomerAddressExtensionEntity|null $enderecoCustomerAddressExtension
-     * @param array<string, mixed>|null $postData Reference to postData array
+     * @param array<string, mixed> $postData Reference to postData array
      */
     public function __construct(
-        ?CustomerAddressEntity $customerAddress = null,
-        ?EnderecoCustomerAddressExtensionEntity $enderecoCustomerAddressExtension = null,
-        ?array &$postData = null
+        ?CustomerAddressEntity $customerAddress,
+        ?EnderecoCustomerAddressExtensionEntity $enderecoCustomerAddressExtension,
+        array &$postData
     ) {
         $this->customerAddress = $customerAddress;
         $this->enderecoCustomerAddressExtension = $enderecoCustomerAddressExtension;
@@ -41,9 +41,9 @@ class CustomerAddressDTO
     /**
      * Reference to an array (Shopware 6 plugin context)
      *
-     * @var array<string, mixed>|null
+     * @var array<string, mixed>
      */
-    private ?array $postData = null;
+    private array $postData;
 
     /**
      * Get CustomerAddress reference
@@ -93,9 +93,9 @@ class CustomerAddressDTO
     /**
      * Get post data reference
      *
-     * @return array<string, mixed>|null
+     * @return array<string, mixed>
      */
-    public function &getPostData(): ?array
+    public function &getPostData(): array
     {
         return $this->postData;
     }
@@ -103,10 +103,10 @@ class CustomerAddressDTO
     /**
      * Set post data reference
      *
-     * @param array<string, mixed>|null $postData
+     * @param array<string, mixed> $postData
      * @return self
      */
-    public function setPostData(?array &$postData): self
+    public function setPostData(array &$postData): self
     {
         $this->postData = &$postData;
         return $this;

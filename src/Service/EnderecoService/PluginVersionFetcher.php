@@ -8,12 +8,17 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\Plugin\PluginCollection;
 use Shopware\Core\Framework\Plugin\PluginEntity as Plugin;
 
 final class PluginVersionFetcher implements PluginVersionFetcherInterface
 {
+    /** @var EntityRepository<PluginCollection>  */
     private EntityRepository $pluginRepository;
 
+    /**
+     * @param EntityRepository<PluginCollection> $pluginRepository
+     */
     public function __construct(EntityRepository $pluginRepository)
     {
         $this->pluginRepository = $pluginRepository;

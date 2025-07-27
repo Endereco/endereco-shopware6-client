@@ -8,4 +8,4 @@ parameters:
         - ./node_modules
     bootstrapFiles:
         - shops/6.6.9.0/vendor/autoload.php
-    checkGenericClassInNonGenericObjectType: false
+    treatPhpDocTypesAsCertain: false

@@ -5,19 +5,20 @@ declare(strict_types=1);
 namespace Endereco\Shopware6Client\Model\AddressPersistenceStrategy;
 
 use Endereco\Shopware6Client\DTO\CustomerAddressDTO;
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionCollection;
 use Endereco\Shopware6Client\Model\CustomerAddressPersistenceStrategy;
-use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-
 
 final class PersistOnlyExtensionFields implements CustomerAddressPersistenceStrategy
 {
     use CustomerAddressExtensionPersistenceStrategyTrait;
 
-    private EntityRepository $extensionRepository;
     private Context $context;
 
+    /**
+     * @param EntityRepository<EnderecoCustomerAddressExtensionCollection> $customerAddressExtensionRepository
+     */
     public function __construct(
         EntityRepository $customerAddressExtensionRepository,
         Context $context

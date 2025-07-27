@@ -11,8 +11,12 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\Plugin\PluginCollection;
+use Shopware\Core\System\Country\Aggregate\CountryState\CountryStateCollection;
 use Shopware\Core\System\Country\Aggregate\CountryState\CountryStateEntity;
+use Shopware\Core\System\Country\CountryCollection;
 use Shopware\Core\System\Country\CountryEntity;
+use Shopware\Core\System\Salutation\SalutationCollection;
 use Shopware\Core\System\Salutation\SalutationEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Page\GenericPageLoadedEvent;
@@ -22,15 +26,33 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class AddDataToPageSubscriber implements EventSubscriberInterface
 {
     protected SystemConfigService $systemConfigService;
+
     protected EnderecoService $enderecoService;
+
     protected AgentInfoGeneratorInterface $agentInfoGenerator;
+
     protected PluginVersionFetcher $pluginVersionFetcher;
+
+    /** @var EntityRepository<CountryCollection>  */
     protected EntityRepository $countryRepository;
+
+    /** @var EntityRepository<CountryStateCollection>  */
     protected EntityRepository $stateRepository;
+
+    /** @var EntityRepository<SalutationCollection> */
     protected EntityRepository $salutationRepository;
+
+    /** @var EntityRepository<PluginCollection>  */
     protected EntityRepository $pluginRepository;
+
     private AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker;
 
+    /**
+     * @param EntityRepository<CountryCollection> $countryRepository
+     * @param EntityRepository<CountryStateCollection> $stateRepository
+     * @param EntityRepository<SalutationCollection> $salutationRepository
+     * @param EntityRepository<PluginCollection> $pluginRepository
+     */
     public function __construct(
         SystemConfigService $systemConfigService,
         EnderecoService $enderecoService,
@@ -236,7 +258,7 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
          * 'f' - female, in Shopware 6 it would be 'mrs'
          * 'd' - diverse, in Shopware 6 it would be 'diverse', that needs to be created separately
          * 'x' - unknown, in Shopware 6 it would be 'not_specified'. It's also set in endereco.js
-         * @var EntitySearchResult $salutations
+         * @var EntitySearchResult<SalutationCollection> $salutations
          */
         $salutations = $this->salutationRepository->search(new Criteria(), $context);
         $relevanceMapping = [
@@ -269,7 +291,6 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
      */
     private function createSafeJsonString(array $array): string
     {
-        /** @var string|false $encodedString */
         $encodedString = json_encode($array);
 
         if (!$encodedString) {
@@ -443,7 +464,7 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
 
         $criteria = (new Criteria())->addFilter(new EqualsFilter('active', 1));
 
-        /** @var EntitySearchResult $countries */
+        /** @var EntitySearchResult<CountryCollection> $countries */
         $countries = $this->countryRepository->search($criteria, $context);
         $mapping = [];
         $mappingReverse = [];
@@ -467,7 +488,7 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
 
         $criteria = (new Criteria())->addFilter(new EqualsFilter('active', 1));
 
-        /** @var EntitySearchResult $states */
+        /** @var EntitySearchResult<CountryStateCollection> $states */
         $states = $this->stateRepository->search($criteria, $context);
         $statesMapping = [];
         $statesMappingReverse = [];

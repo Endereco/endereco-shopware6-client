@@ -3,6 +3,7 @@
 namespace Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress;
 
 use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionCollection;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoBaseAddressExtensionEntity;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
@@ -14,9 +15,12 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
  */
 final class AddressExtensionExistsInsurance implements IntegrityInsurance
 {
-    /** @var EntityRepository */
+    /** @var EntityRepository<EnderecoCustomerAddressExtensionCollection> */
     private EntityRepository $addressExtensionRepository;
 
+    /**
+     * @param EntityRepository<EnderecoCustomerAddressExtensionCollection> $addressExtensionRepository
+     */
     public function __construct(
         EntityRepository $addressExtensionRepository
     ) {

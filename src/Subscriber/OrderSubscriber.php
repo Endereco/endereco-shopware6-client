@@ -20,12 +20,16 @@ class OrderSubscriber implements EventSubscriberInterface
 {
     /** @var OrdersCustomFieldsUpdaterInterface */
     private OrdersCustomFieldsUpdaterInterface $ordersCustomFieldsUpdater;
-    /** @var EntityRepository */
+
+    /** @var EntityRepository<OrderAddressCollection> */
     private EntityRepository $orderAddressRepository;
 
     /** @var BySystemConfigFilterInterface */
     private BySystemConfigFilterInterface $bySystemConfigFilter;
 
+    /**
+     * @param EntityRepository<OrderAddressCollection> $orderAddressRepository
+     */
     public function __construct(
         EntityRepository $orderAddressRepository,
         BySystemConfigFilterInterface $bySystemConfigFilter,
@@ -59,6 +63,12 @@ class OrderSubscriber implements EventSubscriberInterface
         // The primary key aka ID of the `EnderecoOrderAddressExtension` is the ID of the `OrderAddress`.
         $orderAddressIds = $event->getIds();
 
+        // If the list of order entity IDs is empty, nothing has to be updated.
+        // Furthermore, the criteria object requires a non-empty list of IDs.
+        if (count($orderAddressIds) === 0) {
+            return;
+        }
+
         $orderAddressIds = $this->bySystemConfigFilter->filterEntityIdsBySystemConfig(
             $this->orderAddressRepository,
             'order.salesChannelId',
@@ -70,8 +80,12 @@ class OrderSubscriber implements EventSubscriberInterface
             $event->getContext()
         );
 
-        $criteria = new Criteria();
-        $criteria->addFilter(new EqualsAnyFilter('id', $orderAddressIds));
+        // If the list of order entity IDs is empty after it was filtered nothing has to be updated as well.
+        if (count($orderAddressIds) === 0) {
+            return;
+        }
+
+        $criteria = new Criteria($orderAddressIds);
 
         /** @var OrderAddressCollection $orderAddresses */
         $orderAddresses = $this->orderAddressRepository->search($criteria, $event->getContext())->getEntities();
