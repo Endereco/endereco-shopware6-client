@@ -6,6 +6,7 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainCollection;
 use Shopware\Core\System\SalesChannel\Aggregate\SalesChannelDomain\SalesChannelDomainEntity;
 
 /**
@@ -20,13 +21,15 @@ final class LocaleFetcher implements LocaleFetcherInterface
 {
     /**
      * Repository for accessing sales channel domain entities
+     *
+     * @var EntityRepository<SalesChannelDomainCollection>
      */
     private EntityRepository $salesChannelDomainRepository;
 
     /**
      * Creates a new LocaleFetcher with required dependencies.
      *
-     * @param EntityRepository $salesChannelDomainRepository Repository for sales channel domain access
+     * @param EntityRepository<SalesChannelDomainCollection> $salesChannelDomainRepository Repository for sales channel domain access
      */
     public function __construct(
         EntityRepository $salesChannelDomainRepository

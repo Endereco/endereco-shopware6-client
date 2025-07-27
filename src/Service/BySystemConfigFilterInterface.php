@@ -3,6 +3,8 @@
 namespace Endereco\Shopware6Client\Service;
 
 use Endereco\Shopware6Client\Model\ExpectedSystemConfigValue;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressCollection;
+use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressCollection;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 
@@ -23,18 +25,19 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 interface BySystemConfigFilterInterface
 {
     /**
-     * Filters a list of entity IDs based on their sales channel's system configuration.
+     * Filters entity IDs based on their sales channel's system configuration.
      *
-     * This method should process the provided entity IDs and return only those whose
-     * associated sales channels match all the specified configuration requirements.
+     * This method processes a list of entity IDs and returns only those whose associated
+     * sales channels match all the specified configuration requirements.
      *
-     * @param EntityRepository $entityRepository The repository for the entities to be filtered
-     * @param string $salesChannelIdField The field path to access the sales channel ID (e.g., 'order.salesChannelId')
-     * @param string[] $entityIds List of entity IDs to be filtered
-     * @param ExpectedSystemConfigValue[] $expectedSystemConfigValues List of configuration values that must be matched
-     * @param Context $context The Shopware context for the operation
+     * @param EntityRepository<CustomerAddressCollection>|EntityRepository<OrderAddressCollection> $entityRepository
+     *        The repository for the entities being filtered
+     * @param string $salesChannelIdField The field path to the sales channel ID (e.g., 'order.salesChannelId')
+     * @param non-empty-array<string> $entityIds List of entity IDs to filter
+     * @param array<ExpectedSystemConfigValue> $expectedSystemConfigValues List of required configuration values
+     * @param Context $context The Shopware context
      *
-     * @return string[] Filtered list of entity IDs that match all configuration requirements
+     * @return array<string> Filtered list of entity IDs that meet all configuration requirements
      */
     public function filterEntityIdsBySystemConfig(
         EntityRepository $entityRepository,

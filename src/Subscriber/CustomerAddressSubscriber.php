@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Endereco\Shopware6Client\Subscriber;
 
 use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionCollection;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoBaseAddressExtensionEntity;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
@@ -12,7 +13,9 @@ use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityIn
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\ProcessContextService;
 use Endereco\Shopware6Client\Service\SessionManagementService;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressCollection;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Shopware\Core\Checkout\Customer\CustomerCollection;
 use Shopware\Core\Checkout\Customer\CustomerEvents;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityLoadedEvent;
@@ -20,10 +23,13 @@ use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityWrittenEvent;
 use Shopware\Core\Framework\Event\DataMappingEvent;
 use Shopware\Core\Framework\Validation\BuildValidationEvent;
 use Shopware\Core\Framework\Validation\DataBag\DataBag;
+use Shopware\Core\System\Country\Aggregate\CountryState\CountryStateCollection;
+use Shopware\Core\System\Country\CountryCollection;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Controller\StorefrontController;
 use Shopware\Storefront\Event\StorefrontRenderEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -39,19 +45,43 @@ use Shopware\Core\Checkout\Customer\CustomerDefinition;
 class CustomerAddressSubscriber implements EventSubscriberInterface
 {
     protected SystemConfigService $systemConfigService;
+
     protected EnderecoService $enderecoService;
+
     protected SessionManagementService $sessionManagementService;
+
+    /** @var EntityRepository<CustomerCollection>  */
     protected EntityRepository $customerRepository;
+
+    /** @var EntityRepository<CustomerAddressCollection>  */
     protected EntityRepository $customerAddressRepository;
+
+    /** @var EntityRepository<EnderecoCustomerAddressExtensionCollection>  */
     protected EntityRepository $enderecoAddressExtensionRepository;
+
+    /** @var EntityRepository<CountryCollection>  */
     protected EntityRepository $countryRepository;
+
+    /** @var EntityRepository<CountryStateCollection>  */
     protected EntityRepository $countryStateRepository;
+
     protected CountryCodeFetcherInterface $countryCodeFetcher;
+
     private CustomerAddressIntegrityInsuranceInterface $customerAddressIntegrityInsurance;
+
     protected RequestStack $requestStack;
+
     private AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder;
+
     private ProcessContextService $processContext;
 
+    /**
+     * @param EntityRepository<CustomerCollection> $customerRepository
+     * @param EntityRepository<CustomerAddressCollection> $customerAddressRepository
+     * @param EntityRepository<EnderecoCustomerAddressExtensionCollection> $enderecoAddressExtensionRepository
+     * @param EntityRepository<CountryCollection> $countryRepository
+     * @param EntityRepository<CountryStateCollection> $countryStateRepository
+     */
     public function __construct(
         ProcessContextService $processContext,
         AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder,
@@ -67,7 +97,6 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         CustomerAddressIntegrityInsuranceInterface $customerAddressIntegrityInsurance,
         RequestStack $requestStack
     ) {
-        // Other assignments...
         $this->processContext = $processContext;
         $this->addressCheckPayloadBuilder = $addressCheckPayloadBuilder;
         $this->enderecoService = $enderecoService;
@@ -239,7 +268,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
      * check is required. If either is required, it ensures the address status is set. After looping through all
      * address entities, it closes all stored sessions.
      *
-     * @param EntityLoadedEvent $event The event that was triggered when entities were loaded.
+     * @param EntityLoadedEvent<CustomerAddressEntity> $event The event that was triggered when entities were loaded.
      * @return void
      */
     public function ensureAddressesIntegrity(EntityLoadedEvent $event): void
@@ -302,9 +331,12 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
 
             /* Check if 'pickwareDhlAddressRadioGroup' is present and 'regular'
                to ensure compatibility with template changes by PickwareDhl */
+            $pickwareDhlAddressRadioGroupData = array_values(
+                $event->getData()->only('pickwareDhlAddressRadioGroup')
+            );
             if (
-                $event->getData()->has('pickwareDhlAddressRadioGroup') &&
-                $event->getData()->only('pickwareDhlAddressRadioGroup') !== 'regular'
+                count($pickwareDhlAddressRadioGroupData) !== 0 &&
+                $pickwareDhlAddressRadioGroupData[0] !== 'regular'
             ) {
                 // If street splitting is enabled, add NotBlank validation rule
                 // to 'enderecoStreet' and 'enderecoHousenumber'
@@ -424,16 +456,14 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
      */
     public function saveAccountableSessionForLater(BuildValidationEvent $event)
     {
-        $isPostRequest =
-            is_array($_SERVER)
-            && array_key_exists('REQUEST_METHOD', $_SERVER)
-            && 'POST' === $_SERVER['REQUEST_METHOD']
-            && $_POST;
+        $request = $this->requestStack->getCurrentRequest();
+        if (!$request instanceof Request) {
+            return;
+        }
 
-        if ($isPostRequest) {
+        if ($request->getRealMethod() === 'POST') {
             // Look for accountable session id's in $_POST
-            $accountableSessionIds = $this->enderecoService->findAccountableSessionIds($_POST);
-
+            $accountableSessionIds = $this->enderecoService->findAccountableSessionIds($request->getPayload()->all());
 
             // Save them to session variable, if any found.
             if (!empty($accountableSessionIds)) {

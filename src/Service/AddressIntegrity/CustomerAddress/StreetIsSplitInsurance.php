@@ -107,9 +107,11 @@ final class StreetIsSplitInsurance implements IntegrityInsurance
             $this->enderecoService->fetchSalesChannelId($context)
         );
 
+        $postData = [];
         $addressDTO = new CustomerAddressDTO(
             $addressEntity,
-            $addressExtension
+            $addressExtension,
+            $postData
         );
 
         $addressPersistenceStrategy = $this->addressPersistenceStrategyProvider->getStrategy(

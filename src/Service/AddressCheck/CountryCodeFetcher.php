@@ -5,6 +5,7 @@ namespace Endereco\Shopware6Client\Service\AddressCheck;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\System\Country\CountryCollection;
 use Shopware\Core\System\Country\CountryEntity;
 
 /**
@@ -18,13 +19,15 @@ final class CountryCodeFetcher implements CountryCodeFetcherInterface
 {
     /**
      * Repository for accessing country entities
+     *
+     * @var EntityRepository<CountryCollection>
      */
     private EntityRepository $countryRepository;
 
     /**
      * Creates a new CountryCodeFetcher with required dependencies.
      *
-     * @param EntityRepository $countryRepository Repository for country entity access
+     * @param EntityRepository<CountryCollection> $countryRepository Repository for country entity access
      */
     public function __construct(
         EntityRepository $countryRepository

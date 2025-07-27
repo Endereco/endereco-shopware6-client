@@ -16,31 +16,33 @@ use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AddressPer
 use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\AgentInfoGeneratorInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\PayloadPreparatorInterface;
-use Endereco\Shopware6Client\Service\SessionManagementService;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressCollection;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressEntity;
 use Shopware\Core\Framework\Api\Context\SalesChannelApiSource;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\System\Country\Aggregate\CountryState\CountryStateCollection;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Throwable;
 
 class EnderecoService
 {
     private Client $httpClient;
 
+    /** @var EntityRepository<CountryStateCollection>  */
     private EntityRepository $countryStateRepository;
 
+    /** @var EntityRepository<CustomerAddressCollection>  */
     private EntityRepository $customerAddressRepository;
 
+    /** @var EntityRepository<OrderAddressCollection>  */
     private EntityRepository $orderAddressRepository;
 
     private LoggerInterface $logger;
@@ -63,6 +65,11 @@ class EnderecoService
 
     protected RequestStack $requestStack;
 
+    /**
+     * @param EntityRepository<CountryStateCollection> $countryStateRepository
+     * @param EntityRepository<CustomerAddressCollection> $customerAddressRepository
+     * @param EntityRepository<OrderAddressCollection> $orderAddressRepository
+     */
     public function __construct(
         SystemConfigService $systemConfigService,
         EntityRepository $countryStateRepository,
