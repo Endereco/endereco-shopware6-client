@@ -2,8 +2,9 @@
 
 namespace Endereco\Shopware6Client\Model\AddressPersistenceStrategy;
 
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionCollection;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
-use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 
 /**
  * Trait for handling persistence operations for customer address extension entities.
@@ -13,6 +14,9 @@ use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEnt
  */
 trait CustomerAddressExtensionPersistenceStrategyTrait
 {
+    /** @var EntityRepository<EnderecoCustomerAddressExtensionCollection> */
+    private EntityRepository $extensionRepository;
+
     /**
      * Builds a payload array for upserting a customer address extension.
      *

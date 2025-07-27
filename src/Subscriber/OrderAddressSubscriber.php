@@ -36,6 +36,8 @@ class OrderAddressSubscriber implements EventSubscriberInterface
      * ensures the street is split, and checks if the validation is still up-to-date. It a re-validation is required,
      * it ensures the address status is set and the request payload is up-to-date.
      * After looping through all address entities, it closes all stored sessions.
+     *
+     * @param EntityLoadedEvent<OrderAddressEntity> $event
      */
     public function ensureAddressesIntegrity(EntityLoadedEvent $event): void
     {

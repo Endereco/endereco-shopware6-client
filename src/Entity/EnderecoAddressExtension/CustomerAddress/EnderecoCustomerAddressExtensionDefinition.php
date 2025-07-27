@@ -35,6 +35,16 @@ class EnderecoCustomerAddressExtensionDefinition extends EnderecoBaseAddressExte
     }
 
     /**
+     * Get the class of the collection.
+     *
+     * @return string The class of the collection.
+     */
+    public function getCollectionClass(): string
+    {
+        return EnderecoCustomerAddressExtensionCollection::class;
+    }
+
+    /**
      * Creates FK field linking to customer address
      *
      * @return FkField The foreign key field

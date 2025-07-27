@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Endereco\Shopware6Client\Controller\Storefront;
 
 use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionCollection;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\SessionManagementService;
 use Exception;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressCollection;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Checkout\Customer\Exception\AddressNotFoundException;
 use Shopware\Core\Checkout\Cart\Exception\CustomerNotLoggedInException;
@@ -35,11 +37,18 @@ use function count;
  */
 class AddressController extends StorefrontController
 {
+    /** @var EntityRepository<CustomerAddressCollection>  */
     protected EntityRepository $addressRepository;
+
     protected AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder;
+
     protected EnderecoService $enderecoService;
+
     protected SessionManagementService $sessionManagementService;
 
+    /**
+     * @param EntityRepository<CustomerAddressCollection> $addressRepository
+     */
     public function __construct(
         EnderecoService $enderecoService,
         SessionManagementService $sessionManagementService,

@@ -1,3 +1,7 @@
+includes:
+   - ./phpstan-baseline.neon
+   - ./vendor/shopwarelabs/phpstan-shopware/rules.neon
+
 parameters:
     level: 8
     paths:
@@ -8,4 +12,8 @@ parameters:
         - ./node_modules
     bootstrapFiles:
         - shops/6.7.0.1/vendor/autoload.php
-    checkGenericClassInNonGenericObjectType: false
+    treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        -
+            identifier: phpDoc.parseError
+            message: '#^PHPDoc tag @SuppressWarnings has invalid value \(\(PHPMD\.UnusedFormalParameter\)\).*#'

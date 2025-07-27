@@ -3,9 +3,11 @@
 namespace Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\FlagIsSetInsurance;
 
 use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionCollection;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\IntegrityInsurance;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Shopware\Core\Checkout\Customer\CustomerCollection;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -16,12 +18,15 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
  */
 final class PayPalExpressFlagIsSetInsurance implements IntegrityInsurance
 {
+    /** @var EntityRepository<CustomerCollection>  */
     private EntityRepository $customerRepository;
+
+    /** @var EntityRepository<EnderecoCustomerAddressExtensionCollection>  */
     private EntityRepository $addressExtensionRepository;
 
     /**
-     * @param EntityRepository $customerRepository Repository to fetch customer data
-     * @param EntityRepository $addressExtensionRepository Repository to manage address extension data
+     * @param EntityRepository<CustomerCollection> $customerRepository Repository to fetch customer data
+     * @param EntityRepository<EnderecoCustomerAddressExtensionCollection> $addressExtensionRepository Repository to manage address extension data
      */
     public function __construct(
         EntityRepository $customerRepository,

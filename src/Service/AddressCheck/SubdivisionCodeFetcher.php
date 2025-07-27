@@ -5,6 +5,7 @@ namespace Endereco\Shopware6Client\Service\AddressCheck;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\System\Country\Aggregate\CountryState\CountryStateCollection;
 use Shopware\Core\System\Country\Aggregate\CountryState\CountryStateEntity;
 
 /**
@@ -19,13 +20,15 @@ final class SubdivisionCodeFetcher implements SubdivisionCodeFetcherInterface
 {
     /**
      * Repository for accessing country state entities
+     *
+     * @var EntityRepository<CountryStateCollection>
      */
     private EntityRepository $countryStateRepository;
 
     /**
      * Creates a new SubdivisionCodeFetcher with required dependencies.
      *
-     * @param EntityRepository $countryStateRepository Repository for country state access
+     * @param EntityRepository<CountryStateCollection> $countryStateRepository Repository for country state access
      */
     public function __construct(
         EntityRepository $countryStateRepository

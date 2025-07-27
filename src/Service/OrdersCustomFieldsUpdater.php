@@ -19,9 +19,15 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\OrFilter;
 final class OrdersCustomFieldsUpdater implements OrdersCustomFieldsUpdaterInterface
 {
     private OrderCustomFieldsBuilderInterface $orderCustomFieldBuilder;
+
+    /** @var EntityRepository<OrderCollection>  */
     private EntityRepository $orderRepository;
+
     private SyncServiceInterface $syncService;
 
+    /**
+     * @param EntityRepository<OrderCollection> $orderRepository
+     */
     public function __construct(
         OrderCustomFieldsBuilderInterface $orderCustomFieldBuilder,
         EntityRepository $orderRepository,

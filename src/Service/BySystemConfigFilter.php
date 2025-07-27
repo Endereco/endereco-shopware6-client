@@ -3,6 +3,8 @@
 namespace Endereco\Shopware6Client\Service;
 
 use Endereco\Shopware6Client\Model\ExpectedSystemConfigValue;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressCollection;
+use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressCollection;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Aggregation\Bucket\TermsAggregation;
@@ -50,20 +52,6 @@ final class BySystemConfigFilter implements BySystemConfigFilterInterface
         $this->systemConfigService = $systemConfigService;
     }
 
-    /**
-     * Filters entity IDs based on their sales channel's system configuration.
-     *
-     * This method processes a list of entity IDs and returns only those whose associated
-     * sales channels match all the specified configuration requirements.
-     *
-     * @param EntityRepository $entityRepository The repository for the entities being filtered
-     * @param string $salesChannelIdField The field path to the sales channel ID (e.g., 'order.salesChannelId')
-     * @param array<string> $entityIds List of entity IDs to filter
-     * @param array<ExpectedSystemConfigValue> $expectedSystemConfigValues List of required configuration values
-     * @param Context $context The Shopware context
-     *
-     * @return array<string> Filtered list of entity IDs that meet all configuration requirements
-     */
     public function filterEntityIdsBySystemConfig(
         EntityRepository $entityRepository,
         string $salesChannelIdField,
@@ -71,8 +59,13 @@ final class BySystemConfigFilter implements BySystemConfigFilterInterface
         array $expectedSystemConfigValues,
         Context $context
     ): array {
-        $criteria = new Criteria();
-        $criteria->addFilter(new EqualsAnyFilter('id', $entityIds));
+        // If the list of entity IDs is empty, filtering is not necessary.
+        // Furthermore, the criteria object requires a non-empty list of IDs.
+        if (count($entityIds) === 0) {
+            return [];
+        }
+
+        $criteria = new Criteria($entityIds);
         $criteria->addAggregation(new TermsAggregation('sales-channel-ids', $salesChannelIdField));
         $criteria->addFields(['id']);
         $salesChannelIdsAggregation = $entityRepository
@@ -103,8 +96,7 @@ final class BySystemConfigFilter implements BySystemConfigFilterInterface
             }
         }
 
-        $criteria = new Criteria();
-        $criteria->addFilter(new EqualsAnyFilter('id', $entityIds));
+        $criteria = new Criteria($entityIds);
         $criteria->addFilter(new EqualsAnyFilter($salesChannelIdField, $allowedSalesChannels));
 
         $filteredEntityIds = $entityRepository->searchIds($criteria, $context)->getIds();

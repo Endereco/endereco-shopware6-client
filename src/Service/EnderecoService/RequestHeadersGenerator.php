@@ -33,7 +33,7 @@ final class RequestHeadersGenerator implements RequestHeadersGeneratorInterface
         return [
             'Content-Type' => 'application/json',
             'X-Auth-Key' => $apiKey,
-            'X-Transaction-Id' => $sessionId,
+            'X-Transaction-Id' => $sessionId ?? 'not_required',
             'X-Transaction-Referer' => $_SERVER['HTTP_REFERER'] ?? __FILE__,
             'X-Agent' => $appName,
         ];

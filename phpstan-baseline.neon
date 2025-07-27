@@ -1,0 +1,19 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Usage of unlink is forbidden to local files\. Use temporary directory with sys_get_temp_dir\(\) if needed\.$#'
+			identifier: shopware.forbidLocalDiskWrite
+			count: 1
+			path: src/Installer/PluginLifecycle.php
+
+		-
+			message: '#^Property Endereco\\Shopware6Client\\Struct\\OrderCustomFields\:\:\$billingAddressValidationData on left side of \?\? is not nullable nor uninitialized\.$#'
+			identifier: nullCoalesce.initializedProperty
+			count: 1
+			path: src/Struct/OrderCustomFields.php
+
+		-
+			message: '#^Property Endereco\\Shopware6Client\\Struct\\OrderCustomFields\:\:\$shippingAddressValidationData on left side of \?\? is not nullable nor uninitialized\.$#'
+			identifier: nullCoalesce.initializedProperty
+			count: 1
+			path: src/Struct/OrderCustomFields.php

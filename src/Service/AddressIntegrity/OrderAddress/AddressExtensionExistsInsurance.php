@@ -2,6 +2,7 @@
 
 namespace Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddress;
 
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionCollection;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionEntity;
 use Endereco\Shopware6Client\Entity\OrderAddress\OrderAddressExtension;
 use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressEntity;
@@ -10,8 +11,12 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 
 final class AddressExtensionExistsInsurance implements IntegrityInsurance
 {
+    /** @var EntityRepository<EnderecoOrderAddressExtensionCollection>  */
     private EntityRepository $addressExtensionRepository;
 
+    /**
+     * @param EntityRepository<EnderecoOrderAddressExtensionCollection> $addressExtensionRepository
+     */
     public function __construct(
         EntityRepository $addressExtensionRepository
     ) {
@@ -50,7 +55,6 @@ final class AddressExtensionExistsInsurance implements IntegrityInsurance
         OrderAddressEntity $addressEntity,
         Context $context
     ): void {
-        /** @var EnderecoOrderAddressExtensionEntity $addressExtension */
         $addressExtension = $this->createAddressExtensionWithDefaultValues($addressEntity);
 
         $this->addressExtensionRepository->upsert(

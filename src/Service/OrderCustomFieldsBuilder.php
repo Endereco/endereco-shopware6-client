@@ -46,16 +46,13 @@ final class OrderCustomFieldsBuilder implements OrderCustomFieldsBuilderInterfac
         if (is_null($orderAddresses)) {
             return [];
         }
-        /** @var OrderAddressCollection $orderAddresses */
 
-        /** @var array<int, OrderAddressEntity> $billingAddresses */
         $billingAddresses = $orderAddresses->filter(
             function (OrderAddressEntity $address) use ($orderEntity) {
                 return $address->getId() === $orderEntity->getBillingAddressId();
             }
         );
 
-        /** @var OrderAddressEntity $orderAddressEntity */
         foreach ($billingAddresses as $orderAddressEntity) {
             $this->addOrderAddressExtensionToCollection(
                 $orderAddressEntity,
