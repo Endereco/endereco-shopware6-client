@@ -782,23 +782,33 @@ class EnderecoService
     }
 
     /**
-     * Checks if a given address was created within the last 30 minutes.
+     * Checks if a given address was created within the configured TTL period.
      *
      * @param CustomerAddressEntity $addressEntity The address entity to check.
      *
-     * @return bool Returns true if the address was created within the last 30 minutes, false otherwise.
+     * @return bool Returns true if the address was created within the configured TTL period, false otherwise.
      */
     public function isAddressRecent(CustomerAddressEntity $addressEntity): bool
     {
+        // Get the TTL configuration in minutes (default: 30 minutes)
+        $ttlMinutes = $this->systemConfigService->getInt(
+            'EnderecoShopware6Client.config.enderecoAddressCheckTtl'
+        ) ?: 30;
+
+        // If TTL is set to 0, address validation should always run (address is never considered recent)
+        if ($ttlMinutes === 0) {
+            return false;
+        }
+
         // Get the creation time of the address
         $creationTime = $addressEntity->getCreatedAt();
 
-        // Get the current time minus 30 minutes
-        $fiveMinutesAgo = (new \DateTime())->modify('-30 minutes');
+        // Get the current time minus the configured TTL
+        $ttlAgo = (new \DateTime())->modify('-' . $ttlMinutes . ' minutes');
 
-        // If the creation time of the address is greater than (or equal to) the time 30 minutes ago, return true
+        // If the creation time of the address is greater than (or equal to) the TTL threshold, return true
         // Otherwise, return false
-        return $creationTime >= $fiveMinutesAgo;
+        return $creationTime >= $ttlAgo;
     }
 
     /**

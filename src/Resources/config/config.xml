@@ -713,5 +713,18 @@
                 Namen müssen mit "," getrennt eingeben werden.
             </helpText>
         </input-field>
+
+        <input-field type="int">
+            <name>enderecoAddressCheckTtl</name>
+            <label>Address validity period in minutes</label>
+            <label lang="de-DE">Adressgültigkeit in Minuten</label>
+            <defaultValue>30</defaultValue>
+            <helpText>
+                Time in minutes after address creation during which address validation is skipped (address is considered valid). After this period, the address will be validated again. Set to 0 to always validate addresses.
+            </helpText>
+            <helpText lang="de-DE">
+                Zeit in Minuten nach der Adresserstellung, während der die Adressvalidierung übersprungen wird (Adresse gilt als gültig). Nach dieser Zeit wird die Adresse erneut validiert. Auf 0 setzen, um Adressen immer zu validieren.
+            </helpText>
+        </input-field>
     </card>
 </config>
