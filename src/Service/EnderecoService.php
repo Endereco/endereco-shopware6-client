@@ -11,6 +11,8 @@ use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\Endere
 use Endereco\Shopware6Client\Entity\OrderAddress\OrderAddressExtension;
 use Endereco\Shopware6Client\Misc\EnderecoConstants;
 use Endereco\Shopware6Client\Model\AddressCheckResult;
+use Endereco\Shopware6Client\Model\CustomerAddressUpdatePayload;
+use Endereco\Shopware6Client\Model\EnderecoExtensionData;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AddressPersistenceStrategyProvider;
 use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterInterface;
@@ -151,26 +153,20 @@ class EnderecoService
         CustomerAddressEntity $addressEntity,
         Context $context
     ): void {
-        $addressId = $addressEntity->getId();
-
-        $updatePayload = [
-            'id' => $addressId,
-        ];
-
         $addressExtension = EnderecoCustomerAddressExtensionEntity::createWithDefaultValues($addressEntity);
         $addressEntity->addExtension(CustomerAddressExtension::ENDERECO_EXTENSION, $addressExtension);
 
-        $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsRequestPayload']
-            = $addressExtension->getAmsRequestPayload();
-        $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsStatus']
-            = $addressExtension->getAmsStatus();
-        $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsPredictions']
-            = $addressExtension->getAmsPredictions();
-        $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsTimestamp']
-            = $addressExtension->getAmsTimestamp();
+        $payload = new CustomerAddressUpdatePayload($addressEntity->getId());
+        $extensionData = new EnderecoExtensionData();
+        $extensionData->setAmsRequestPayload($addressExtension->getAmsRequestPayload())
+            ->setAmsStatus($addressExtension->getAmsStatus())
+            ->setAmsPredictions($addressExtension->getAmsPredictions())
+            ->setAmsTimestamp($addressExtension->getAmsTimestamp());
+
+        $payload->setEnderecoExtension($extensionData);
 
         // Update the customer address in the repository
-        $this->customerAddressRepository->update([$updatePayload], $context);
+        $this->customerAddressRepository->update([$payload->toArray()], $context);
     }
 
     /**
@@ -242,9 +238,7 @@ class EnderecoService
     ): void {
         $addressId = $addressEntity->getId();
 
-        $updatePayload = [
-            'id' => $addressId,
-        ];
+        $payload = new CustomerAddressUpdatePayload($addressId);
 
         if ($addressCheckResult->isAutomaticCorrection() && $this->isAutocorrectionAllowedInSettings($context)) {
             // In case of automatic correction, apply the first prediction to the customer address and generate
@@ -253,16 +247,15 @@ class EnderecoService
 
             $correction = $addressCheckResult->getPredictions()[0];
 
-            $updatePayload['zipcode'] = $correction['postalCode'];
-            $updatePayload['city'] = $correction['locality'];
-
             $fullStreet = $this->buildFullStreet(
                 $correction['streetName'],
                 $correction['buildingNumber'],
                 $correction['countryCode']
             );
 
-            $updatePayload['street'] = $fullStreet;
+            $payload->setZipcode($correction['postalCode']);
+            $payload->setCity($correction['locality']);
+            $payload->setStreet($fullStreet);
 
             $addressEntity->setZipcode($correction['postalCode']);
             $addressEntity->setCity($correction['locality']);
@@ -276,25 +269,21 @@ class EnderecoService
                         $context
                     )->firstId();
                 if (!is_null($countryStateId)) {
-                    $updatePayload['countryStateId'] = $countryStateId;
-
+                    $payload->setCountryStateId($countryStateId);
                     $addressEntity->setCountryStateId($countryStateId);
                 }
             }
 
             // Update the endereco extension fields
-            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['street']
-                = $correction['streetName'];
-            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['houseNumber']
-                = $correction['buildingNumber'];
-            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsStatus']
-                = implode(',', $newStatuses);
-            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsPredictions']
-                = [];
-            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsTimestamp']
-                = time();
-            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsRequestPayload']
-                = $addressCheckResult->getAddressSignature();
+            $extensionData = new EnderecoExtensionData();
+            $extensionData->setStreet($correction['streetName'])
+                ->setHouseNumber($correction['buildingNumber'])
+                ->setAmsStatus(implode(',', $newStatuses))
+                ->setAmsPredictions([])
+                ->setAmsTimestamp(time())
+                ->setAmsRequestPayload($addressCheckResult->getAddressSignature());
+
+            $payload->setEnderecoExtension($extensionData);
 
             /** @var EnderecoCustomerAddressExtensionEntity|null $addressExtension */
             $addressExtension = $addressEntity->getExtension(CustomerAddressExtension::ENDERECO_EXTENSION);
@@ -317,8 +306,6 @@ class EnderecoService
             $addressExtension->setAmsRequestPayload($addressCheckResult->getAddressSignature());
         } elseif ($addressCheckResult->isFullyCorrect() && !empty($addressCheckResult->getPredictions())) {
             $correction = $addressCheckResult->getPredictions()[0];
-            $updatePayload['zipcode'] = $correction['postalCode'];
-            $updatePayload['city'] = $correction['locality'];
 
             $fullStreet = $this->buildFullStreet(
                 $correction['streetName'],
@@ -326,7 +313,9 @@ class EnderecoService
                 $correction['countryCode']
             );
 
-            $updatePayload['street'] = $fullStreet;
+            $payload->setZipcode($correction['postalCode']);
+            $payload->setCity($correction['locality']);
+            $payload->setStreet($fullStreet);
 
             $addressEntity->setZipcode($correction['postalCode']);
             $addressEntity->setCity($correction['locality']);
@@ -340,8 +329,7 @@ class EnderecoService
                         $context
                     )->firstId();
                 if (!is_null($countryStateId)) {
-                    $updatePayload['countryStateId'] = $countryStateId;
-
+                    $payload->setCountryStateId($countryStateId);
                     $addressEntity->setCountryStateId($countryStateId);
                 }
             }
@@ -354,14 +342,13 @@ class EnderecoService
                 : 'address_selected_automatically';
 
             // If there was no automatic correction, save the statuses and predictions from the address check result
-            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsStatus']
-                = $automaticStatuscodes;
-            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsPredictions']
-                = $addressCheckResult->getPredictions();
-            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsTimestamp']
-                = time();
-            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsRequestPayload']
-                = $addressCheckResult->getAddressSignature();
+            $extensionData = new EnderecoExtensionData();
+            $extensionData->setAmsStatus($automaticStatuscodes)
+                ->setAmsPredictions($addressCheckResult->getPredictions())
+                ->setAmsTimestamp(time())
+                ->setAmsRequestPayload($addressCheckResult->getAddressSignature());
+
+            $payload->setEnderecoExtension($extensionData);
 
             /** @var EnderecoCustomerAddressExtensionEntity|null $addressExtension */
             $addressExtension = $addressEntity->getExtension(CustomerAddressExtension::ENDERECO_EXTENSION);
@@ -376,14 +363,13 @@ class EnderecoService
             $addressExtension->setAmsRequestPayload($addressCheckResult->getAddressSignature());
         } else {
             // If there was no automatic correction, save the statuses and predictions from the address check result
-            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsStatus']
-                = $addressCheckResult->getStatusesAsString();
-            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsPredictions']
-                = $addressCheckResult->getPredictions();
-            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsTimestamp']
-                = time();
-            $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsRequestPayload']
-                = $addressCheckResult->getAddressSignature();
+            $extensionData = new EnderecoExtensionData();
+            $extensionData->setAmsStatus($addressCheckResult->getStatusesAsString())
+                ->setAmsPredictions($addressCheckResult->getPredictions())
+                ->setAmsTimestamp(time())
+                ->setAmsRequestPayload($addressCheckResult->getAddressSignature());
+
+            $payload->setEnderecoExtension($extensionData);
 
             /** @var EnderecoCustomerAddressExtensionEntity|null $addressExtension */
             $addressExtension = $addressEntity->getExtension(CustomerAddressExtension::ENDERECO_EXTENSION);
@@ -399,7 +385,7 @@ class EnderecoService
         }
 
         // Update the customer address in the repository
-        $this->customerAddressRepository->update([$updatePayload], $context);
+        $this->customerAddressRepository->update([$payload->toArray()], $context);
     }
 
     /**

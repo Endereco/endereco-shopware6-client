@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Endereco\Shopware6Client\Controller\Storefront;
 
 use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
+use Endereco\Shopware6Client\Model\CustomerAddressUpdatePayload;
+use Endereco\Shopware6Client\Model\EnderecoExtensionData;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\SessionManagementService;
@@ -128,25 +130,27 @@ class AddressController extends StorefrontController
             $predictions = json_decode($address['amsPredictions'], true);
         }
 
-        $updatePayload = [
-            'id' => $addressId,
-            'countryId' => $address['countryId'],
-            'countryStateId' => !empty($address['countryStateId']) ? $address['countryStateId'] : null,
-            'city' => $address['city'],
-            'zipcode' => $address['zipcode'],
-            'street' => $address['street'] ?? '',
-            'additionalAddressLine1' => $address['additionalAddressLine1'] ?? null,
-            'additionalAddressLine2' => $address['additionalAddressLine1'] ?? null,
-            'extensions' => [
-                CustomerAddressExtension::ENDERECO_EXTENSION => [
-                    'street' => $address['enderecoStreet'] ?? '',
-                    'houseNumber' => $address['enderecoHousenumber'] ?? '',
-                    'amsStatus' => $address['amsStatus'],
-                    'amsPredictions' => $predictions,
-                    'amsTimestamp' => time()
-                ]
-            ]
-        ];
+        $payload = new CustomerAddressUpdatePayload($addressId);
+        $payload->setCity($address['city']);
+        $payload->setZipcode($address['zipcode']);
+        $payload->setStreet($address['street'] ?? '');
+        $payload->setAdditionalAddressLine1($address['additionalAddressLine1'] ?? null);
+        $payload->setAdditionalAddressLine2($address['additionalAddressLine2'] ?? null);
+        
+        // Always set country and country state IDs to ensure they're present in the array
+        $payload->setCountryId($address['countryId'] ?? null);
+        $payload->setCountryStateId(!empty($address['countryStateId']) ? $address['countryStateId'] : null);
+        
+        $extensionData = new EnderecoExtensionData();
+        $extensionData->setStreet($address['enderecoStreet'] ?? '')
+            ->setHouseNumber($address['enderecoHousenumber'] ?? '')
+            ->setAmsStatus($address['amsStatus'])
+            ->setAmsPredictions($predictions)
+            ->setAmsTimestamp(time());
+        
+        $payload->setEnderecoExtension($extensionData);
+
+        $updatePayload = $payload->toArray();
 
         // Make sure that custom "street name" and "house number" are filled or the default "street" is filled.
         $this->enderecoService->syncStreet($updatePayload, $mainContext, $salesChannelId);
