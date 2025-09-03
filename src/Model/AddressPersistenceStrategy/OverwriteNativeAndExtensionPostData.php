@@ -6,6 +6,8 @@ namespace Endereco\Shopware6Client\Model\AddressPersistenceStrategy;
 
 use Endereco\Shopware6Client\DTO\CustomerAddressDTO;
 use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
+use Endereco\Shopware6Client\Model\CustomerAddressField;
+use Endereco\Shopware6Client\Model\EnderecoExtensionField;
 use Endereco\Shopware6Client\Model\CustomerAddressPersistenceStrategy;
 use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
 use Shopware\Core\Framework\Context;
@@ -57,7 +59,7 @@ final class OverwriteNativeAndExtensionPostData implements CustomerAddressPersis
      */
     private function maybeUpdateNative(string $streetFull, ?string $additionalInfo, array &$postData): void
     {
-        $postData['street'] = $streetFull;
+        $postData[CustomerAddressField::STREET] = $streetFull;
 
         if ($this->additionalAddressFieldChecker->hasAdditionalAddressField($this->context)) {
             $fieldName = $this->additionalAddressFieldChecker->getAvailableAdditionalAddressFieldName($this->context);
@@ -80,16 +82,16 @@ final class OverwriteNativeAndExtensionPostData implements CustomerAddressPersis
         array &$postData
     ): void {
 
-        if (!isset($postData['extensions']) || !isset($postData['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION])) {
+        if (!isset($postData[CustomerAddressField::EXTENSIONS]) || !isset($postData[CustomerAddressField::EXTENSIONS][CustomerAddressExtension::ENDERECO_EXTENSION])) {
             // Initialize the extension structure if it doesn't exist
-            if (!isset($postData['extensions'])) {
-                $postData['extensions'] = [];
+            if (!isset($postData[CustomerAddressField::EXTENSIONS])) {
+                $postData[CustomerAddressField::EXTENSIONS] = [];
             }
 
-            $postData['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION] = [];
+            $postData[CustomerAddressField::EXTENSIONS][CustomerAddressExtension::ENDERECO_EXTENSION] = [];
         }
 
-        $postData['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['street'] = $streetName;
-        $postData['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['houseNumber'] = $buildingNumber;
+        $postData[CustomerAddressField::EXTENSIONS][CustomerAddressExtension::ENDERECO_EXTENSION][EnderecoExtensionField::STREET] = $streetName;
+        $postData[CustomerAddressField::EXTENSIONS][CustomerAddressExtension::ENDERECO_EXTENSION][EnderecoExtensionField::HOUSE_NUMBER] = $buildingNumber;
     }
 }

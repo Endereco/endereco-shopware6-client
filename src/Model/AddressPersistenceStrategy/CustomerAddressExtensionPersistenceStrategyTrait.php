@@ -3,6 +3,7 @@
 namespace Endereco\Shopware6Client\Model\AddressPersistenceStrategy;
 
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
+use Endereco\Shopware6Client\Model\EnderecoExtensionData;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 
 /**
@@ -13,30 +14,6 @@ use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEnt
  */
 trait CustomerAddressExtensionPersistenceStrategyTrait
 {
-    /**
-     * Builds a payload array for upserting a customer address extension.
-     *
-     * @param string $addressId    The ID of the customer address
-     * @param string $streetName   The name of the street
-     * @param string $houseNumber  The house number
-     *
-     * @return array{
-     *     addressId: string,
-     *     street: string,
-     *     houseNumber: string,
-     * }
-     */
-    private function buildAddressExtensionUpsertPayload(
-        string $addressId,
-        string $streetName,
-        string $houseNumber
-    ): array {
-        return [
-            'addressId' => $addressId,
-            'street' => $streetName,
-            'houseNumber' => $houseNumber,
-        ];
-    }
 
     /**
      * Checks if the extension entity values differ from the provided values. We can use this information to skip
@@ -101,8 +78,12 @@ trait CustomerAddressExtensionPersistenceStrategyTrait
             return;
         }
 
-        $update = $this->buildAddressExtensionUpsertPayload($addressExtension->getAddressId(), $streetName, $buildingNumber);
-        $this->extensionRepository->update([$update], $this->context);
+        $extensionData = (new EnderecoExtensionData())
+            ->setAddressId($addressExtension->getAddressId())
+            ->setStreet($streetName)
+            ->setHouseNumber($buildingNumber);
+        
+        $this->extensionRepository->update([$extensionData->toArray()], $this->context);
 
         $this->updateExtensionEntityFields($streetName, $buildingNumber, $addressExtension);
     }
