@@ -18,17 +18,18 @@ use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressCorrection\AddressCorrectionScopeBuilderInterface;
 use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\Check\IsAmsRequestPayloadIsUpToDateCheckerInterface;
-use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AddressExtensionExistsInsurance;
+use Endereco\Shopware6Client\CustomerAddressPipeline\Operation\SetExtension;
+use Endereco\Shopware6Client\CustomerAddressPipeline\Operation\SetSkipFlag;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AddressPersistenceStrategyProvider;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AddressPersistenceStrategyProviderInterface;
-use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AmsRequestPayloadIsUpToDateInsurance;
-use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AmsStatusIsSetInsurance;
-use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\FlagIsSetInsurance\AmazonFlagIsSetInsurance;
-use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\FlagIsSetInsurance\PayPalExpressFlagIsSetInsurance;
-use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\IntegrityInsurance;
-use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\StreetIsSplitInsurance;
-use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityInsurance;
-use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityInsuranceInterface;
+use Endereco\Shopware6Client\CustomerAddressPipeline\Operation\AssessValidationStatus;
+use Endereco\Shopware6Client\CustomerAddressPipeline\Operation\Validate;
+use Endereco\Shopware6Client\CustomerAddressPipeline\Operation\SetAmazonFlag;
+use Endereco\Shopware6Client\CustomerAddressPipeline\Operation\SetPayPalExpressFlag;
+use Endereco\Shopware6Client\CustomerAddressPipeline\Operation\Operation;
+use Endereco\Shopware6Client\CustomerAddressPipeline\Operation\ParseStreet;
+use Endereco\Shopware6Client\CustomerAddressPipeline\Pipeline;
+use Endereco\Shopware6Client\CustomerAddressPipeline\PipelineInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\ProcessContextService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -45,17 +46,27 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->autoconfigure();
 
     /**
-     * Tag any services implementing IntegrityInsurance so they can be collected and run together.
+     * Tag any services implementing OperationInterface so they can be collected and run together.
      */
     $services
-        ->instanceof(IntegrityInsurance::class)
+        ->instanceof(Operation::class)
         ->tag('endereco.shopware6_client.customer_address_integrity_insurance');
+
+    /**
+     * Checks prerequisites for running the customer address pipeline.
+     * This operation runs first (priority 0) and can skip remaining operations.
+     */
+    $services->set(SetSkipFlag::class)
+        ->args([
+            '$processContext' => service(ProcessContextService::class),
+            '$enderecoService' => service(EnderecoService::class),
+        ]);
 
     /**
      * Ensures the address extension entity exists both in the entity and the database.
      * This insurance creates or verifies the EnderecoCustomerAddressExtension record as necessary.
      */
-    $services->set(AddressExtensionExistsInsurance::class)
+    $services->set(SetExtension::class)
         ->args([
             '$addressExtensionRepository' => service(
                 EnderecoCustomerAddressExtensionDefinition::ENTITY_NAME . '.repository'
@@ -66,14 +77,13 @@ return static function (ContainerConfigurator $containerConfigurator): void {
      * Ensures that the Shopware "street" field is properly split into "street" and "housenumber" in the extension.
      * This is crucial for customers that require explicit separate street and house number fields.
      */
-    $services->set(StreetIsSplitInsurance::class)
+    $services->set(ParseStreet::class)
         ->args([
             '$countryCodeFetcher' => service(CountryCodeFetcherInterface::class),
             '$streetSplitter' => service(StreetSplitterInterface::class),
             '$enderecoService' => service(EnderecoService::class),
             '$addressPersistenceStrategyProvider' => service(AddressPersistenceStrategyProviderInterface::class),
             '$additionalAddressFieldChecker' => service(AdditionalAddressFieldCheckerInterface::class),
-            '$processContext' => service(ProcessContextService::class),
         ]);
 
 
@@ -93,10 +103,10 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services->alias(AddressPersistenceStrategyProviderInterface::class, AddressPersistenceStrategyProvider::class);
 
     /**
-     * Invalidates address validation data if the current payload is outdated or no longer valid.
-     * Also removes any stale validation payload to force a re-validation.
+     * Assesses validation status by checking if current address data matches stored validation payload.
+     * If validation is current and complete, skips remaining operations. Otherwise, clears outdated metadata.
      */
-    $services->set(AmsRequestPayloadIsUpToDateInsurance::class)
+    $services->set(AssessValidationStatus::class)
         ->args([
             '$isAmsRequestPayloadIsUpToDateChecker' =>
                 service(IsAmsRequestPayloadIsUpToDateCheckerInterface::class),
@@ -108,7 +118,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
      * generates an up-to-date payload for future reference. Only invoked when there's no
      * existing or valid AMS status.
      */
-    $services->set(AmsStatusIsSetInsurance::class)
+    $services->set(Validate::class)
         ->args([
             '$isAmsRequestPayloadIsUpToDateChecker' =>
                 service(IsAmsRequestPayloadIsUpToDateCheckerInterface::class),
@@ -120,7 +130,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     /**
      * Sets an Amazon Pay flag in the extension if the address originates from an Amazon Pay checkout process.
      */
-    $services->set(AmazonFlagIsSetInsurance::class)
+    $services->set(SetAmazonFlag::class)
         ->args([
             '$customerRepository' => service('customer.repository'),
             '$addressExtensionRepository' => service(
@@ -131,7 +141,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     /**
      * Sets a PayPal Express flag in the extension if the address originates from a PayPal Express checkout process.
      */
-    $services->set(PayPalExpressFlagIsSetInsurance::class)
+    $services->set(SetPayPalExpressFlag::class)
         ->args([
             '$customerRepository' => service('customer.repository'),
             '$addressExtensionRepository' => service(
@@ -146,9 +156,9 @@ return static function (ContainerConfigurator $containerConfigurator): void {
      * The tagged_iterator collects all services tagged with
      * 'endereco.shopware6_client.customer_address_integrity_insurance' and runs them in order.
      */
-    $services->set(CustomerAddressIntegrityInsurance::class)
+    $services->set(Pipeline::class)
         ->args([
-            '$insurances' => tagged_iterator(
+            '$operations' => tagged_iterator(
                 'endereco.shopware6_client.customer_address_integrity_insurance',
                 null,
                 null,
@@ -157,11 +167,11 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ]);
 
     /**
-     * Define an alias so that wherever CustomerAddressIntegrityInsuranceInterface is required,
-     * we use the concrete CustomerAddressIntegrityInsurance class.
+     * Define an alias so that wherever PipelineInterface is required,
+     * we use the concrete Pipeline class.
      */
     $services->alias(
-        CustomerAddressIntegrityInsuranceInterface::class,
-        CustomerAddressIntegrityInsurance::class
+        PipelineInterface::class,
+        Pipeline::class
     );
 };

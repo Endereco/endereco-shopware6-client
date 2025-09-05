@@ -1,10 +1,11 @@
 <?php
 
-namespace Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\FlagIsSetInsurance;
+namespace Endereco\Shopware6Client\CustomerAddressPipeline\Operation;
 
 use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
-use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\IntegrityInsurance;
+use Endereco\Shopware6Client\CustomerAddressPipeline\Operation\Operation;
+use Endereco\Shopware6Client\CustomerAddressPipeline\Workspace;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Framework\Context;
@@ -12,16 +13,16 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 
 /**
- * Insurance class to handle PayPal Express address flag setting
+ * Operation class to handle Amazon Pay address flags
  */
-final class PayPalExpressFlagIsSetInsurance implements IntegrityInsurance
+final class SetAmazonFlag implements Operation
 {
-    private EntityRepository $customerRepository;
-    private EntityRepository $addressExtensionRepository;
+    private  EntityRepository $customerRepository;
+    private  EntityRepository $addressExtensionRepository;
 
     /**
-     * @param EntityRepository $customerRepository Repository to fetch customer data
-     * @param EntityRepository $addressExtensionRepository Repository to manage address extension data
+     * @param EntityRepository $customerRepository Repository for customer entities
+     * @param EntityRepository $addressExtensionRepository Repository for address extension entities
      */
     public function __construct(
         EntityRepository $customerRepository,
@@ -32,24 +33,53 @@ final class PayPalExpressFlagIsSetInsurance implements IntegrityInsurance
     }
 
     /**
-     * Get the priority for this insurance
+     * Get the priority for this operation
      *
      * @return int Priority value
      */
     public static function getPriority(): int
     {
-        return -10;
+        return -40;
     }
 
     /**
-     * Ensures the PayPal Express flag is properly set for the given address
+     * Determines whether this operation applies to the given address
      *
-     * @param CustomerAddressEntity $addressEntity The address entity to process
-     * @param Context $context The Shopware context
+     * @param Workspace $workspace Customer address workspace
+     * @return bool Always returns true to maintain current behavior
+     */
+    public function applies(Workspace $workspace): bool
+    {
+        // Skip if workspace is marked to skip
+        if ($workspace->shouldSkip()) {
+            return false;
+        }
+
+        $addressEntity = $workspace->getAddressEntity();
+        $context = $workspace->getContext();
+        
+        if ($addressEntity === null || $context === null) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    /**
+     * Ensures the Amazon Pay flag is properly set for the given address
+     *
+     * @param Workspace $workspace The address workspace to process
      * @throws \RuntimeException When address extension is not set
      */
-    public function ensure(CustomerAddressEntity $addressEntity, Context $context): void
+    public function process(Workspace $workspace): void
     {
+        $addressEntity = $workspace->getAddressEntity();
+        $context = $workspace->getContext();
+        
+        if ($addressEntity === null || $context === null) {
+            return;
+        }
+        
         $addressExtension = $addressEntity->getExtension(CustomerAddressExtension::ENDERECO_EXTENSION);
 
         if (!$addressExtension instanceof EnderecoCustomerAddressExtensionEntity) {
@@ -57,7 +87,7 @@ final class PayPalExpressFlagIsSetInsurance implements IntegrityInsurance
         }
 
         $customer = $this->getCustomer($addressEntity->getCustomerId(), $context);
-        $flagValue = $this->checkIfFromPayPal($customer);
+        $flagValue = $this->checkIfFromAmazon($customer);
         $this->persistFlagValue($addressExtension, $flagValue, $context);
         $this->setFlagInExtension($addressExtension, $flagValue);
     }
@@ -80,20 +110,21 @@ final class PayPalExpressFlagIsSetInsurance implements IntegrityInsurance
     }
 
     /**
-     * Checks if customer has been created with PayPal Express plugin.
+     * Checks if customer has been created with amazon pay plugin.
      *
      * @param CustomerEntity $customer The customer entity to check
-     * @return bool True if PayPal Express payer ID exists
+     *
+     * @return bool True if Amazon Pay account ID exists which means it was created by the plugin
      */
-    private function checkIfFromPayPal(CustomerEntity $customer): bool
+    private function checkIfFromAmazon(CustomerEntity $customer): bool
     {
         /** @var array<string, mixed>|null $customerCustomFields */
         $customerCustomFields = $customer->getCustomFields();
-        return isset($customerCustomFields['payPalExpressPayerId']);
+        return isset($customerCustomFields['swag_amazon_pay_account_id']);
     }
 
     /**
-     * Persists the PayPal Express flag value to the database
+     * Persists the Amazon Pay flag value to the database
      *
      * @param EnderecoCustomerAddressExtensionEntity $addressExtension The address extension entity
      * @param bool $flagValue The flag value to persist
@@ -108,7 +139,7 @@ final class PayPalExpressFlagIsSetInsurance implements IntegrityInsurance
             [
                 [
                     'addressId' => $addressExtension->getAddressId(),
-                    'isPayPalAddress' => $flagValue
+                    'isAmazonPayAddress' => $flagValue
                 ]
             ],
             $context
@@ -116,13 +147,13 @@ final class PayPalExpressFlagIsSetInsurance implements IntegrityInsurance
     }
 
     /**
-     * Sets the PayPal Express Checkout flag in the extension entity
+     * Sets the Amazon Pay flag in the extension entity
      *
      * @param EnderecoCustomerAddressExtensionEntity $addressExtension The address extension entity
      * @param bool $value The flag value to set
      */
     private function setFlagInExtension(EnderecoCustomerAddressExtensionEntity $addressExtension, bool $value): void
     {
-        $addressExtension->setIsPayPalAddress($value);
+        $addressExtension->setIsAmazonPayAddress($value);
     }
 }

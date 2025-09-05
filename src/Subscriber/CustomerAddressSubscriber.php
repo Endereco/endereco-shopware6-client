@@ -8,10 +8,13 @@ use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoBaseAddressExtensionEntity;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
-use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityInsuranceInterface;
+use Endereco\Shopware6Client\CustomerAddressPipeline\PipelineInterface;
+use Endereco\Shopware6Client\CustomerAddressPipeline\Workspace;
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\ProcessContextService;
 use Endereco\Shopware6Client\Service\SessionManagementService;
+use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Checkout\Customer\CustomerEvents;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -35,6 +38,7 @@ use Shopware\Core\Content\ImportExport\Event\ImportExportAfterImportRecordEvent;
 use Shopware\Core\Content\ImportExport\Event\ImportExportExceptionImportRecordEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityWrittenContainerEvent;
 use Shopware\Core\Checkout\Customer\CustomerDefinition;
+use Shopware\Core\Framework\Context;
 
 class CustomerAddressSubscriber implements EventSubscriberInterface
 {
@@ -47,10 +51,11 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
     protected EntityRepository $countryRepository;
     protected EntityRepository $countryStateRepository;
     protected CountryCodeFetcherInterface $countryCodeFetcher;
-    private CustomerAddressIntegrityInsuranceInterface $customerAddressIntegrityInsurance;
+    private PipelineInterface $customerAddressPipeline;
     protected RequestStack $requestStack;
     private AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder;
     private ProcessContextService $processContext;
+    private LoggerInterface $logger;
 
     public function __construct(
         ProcessContextService $processContext,
@@ -64,8 +69,9 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         EntityRepository $countryRepository,
         EntityRepository $countryStateRepository,
         CountryCodeFetcherInterface $countryCodeFetcher,
-        CustomerAddressIntegrityInsuranceInterface $customerAddressIntegrityInsurance,
-        RequestStack $requestStack
+        PipelineInterface $customerAddressPipeline,
+        RequestStack $requestStack,
+        LoggerInterface $logger
     ) {
         // Other assignments...
         $this->processContext = $processContext;
@@ -79,8 +85,9 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         $this->countryRepository = $countryRepository;
         $this->countryStateRepository = $countryStateRepository;
         $this->countryCodeFetcher = $countryCodeFetcher;
-        $this->customerAddressIntegrityInsurance = $customerAddressIntegrityInsurance;
+        $this->customerAddressPipeline = $customerAddressPipeline;
         $this->requestStack = $requestStack;
+        $this->logger = $logger;
     }
 
     /**
@@ -234,10 +241,9 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
      * Ensures the integrity of all addresses loaded in the event.
      *
      * The function loops through all entities loaded in the event and performs certain operations if the entity
-     * is an instance of CustomerAddressEntity. For each address entity, it ensures the address extension exists,
-     * ensures the street is split, and checks if the existing customer address check or the PayPal checkout address
-     * check is required. If either is required, it ensures the address status is set. After looping through all
-     * address entities, it closes all stored sessions.
+     * is an instance of CustomerAddressEntity. Each address entity is processed through the customer address
+     * pipeline which handles extension creation, street splitting, validation, and flag setting based on the
+     * configured priorities and business logic.
      *
      * @param EntityLoadedEvent $event The event that was triggered when entities were loaded.
      * @return void
@@ -246,28 +252,59 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
     {
         $context = $event->getContext();
 
-        // Retrieve the sales channel ID and check if Endereco service is active for the channel
-        $salesChannelId = $this->enderecoService->fetchSalesChannelId($context);
-        if (is_null($salesChannelId) || !$this->enderecoService->isEnderecoPluginActive($salesChannelId)) {
+        $addressEntities = array_filter(
+            $event->getEntities(),
+            static fn($entity) => $entity instanceof CustomerAddressEntity
+        );
+
+        if (empty($addressEntities)) {
             return;
         }
 
-        // Loop through all entities loaded in the event
         $this->sessionManagementService->setIsProcessingInsurances(true);
-        foreach ($event->getEntities() as $entity) {
-            // Skip the entity if it's not a CustomerAddressEntity
-            if (!$entity instanceof CustomerAddressEntity) {
-                continue;
+
+        try {
+            foreach ($addressEntities as $addressEntity) {
+                $workspace = $this->createWorkspace($addressEntity, $context);
+                $this->customerAddressPipeline->process($workspace);
             }
+        } catch (\Throwable $e) {
+            $this->logger->error('Error processing customer address pipeline', [
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'addressCount' => count($addressEntities)
+            ]);
+        } finally {
+            $this->sessionManagementService->setIsProcessingInsurances(false);
 
-            $this->customerAddressIntegrityInsurance->ensure($entity, $context);
+            // Close stored sessions after all addresses are processed
+            $salesChannelId = $this->enderecoService->fetchSalesChannelId($context);
+            if ($salesChannelId !== null) {
+                $this->enderecoService->closeStoredSessions($context, $salesChannelId);
+            }
         }
-        $this->sessionManagementService->setIsProcessingInsurances(false);
-
-        // Close all stored sessions after checking all addresses
-        $this->enderecoService->closeStoredSessions($context, $salesChannelId);
     }
 
+    /**
+     * Creates a configured workspace for pipeline processing.
+     *
+     * @param CustomerAddressEntity $addressEntity The address entity to process
+     * @param Context $context The context for the operation
+     * @return Workspace The configured workspace
+     */
+    private function createWorkspace(CustomerAddressEntity $addressEntity, Context $context): Workspace
+    {
+        $workspace = new Workspace();
+        $workspace->setCustomerAddressEntity($addressEntity);
+        $workspace->setContext($context);
+
+        $request = $this->requestStack->getCurrentRequest();
+        if ($request !== null) {
+            $workspace->setRequest($request);
+        }
+
+        return $workspace;
+    }
 
     /**
      * Modifies form validation rules during a BuildValidationEvent.

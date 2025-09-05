@@ -1,10 +1,12 @@
 <?php
 
-namespace Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress;
+namespace Endereco\Shopware6Client\CustomerAddressPipeline\Operation;
 
 use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoBaseAddressExtensionEntity;
+use Endereco\Shopware6Client\CustomerAddressPipeline\Operation\Operation;
+use Endereco\Shopware6Client\CustomerAddressPipeline\Workspace;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -12,7 +14,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 /**
  * Ensures customer addresses have required Endereco extension entity
  */
-final class AddressExtensionExistsInsurance implements IntegrityInsurance
+final class SetExtension implements Operation
 {
     /** @var EntityRepository */
     private EntityRepository $addressExtensionRepository;
@@ -26,17 +28,40 @@ final class AddressExtensionExistsInsurance implements IntegrityInsurance
     /** @return int Priority for execution order */
     public static function getPriority(): int
     {
-        return 0;
+        return -10;
+    }
+
+    public function applies(Workspace $workspace): bool
+    {
+        // Skip if workspace is marked to skip
+        if ($workspace->shouldSkip()) {
+            return false;
+        }
+
+        $addressEntity = $workspace->getAddressEntity();
+        $context = $workspace->getContext();
+        
+        if ($addressEntity === null || $context === null) {
+            return false;
+        }
+        
+        return true;
     }
 
     /**
      * Creates extension if missing from customer address
      *
-     * @param CustomerAddressEntity $addressEntity
-     * @param Context $context
+     * @param Workspace $workspace
      */
-    public function ensure(CustomerAddressEntity $addressEntity, Context $context): void
+    public function process(Workspace $workspace): void
     {
+        $addressEntity = $workspace->getAddressEntity();
+        $context = $workspace->getContext();
+        
+        if ($addressEntity === null || $context === null) {
+            return;
+        }
+        
         $addressExtension = $addressEntity->getExtension(CustomerAddressExtension::ENDERECO_EXTENSION);
 
         if ($addressExtension instanceof EnderecoCustomerAddressExtensionEntity) {

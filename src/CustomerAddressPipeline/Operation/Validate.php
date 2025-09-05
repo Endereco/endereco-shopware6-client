@@ -1,24 +1,26 @@
 <?php
 
-namespace Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress;
+namespace Endereco\Shopware6Client\CustomerAddressPipeline\Operation;
 
 use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
 use Endereco\Shopware6Client\Model\FailedAddressCheckResult;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckerInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\Check\IsAmsRequestPayloadIsUpToDateCheckerInterface;
+use Endereco\Shopware6Client\CustomerAddressPipeline\Operation\Operation;
+use Endereco\Shopware6Client\CustomerAddressPipeline\Workspace;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\ProcessContextService;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Framework\Context;
 
 /**
- * Class AmsStatusIsSetInsurance
+ * Class AmsStatusIsSetOperation
  *
  * Ensures that an AMS status is set for a given CustomerAddressEntity if needed. It checks whether
  * the extension requires validation, and if so, validates the address using the Endereco service.
  */
-final class AmsStatusIsSetInsurance implements IntegrityInsurance
+final class Validate implements Operation
 {
     private const MAX_VALIDATION_ATTEMPTS = 3;
 
@@ -30,7 +32,7 @@ final class AmsStatusIsSetInsurance implements IntegrityInsurance
     private ProcessContextService $processContext;
 
     /**
-     * AmsStatusIsSetInsurance constructor.
+     * AmsStatusIsSetOperation constructor.
      *
      * @param IsAmsRequestPayloadIsUpToDateCheckerInterface $isAmsRequestPayloadIsUpToDateChecker Checker service
      * @param AddressCheckerInterface $addressChecker Service (with cache) for interacting
@@ -51,7 +53,53 @@ final class AmsStatusIsSetInsurance implements IntegrityInsurance
 
     public static function getPriority(): int
     {
-        return -20;
+        return -50;
+    }
+
+    /**
+     * Determines whether this insurance applies to the given address
+     *
+     * @param Workspace $workspace Customer address workspace
+     * @return bool Always returns true to maintain current behavior
+     */
+    public function applies(Workspace $workspace): bool
+    {
+
+        // Skip if workspace is marked to skip
+        if ($workspace->shouldSkip()) {
+            return false;
+        }
+
+        $addressEntity = $workspace->getAddressEntity();
+        $context = $workspace->getContext();
+        
+        if ($addressEntity === null || $context === null) {
+            return false;
+        }
+
+        /** @var EnderecoCustomerAddressExtensionEntity $addressExtension */
+        $addressExtension = $addressEntity->getExtension(CustomerAddressExtension::ENDERECO_EXTENSION);
+
+        if (!$addressExtension instanceof EnderecoCustomerAddressExtensionEntity) {
+            throw new \RuntimeException('The address extension should be set at this point');
+        }
+
+        // We don't support address validation outside of saleschannel yet.
+        $salesChannelId = $this->enderecoService->fetchSalesChannelId($context);
+        if (is_null($salesChannelId) || !$this->enderecoService->isEnderecoPluginActive($salesChannelId)) {
+            return false;
+        }
+
+        if (!$this->isValidationNeeded($addressExtension)) {
+            return false;
+        }
+
+        // We check, if we are allowed to validate the address.
+        if (!$this->canValidate($addressEntity, $salesChannelId)) {
+            return false;
+        }
+        
+        return true;
     }
 
     /**
@@ -63,13 +111,19 @@ final class AmsStatusIsSetInsurance implements IntegrityInsurance
      * 4) Applies the validation result to the address entity if successful.
      * 5) Caches the updated entity so others can reuse the validated data.
      *
-     * @param CustomerAddressEntity $addressEntity   The customer address entity to validate
-     * @param Context               $context         The current Shopware context
+     * @param Workspace $workspace   The customer address workspace
      *
      * @throws \RuntimeException If the address extension is not present on the entity
      */
-    public function ensure(CustomerAddressEntity $addressEntity, Context $context): void
+    public function process(Workspace $workspace): void
     {
+        $addressEntity = $workspace->getAddressEntity();
+        $context = $workspace->getContext();
+        
+        if ($addressEntity === null || $context === null) {
+            return;
+        }
+        
         /** @var EnderecoCustomerAddressExtensionEntity $addressExtension */
         $addressExtension = $addressEntity->getExtension(CustomerAddressExtension::ENDERECO_EXTENSION);
 
@@ -77,18 +131,8 @@ final class AmsStatusIsSetInsurance implements IntegrityInsurance
             throw new \RuntimeException('The address extension should be set at this point');
         }
 
-        // We dont support address validation outside of saleschannel yet.
         $salesChannelId = $this->enderecoService->fetchSalesChannelId($context);
-        if (is_null($salesChannelId) || !$this->enderecoService->isEnderecoPluginActive($salesChannelId)) {
-            return;
-        }
-
-        if (!$this->isValidationNeeded($addressExtension)) {
-            return;
-        }
-
-        // We check, if we are allowed to validate the address.
-        if (!$this->canValidate($addressEntity, $salesChannelId)) {
+        if (is_null($salesChannelId)) {
             return;
         }
 

@@ -9,7 +9,7 @@ declare(strict_types=1);
 use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
-use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityInsuranceInterface;
+use Endereco\Shopware6Client\CustomerAddressPipeline\PipelineInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddressIntegrityInsuranceInterface;
 use Endereco\Shopware6Client\Service\BySystemConfigFilterInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
@@ -69,8 +69,9 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$countryRepository' => service('country.repository'),
             '$countryStateRepository' => service('country_state.repository'),
             '$countryCodeFetcher' => service(CountryCodeFetcherInterface::class),
-            '$customerAddressIntegrityInsurance' => service(CustomerAddressIntegrityInsuranceInterface::class),
+            '$customerAddressPipeline' => service(PipelineInterface::class),
             '$requestStack' => service('request_stack'),
+            '$logger' => service('Endereco\Shopware6Client\Run\Logger'),
         ])
         ->tag('kernel.event_subscriber');
 

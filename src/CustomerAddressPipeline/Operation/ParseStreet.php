@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress;
+namespace Endereco\Shopware6Client\CustomerAddressPipeline\Operation;
 
 use Endereco\Shopware6Client\DTO\CustomerAddressDTO;
 use Endereco\Shopware6Client\DTO\SplitStreetResultDto;
@@ -11,8 +11,10 @@ use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\End
 use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterInterface;
+use Endereco\Shopware6Client\CustomerAddressPipeline\Operation\Operation;
+use Endereco\Shopware6Client\CustomerAddressPipeline\Workspace;
+use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AddressPersistenceStrategyProviderInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
-use Endereco\Shopware6Client\Service\ProcessContextService;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Framework\Context;
 
@@ -23,17 +25,16 @@ use Shopware\Core\Framework\Context;
  * into their component parts (street name and building number) for more structured data storage
  * and better address validation.
  */
-final class StreetIsSplitInsurance implements IntegrityInsurance
+final class ParseStreet implements Operation
 {
     private CountryCodeFetcherInterface $countryCodeFetcher;
     private StreetSplitterInterface $streetSplitter;
     private EnderecoService $enderecoService;
     private AddressPersistenceStrategyProviderInterface $addressPersistenceStrategyProvider;
     private AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker;
-    private ProcessContextService $processContext;
 
     /**
-     * Constructor for the StreetIsSplitInsurance class
+     * Constructor for the StreetIsSplitOperation class
      *
      * @param CountryCodeFetcherInterface $countryCodeFetcher Service to retrieve country codes
      * @param EnderecoService $enderecoService Service to handle address processing via Endereco API
@@ -46,14 +47,12 @@ final class StreetIsSplitInsurance implements IntegrityInsurance
         EnderecoService $enderecoService,
         AddressPersistenceStrategyProviderInterface $addressPersistenceStrategyProvider,
         AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker,
-        ProcessContextService $processContext,
     ) {
         $this->countryCodeFetcher = $countryCodeFetcher;
         $this->streetSplitter = $streetSplitter;
         $this->enderecoService = $enderecoService;
         $this->addressPersistenceStrategyProvider = $addressPersistenceStrategyProvider;
         $this->additionalAddressFieldChecker = $additionalAddressFieldChecker;
-        $this->processContext = $processContext;
     }
 
     /**
@@ -66,7 +65,30 @@ final class StreetIsSplitInsurance implements IntegrityInsurance
      */
     public static function getPriority(): int
     {
-        return -10;
+        return -30;
+    }
+
+    /**
+     * Determines whether this insurance applies to the given address
+     *
+     * @param Workspace $workspace Customer address workspace
+     * @return bool Always returns true to maintain current behavior
+     */
+    public function applies(Workspace $workspace): bool
+    {
+        // Skip if workspace is marked to skip
+        if ($workspace->shouldSkip()) {
+            return false;
+        }
+
+        $addressEntity = $workspace->getAddressEntity();
+        $context = $workspace->getContext();
+        
+        if ($addressEntity === null || $context === null) {
+            return false;
+        }
+        
+        return true;
     }
 
     /**
@@ -77,13 +99,15 @@ final class StreetIsSplitInsurance implements IntegrityInsurance
      * Then applies the appropriate persistence strategy to save these components based on
      * system configuration.
      *
-     * @param CustomerAddressEntity $addressEntity The address to process
-     * @param Context $context The current context
+     * @param Workspace $workspace The address workspace to process
      * @throws \RuntimeException If required address extension is missing
      */
-    public function ensure(CustomerAddressEntity $addressEntity, Context $context): void
+    public function process(Workspace $workspace): void
     {
-        if (!$this->processContext->isStorefront()) {
+        $addressEntity = $workspace->getAddressEntity();
+        $context = $workspace->getContext();
+        
+        if ($addressEntity === null || $context === null) {
             return;
         }
 
