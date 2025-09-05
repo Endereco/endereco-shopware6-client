@@ -244,6 +244,10 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
      */
     public function ensureAddressesIntegrity(EntityLoadedEvent $event): void
     {
+        if ($this->sessionManagementService->isProcessingInsurances) {
+            return;
+        }
+
         $context = $event->getContext();
 
         // Retrieve the sales channel ID and check if Endereco service is active for the channel
