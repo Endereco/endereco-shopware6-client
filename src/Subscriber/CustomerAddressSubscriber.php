@@ -266,6 +266,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
 
             $this->customerAddressIntegrityInsurance->ensure($entity, $context);
         }
+
         $this->sessionManagementService->setIsProcessingInsurances(false);
 
         // Close all stored sessions after checking all addresses

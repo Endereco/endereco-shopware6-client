@@ -9,6 +9,9 @@ use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\End
 use Endereco\Shopware6Client\Model\CustomerAddressPersistenceStrategy;
 use Endereco\Shopware6Client\Model\CustomerAddressUpdatePayload;
 use Endereco\Shopware6Client\Model\CustomerAddressField;
+use Endereco\Shopware6Client\Service\CustomerAddressEntityUpdater;
+use Endereco\Shopware6Client\Service\EnderecoExtensionEntityUpdater;
+use Endereco\Shopware6Client\Model\EnderecoExtensionData;
 use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -19,24 +22,29 @@ use Shopware\Core\Framework\Context;
  */
 final class PersistNativeAndExtensionFields implements CustomerAddressPersistenceStrategy
 {
-    use CustomerAddressExtensionPersistenceStrategyTrait;
 
     private AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker;
     private EntityRepository $extensionRepository;
     private EntityRepository $addressRepository;
     private Context $context;
+    private CustomerAddressEntityUpdater $entityUpdater;
+    private EnderecoExtensionEntityUpdater $extensionEntityUpdater;
 
     public function __construct(
         AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker,
         EntityRepository $customerAddressRepository,
         EntityRepository $customerAddressExtensionRepository,
-        Context $context
+        Context $context,
+        CustomerAddressEntityUpdater $entityUpdater,
+        EnderecoExtensionEntityUpdater $extensionEntityUpdater
     )
     {
         $this->additionalAddressFieldChecker = $additionalAddressFieldChecker;
         $this->addressRepository = $customerAddressRepository;
         $this->extensionRepository = $customerAddressExtensionRepository;
         $this->context = $context;
+        $this->entityUpdater = $entityUpdater;
+        $this->extensionEntityUpdater = $extensionEntityUpdater;
     }
 
     public function execute(
@@ -87,33 +95,12 @@ final class PersistNativeAndExtensionFields implements CustomerAddressPersistenc
         $payload = $this->buildNativeUpdatePayload($streetFull, $additionalInfo, $addressEntity);
         $this->addressRepository->update([$payload->toArray()], $this->context);
 
-        // Update in memory
-        $this->updateAddressEntityFields($streetFull, $additionalInfo, $addressEntity);
+        // Update in memory using normalized payload data
+        $this->entityUpdater->updateFromPayload($payload, $addressEntity);
     }
 
 
 
-    /**
-     * Updates the customer address entity fields
-     *
-     * @param string $streetFull Complete street address
-     * @param string|null $additionalInfo Additional address information
-     * @param CustomerAddressEntity $addressEntity Address entity to update
-     *
-     * @return void
-     */
-    private function updateAddressEntityFields(
-        string $streetFull,
-        ?string $additionalInfo,
-        CustomerAddressEntity $addressEntity
-    ): void {
-        $addressEntity->setStreet($streetFull);
-
-        $setter = $this->additionalAddressFieldChecker->getAvailableAdditionalAddressFieldSetter($this->context);
-        if ($setter && method_exists($addressEntity, $setter)) {
-            $addressEntity->$setter($additionalInfo);
-        }
-    }
 
     /**
      * Builds the payload for updating native Shopware address fields
@@ -171,6 +158,60 @@ final class PersistNativeAndExtensionFields implements CustomerAddressPersistenc
             ) {
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    /**
+     * Updates the address extension fields if values have changed
+     *
+     * @param string $streetName Street name
+     * @param string $buildingNumber Building number
+     * @param EnderecoCustomerAddressExtensionEntity $addressExtension Address extension entity
+     *
+     * @return void
+     */
+    private function maybeUpdateExtension(
+        string $streetName,
+        string $buildingNumber,
+        EnderecoCustomerAddressExtensionEntity $addressExtension
+    ): void {
+        if (!$this->areExtensionValuesChanged($streetName, $buildingNumber, $addressExtension)) {
+            return;
+        }
+
+        $extensionData = (new EnderecoExtensionData())
+            ->setAddressId($addressExtension->getAddressId())
+            ->setStreet($streetName)
+            ->setHouseNumber($buildingNumber);
+        
+        $this->extensionRepository->update([$extensionData->toArray()], $this->context);
+
+        // Update in memory using normalized payload data
+        $this->extensionEntityUpdater->updateFromPayload($extensionData, $addressExtension);
+    }
+
+    /**
+     * Checks if the extension entity values differ from the provided values
+     *
+     * @param string $streetName The street name to compare
+     * @param string $houseNumber The house number to compare
+     * @param EnderecoCustomerAddressExtensionEntity $extension The extension entity to check against
+     *
+     * @return bool True if any values have changed, false otherwise
+     */
+    private function areExtensionValuesChanged(
+        string $streetName,
+        string $houseNumber,
+        EnderecoCustomerAddressExtensionEntity $extension
+    ): bool {
+        if ($extension->getStreet() !== $streetName) {
+            return true;
+        }
+
+        if ($extension->getHouseNumber() !== $houseNumber) {
+            return true;
         }
 
         return false;

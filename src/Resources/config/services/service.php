@@ -11,8 +11,12 @@ use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AddressPersistenceStrategyProviderInterface;
 use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitter;
+use Endereco\Shopware6Client\Service\AddressAsArrayUpdater;
+use Endereco\Shopware6Client\Service\AddressExtensionAsArrayUpdater;
 use Endereco\Shopware6Client\Service\BySystemConfigFilter;
 use Endereco\Shopware6Client\Service\BySystemConfigFilterInterface;
+use Endereco\Shopware6Client\Service\CustomerAddressEntityUpdater;
+use Endereco\Shopware6Client\Service\EnderecoExtensionEntityUpdater;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\EnderecoService\AgentInfoGeneratorInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\PayloadPreparatorInterface;
@@ -38,6 +42,14 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
     $services->set(ProcessContextService::class);
 
+    // Entity updaters
+    $services->set(CustomerAddressEntityUpdater::class);
+    $services->set(EnderecoExtensionEntityUpdater::class);
+    
+    // Array updaters
+    $services->set(AddressAsArrayUpdater::class);
+    $services->set(AddressExtensionAsArrayUpdater::class);
+
     $services->set(SessionManagementService::class)
         ->args([
             '$systemConfigService' => service(SystemConfigService::class),
@@ -60,12 +72,15 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$customerAddressRepository' => service('customer_address.repository'),
             '$orderAddressRepository' => service('order_address.repository'),
             '$countryCodeFetcher' => service(CountryCodeFetcherInterface::class),
-            '$addressPersistenceStrategyProvider' => service(AddressPersistenceStrategyProviderInterface::class),
             '$agentInfoGenerator' => service(AgentInfoGeneratorInterface::class),
             '$payloadPreparator' => service(PayloadPreparatorInterface::class),
             '$streetSplitter' => service(StreetSplitterInterface::class),
             '$requestStack' => service('request_stack'),
             '$sessionManagementService' => service(SessionManagementService::class),
+            '$entityUpdater' => service(CustomerAddressEntityUpdater::class),
+            '$extensionEntityUpdater' => service(EnderecoExtensionEntityUpdater::class),
+            '$arrayUpdater' => service(AddressAsArrayUpdater::class),
+            '$extensionArrayUpdater' => service(AddressExtensionAsArrayUpdater::class),
             '$logger' => service('Endereco\Shopware6Client\Run\Logger'),
         ])
         ->public();

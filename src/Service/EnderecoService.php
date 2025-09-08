@@ -14,8 +14,11 @@ use Endereco\Shopware6Client\Model\AddressCheckResult;
 use Endereco\Shopware6Client\Model\CustomerAddressUpdatePayload;
 use Endereco\Shopware6Client\Model\EnderecoExtensionData;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
-use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AddressPersistenceStrategyProvider;
 use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterInterface;
+use Endereco\Shopware6Client\Service\AddressAsArrayUpdater;
+use Endereco\Shopware6Client\Service\AddressExtensionAsArrayUpdater;
+use Endereco\Shopware6Client\Service\CustomerAddressEntityUpdater;
+use Endereco\Shopware6Client\Service\EnderecoExtensionEntityUpdater;
 use Endereco\Shopware6Client\Service\EnderecoService\AgentInfoGeneratorInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\PayloadPreparatorInterface;
 use GuzzleHttp\Client;
@@ -50,7 +53,6 @@ class EnderecoService
 
     private CountryCodeFetcherInterface $countryCodeFetcher;
 
-    private AddressPersistenceStrategyProvider $addressPersistenceStrategyProvider;
 
     private AgentInfoGeneratorInterface $agentInfoGenerator;
 
@@ -59,6 +61,14 @@ class EnderecoService
     private StreetSplitterInterface $streetSplitter;
 
     private SessionManagementService $sessionManagementService;
+
+    private CustomerAddressEntityUpdater $entityUpdater;
+
+    private EnderecoExtensionEntityUpdater $extensionEntityUpdater;
+
+    private AddressAsArrayUpdater $arrayUpdater;
+
+    private AddressExtensionAsArrayUpdater $extensionArrayUpdater;
 
     public bool $isImport = false;
 
@@ -75,12 +85,15 @@ class EnderecoService
         EntityRepository $customerAddressRepository,
         EntityRepository $orderAddressRepository,
         CountryCodeFetcherInterface $countryCodeFetcher,
-        AddressPersistenceStrategyProvider $addressPersistenceStrategyProvider,
         AgentInfoGeneratorInterface $agentInfoGenerator,
         PayloadPreparatorInterface $payloadPreparator,
         StreetSplitterInterface $streetSplitter,
         RequestStack $requestStack,
         SessionManagementService $sessionManagementService,
+        CustomerAddressEntityUpdater $entityUpdater,
+        EnderecoExtensionEntityUpdater $extensionEntityUpdater,
+        AddressAsArrayUpdater $arrayUpdater,
+        AddressExtensionAsArrayUpdater $extensionArrayUpdater,
         LoggerInterface $logger
     ) {
         $this->httpClient = new Client(['timeout' => 3.0, 'connection_timeout' => 2.0]);
@@ -89,12 +102,15 @@ class EnderecoService
         $this->customerAddressRepository = $customerAddressRepository;
         $this->orderAddressRepository = $orderAddressRepository;
         $this->countryCodeFetcher = $countryCodeFetcher;
-        $this->addressPersistenceStrategyProvider = $addressPersistenceStrategyProvider;
         $this->agentInfoGenerator = $agentInfoGenerator;
         $this->payloadPreparator = $payloadPreparator;
         $this->streetSplitter = $streetSplitter;
         $this->requestStack = $requestStack;
         $this->sessionManagementService = $sessionManagementService;
+        $this->entityUpdater = $entityUpdater;
+        $this->extensionEntityUpdater = $extensionEntityUpdater;
+        $this->arrayUpdater = $arrayUpdater;
+        $this->extensionArrayUpdater = $extensionArrayUpdater;
         $this->logger = $logger;
     }
 
@@ -257,9 +273,7 @@ class EnderecoService
             $payload->setCity($correction['locality']);
             $payload->setStreet($fullStreet);
 
-            $addressEntity->setZipcode($correction['postalCode']);
-            $addressEntity->setCity($correction['locality']);
-            $addressEntity->setStreet($fullStreet);
+            $this->entityUpdater->updateFromPayload($payload, $addressEntity);
 
             // If a subdivision code exists in the correction, find the corresponding country state ID and set it
             if (array_key_exists('subdivisionCode', $correction)) {
@@ -298,12 +312,8 @@ class EnderecoService
             // here, we make it possible to access the data within the first request.
             // The entity is also saved in cache right after this and reused by other entities, so we need to update
             // the data in it ASAP.
-            $addressExtension->setStreet($correction['streetName']);
-            $addressExtension->setHouseNumber($correction['buildingNumber']);
-            $addressExtension->setAmsStatus(implode(',', $newStatuses));
-            $addressExtension->setAmsPredictions([]);
-            $addressExtension->setAmsTimestamp(time());
-            $addressExtension->setAmsRequestPayload($addressCheckResult->getAddressSignature());
+            // Update extension entity using normalized data
+            $this->extensionEntityUpdater->updateFromPayload($extensionData, $addressExtension);
         } elseif ($addressCheckResult->isFullyCorrect() && !empty($addressCheckResult->getPredictions())) {
             $correction = $addressCheckResult->getPredictions()[0];
 
@@ -317,9 +327,7 @@ class EnderecoService
             $payload->setCity($correction['locality']);
             $payload->setStreet($fullStreet);
 
-            $addressEntity->setZipcode($correction['postalCode']);
-            $addressEntity->setCity($correction['locality']);
-            $addressEntity->setStreet($fullStreet);
+            $this->entityUpdater->updateFromPayload($payload, $addressEntity);
 
             // If a subdivision code exists in the correction, find the corresponding country state ID and set it
             if (array_key_exists('subdivisionCode', $correction)) {
@@ -357,10 +365,8 @@ class EnderecoService
                 $addressEntity->addExtension(CustomerAddressExtension::ENDERECO_EXTENSION, $addressExtension);
             }
 
-            $addressExtension->setAmsStatus($addressCheckResult->getStatusesAsString());
-            $addressExtension->setAmsPredictions($addressCheckResult->getPredictions());
-            $addressExtension->setAmstimestamp(time());
-            $addressExtension->setAmsRequestPayload($addressCheckResult->getAddressSignature());
+            // Use the existing extensionData from above (line 347-353)
+            $this->extensionEntityUpdater->updateFromPayload($extensionData, $addressExtension);
         } else {
             // If there was no automatic correction, save the statuses and predictions from the address check result
             $extensionData = new EnderecoExtensionData();
@@ -378,10 +384,8 @@ class EnderecoService
                 $addressEntity->addExtension(CustomerAddressExtension::ENDERECO_EXTENSION, $addressExtension);
             }
 
-            $addressExtension->setAmsStatus($addressCheckResult->getStatusesAsString());
-            $addressExtension->setAmsPredictions($addressCheckResult->getPredictions());
-            $addressExtension->setAmstimestamp(time());
-            $addressExtension->setAmsRequestPayload($addressCheckResult->getAddressSignature());
+            // Use the existing extensionData from above (line 366-372)
+            $this->extensionEntityUpdater->updateFromPayload($extensionData, $addressExtension);
         }
 
         // Update the customer address in the repository
@@ -432,6 +436,10 @@ class EnderecoService
         $isFullStreetEmpty = empty($addressData['street']);
         $isStreetNameEmpty = empty($addressData['extensions'][$extensionName]['street']);
 
+        // Create payload objects for normalized updates
+        $customerAddressPayload = new CustomerAddressUpdatePayload('sync_street');
+        $extensionData = new EnderecoExtensionData();
+
         // In the following we handle three expected scenatio:
         // 1. The full street is empty, but name nad housenumber not -> fill up full street
         // 2. The full street is known and the street name is not -> fill up street name and house number
@@ -456,8 +464,11 @@ class EnderecoService
                 $countryCode
             );
 
-            // Add the full street to the output data
-            $addressData['street'] = $fullStreet;
+            // Set the normalized street in payload
+            $customerAddressPayload->setStreet($fullStreet);
+
+            // Apply normalized changes to address data
+            $this->arrayUpdater->updateFromPayload($customerAddressPayload, $addressData);
         } elseif (!$isFullStreetEmpty && $isStreetNameEmpty) {
             // Get the full street and split it
             $fullStreet = $addressData['street'];
@@ -485,24 +496,23 @@ class EnderecoService
                 $salesChannelId
             );
 
-            $customerAddressDTO = new CustomerAddressDTO(
-                null,
-                null,
-                $addressData
-            );
+            // Set split results in payload objects
+            $customerAddressPayload->setStreet($streetSplitResult->getFullStreet());
 
-            $addressPersistenceStrategy = $this->addressPersistenceStrategyProvider->getStrategy(
-                $customerAddressDTO,
-                $context
-            );
+            if ($streetSplitResult->getAdditionalInfo() !== null) {
+                if (array_key_exists('additionalAddressLine1', $addressData)) {
+                    $customerAddressPayload->setAdditionalAddressLine1($streetSplitResult->getAdditionalInfo());
+                } elseif (array_key_exists('additionalAddressLine2', $addressData)) {
+                    $customerAddressPayload->setAdditionalAddressLine2($streetSplitResult->getAdditionalInfo());
+                }
+            }
 
-            $addressPersistenceStrategy->execute(
-                $streetSplitResult->getFullStreet(),
-                $streetSplitResult->getAdditionalInfo(),
-                $streetSplitResult->getStreetName(),
-                $streetSplitResult->getBuildingNumber(),
-                $customerAddressDTO
-            );
+            $extensionData->setStreet($streetSplitResult->getStreetName());
+            $extensionData->setHouseNumber($streetSplitResult->getBuildingNumber());
+
+            // Apply normalized changes to address data
+            $this->arrayUpdater->updateFromPayload($customerAddressPayload, $addressData);
+            $this->extensionArrayUpdater->updateFromExtensionPayload($extensionData, $addressData);
         } elseif (!$isFullStreetEmpty && !$isStreetNameEmpty) {
             if ($this->isStreetSplittingFeatureEnabled($salesChannelId)) {
                 // Fetch important parts to build a full street.
@@ -523,8 +533,11 @@ class EnderecoService
                     $countryCode
                 );
 
-                // Add the full street to the output data
-                $addressData['street'] = $fullStreet;
+                // Set the normalized street in payload
+                $customerAddressPayload->setStreet($fullStreet);
+
+                // Apply normalized changes to address data
+                $this->arrayUpdater->updateFromPayload($customerAddressPayload, $addressData);
             } else {
                 // Get the full street and split it
                 $fullStreet = $addressData['street'];
@@ -552,24 +565,23 @@ class EnderecoService
                     $salesChannelId
                 );
 
-                $customerAddressDTO = new CustomerAddressDTO(
-                    null,
-                    null,
-                    $addressData
-                );
+                // Set split results in payload objects
+                $customerAddressPayload->setStreet($splitStreetResult->getFullStreet());
 
-                $addressPersistenceStrategy = $this->addressPersistenceStrategyProvider->getStrategy(
-                    $customerAddressDTO,
-                    $context
-                );
+                if ($splitStreetResult->getAdditionalInfo() !== null) {
+                    if (array_key_exists('additionalAddressLine1', $addressData)) {
+                        $customerAddressPayload->setAdditionalAddressLine1($splitStreetResult->getAdditionalInfo());
+                    } elseif (array_key_exists('additionalAddressLine2', $addressData)) {
+                        $customerAddressPayload->setAdditionalAddressLine2($splitStreetResult->getAdditionalInfo());
+                    }
+                }
 
-                $addressPersistenceStrategy->execute(
-                    $splitStreetResult->getFullStreet(),
-                    $splitStreetResult->getAdditionalInfo(),
-                    $splitStreetResult->getStreetName(),
-                    $splitStreetResult->getBuildingNumber(),
-                    $customerAddressDTO
-                );
+                $extensionData->setStreet($splitStreetResult->getStreetName());
+                $extensionData->setHouseNumber($splitStreetResult->getBuildingNumber());
+
+                // Apply normalized changes to address data
+                $this->arrayUpdater->updateFromPayload($customerAddressPayload, $addressData);
+                $this->extensionArrayUpdater->updateFromExtensionPayload($extensionData, $addressData);
             }
         }
     }

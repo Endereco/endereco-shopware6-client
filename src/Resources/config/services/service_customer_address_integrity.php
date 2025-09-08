@@ -29,6 +29,8 @@ use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\IntegrityI
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\StreetIsSplitInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityInsuranceInterface;
+use Endereco\Shopware6Client\Service\CustomerAddressEntityUpdater;
+use Endereco\Shopware6Client\Service\EnderecoExtensionEntityUpdater;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\ProcessContextService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -88,7 +90,9 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$customerAddressRepository' => service('customer_address.repository'),
             '$customerAddressExtensionRepository' => service(
                 EnderecoCustomerAddressExtensionDefinition::ENTITY_NAME . '.repository'
-            )
+            ),
+            '$entityUpdater' => service(CustomerAddressEntityUpdater::class),
+            '$extensionEntityUpdater' => service(EnderecoExtensionEntityUpdater::class)
         ]);
     $services->alias(AddressPersistenceStrategyProviderInterface::class, AddressPersistenceStrategyProvider::class);
 

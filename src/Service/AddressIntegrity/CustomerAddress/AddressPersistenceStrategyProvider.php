@@ -12,6 +12,8 @@ use Endereco\Shopware6Client\Model\AddressPersistenceStrategy\PersistOnlyExtensi
 use Endereco\Shopware6Client\Model\CustomerAddressPersistenceStrategy;
 use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
 use Endereco\Shopware6Client\Service\AddressCorrection\AddressCorrectionScopeBuilderInterface;
+use Endereco\Shopware6Client\Service\CustomerAddressEntityUpdater;
+use Endereco\Shopware6Client\Service\EnderecoExtensionEntityUpdater;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 
@@ -21,17 +23,23 @@ final class AddressPersistenceStrategyProvider implements AddressPersistenceStra
     private AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker;
     private EntityRepository $customerAddressExtensionRepository;
     private EntityRepository $customerAddressRepository;
+    private CustomerAddressEntityUpdater $entityUpdater;
+    private EnderecoExtensionEntityUpdater $extensionEntityUpdater;
 
     public function __construct(
         AddressCorrectionScopeBuilderInterface $addressCorrectionScopeBuilder,
         AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker,
         EntityRepository $customerAddressRepository,
-        EntityRepository $customerAddressExtensionRepository
+        EntityRepository $customerAddressExtensionRepository,
+        CustomerAddressEntityUpdater $entityUpdater,
+        EnderecoExtensionEntityUpdater $extensionEntityUpdater
     ) {
         $this->additionalAddressFieldChecker = $additionalAddressFieldChecker;
         $this->addressCorrectionScopeBuilder = $addressCorrectionScopeBuilder;
         $this->customerAddressRepository = $customerAddressRepository;
         $this->customerAddressExtensionRepository = $customerAddressExtensionRepository;
+        $this->entityUpdater = $entityUpdater;
+        $this->extensionEntityUpdater = $extensionEntityUpdater;
     }
 
     /**
@@ -62,14 +70,17 @@ final class AddressPersistenceStrategyProvider implements AddressPersistenceStra
                     $this->additionalAddressFieldChecker,
                     $this->customerAddressRepository,
                     $this->customerAddressExtensionRepository,
-                    $context
+                    $context,
+                    $this->entityUpdater,
+                    $this->extensionEntityUpdater
                 );
             }
 
             if ($addressCorrectionScope->canWriteExtensionFields()) {
                 return new PersistOnlyExtensionFields(
                     $this->customerAddressExtensionRepository,
-                    $context
+                    $context,
+                    $this->extensionEntityUpdater
                 );
             }
         }
