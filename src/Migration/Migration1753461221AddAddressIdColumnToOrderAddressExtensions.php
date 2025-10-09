@@ -22,6 +22,15 @@ class Migration1753461221AddAddressIdColumnToOrderAddressExtensions extends Migr
      */
     public function update(Connection $connection): void
     {
+        $hasOrderAddressForeignKeyConstraint = $connection->executeQuery(<<<SQL
+        SELECT COUNT(*)
+        FROM information_schema.REFERENTIAL_CONSTRAINTS
+        WHERE CONSTRAINT_SCHEMA = :database
+            AND TABLE_NAME = 'endereco_order_address_ext_gh'
+            and REFERENCED_TABLE_NAME = 'order_address'
+            and CONSTRAINT_NAME = 'fk.end_order_address_id_gh'
+        SQL, ['database' => $connection->getDatabase()])->fetchOne() > 0;
+
         $sql = <<<SQL
         ALTER TABLE `endereco_order_address_ext_gh`
             ADD COLUMN `id` BINARY(16) NOT NULL FIRST,
@@ -51,12 +60,16 @@ class Migration1753461221AddAddressIdColumnToOrderAddressExtensions extends Migr
         SQL;
         $connection->executeStatement($sql);
 
-        // The constraint must be dropped before the primary key because it uses the primary key.
-        $sql = <<<SQL
-        ALTER TABLE `endereco_order_address_ext_gh`
-            DROP CONSTRAINT `fk.end_order_address_id_gh`
-        SQL;
-        $connection->executeStatement($sql);
+        // Only drop constraint when exists. Constraint may be not added yet,
+        // see Migration1731623484CreateOrderAddressExtensionTable.php
+        if ($hasOrderAddressForeignKeyConstraint) {
+            // The constraint must be dropped before the primary key because it uses the primary key.
+            $sql = <<<SQL
+            ALTER TABLE `endereco_order_address_ext_gh`
+                DROP CONSTRAINT `fk.end_order_address_id_gh`
+            SQL;
+            $connection->executeStatement($sql);
+        }
 
         $sql = <<<SQL
         ALTER TABLE `endereco_order_address_ext_gh`
