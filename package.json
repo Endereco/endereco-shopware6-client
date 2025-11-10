@@ -14,7 +14,7 @@
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.26.7",
     "@babel/register": "^7.25.9",
-    "@endereco/js-sdk": "1.13.0",
+    "@endereco/js-sdk": "1.14.0",
     "axios": "^1.8.1",
     "babel-loader": "^10.0.0",
     "babel-preset-env": "^1.7.0",

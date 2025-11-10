@@ -333,13 +333,18 @@ if (window.EnderecoIntegrator) {
     window.EnderecoIntegrator = EnderecoIntegrator;
 }
 
-window.EnderecoIntegrator.prepareDOMElement = (DOMElement) => {
+window.EnderecoIntegrator.prepareDOMElement = (DOMElement, addressObject) => {
     // Check if the element has already been prepared
     if (DOMElement._enderecoBlurListenerAttached) {
         return; // Skip if already prepared
     }
 
-    const enderecoBlurListener = (e) => {
+    const enderecoBlurListener = async (e) => {
+        // Wait for any active prediction applications to complete
+        if (addressObject && addressObject.waitForPredictionApplication) {
+            await addressObject.waitForPredictionApplication();
+        }
+
         // Dispatch 'focus', 'input', 'change' and 'blur' events on the target element
         // The 'input' event is required for Shopware 6.7 to reset error states
         let prevActiveElement = document.activeElement;
