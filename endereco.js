@@ -372,3 +372,41 @@ const waitForConfig = setInterval(() => {
         clearInterval(waitForConfig);
     }
 }, 10);
+
+//Disable "Esc" keypress handling in input:focus inside address-form 
+//and if autocomplete-dropdown list is open
+function initEnderecoEscHandler() {
+
+    if (window.__enderecoEscHandlerAttached) {
+        return;
+    }
+    window.__enderecoEscHandlerAttached = true;
+
+    document.addEventListener('keydown', (e) => {
+        if (!document.body.classList.contains('modal-open')) {
+            return;
+        }
+
+        if (e.key !== 'Escape') {
+            return;
+        }
+
+        const active = document.activeElement;
+        if (!active || active.tagName !== 'INPUT') {
+            return;
+        }
+
+        const prediction = active.nextElementSibling;
+        if (!prediction || !prediction.classList.contains('endereco-predictions-wrapper')) {
+            return;
+        }
+
+        // stop modal ESC
+        e.stopPropagation();
+
+        // close only predictions
+        prediction.remove();
+    }, true);
+}
+
+initEnderecoEscHandler();
