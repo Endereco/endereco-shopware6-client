@@ -53,6 +53,9 @@
                         data-phone-selector="[name='{{ prefix }}[phoneNumber]']"
                 >
 
+               {# In Shopware 6.7, the `name` property of the `personalSalutation` and `personalTitle` select elements in billing addresses do not
+                   include a prefix. Therefore, conditional checks have been added for the `data-salutation-selector` attribute to handle this 
+                   difference and ensure proper field mapping. #}
                 <input
                         type="hidden"
                         name="endereco_data_marker"
@@ -63,8 +66,8 @@
                         data-has-object="no"
                         data-first-name-selector="[name='{{ prefix }}[firstName]']"
                         data-last-name-selector="[name='{{ prefix }}[lastName]']"
-                        data-salutation-selector="[name='{{ prefix }}[salutationId]']"
-                        data-title-selector="[name='{{ prefix }}[title]']"
+                        data-salutation-selector="[name='{% if prefix == 'billingAddress' %}salutationId{% else %}{{ prefix }}[salutationId]{% endif %}']"
+                        data-title-selector="[name='{% if prefix == 'billingAddress' %}title{% else %}{{ prefix }}[title]{% endif %}']"
                 >
 
                 {% set amsStatus = '' %}
