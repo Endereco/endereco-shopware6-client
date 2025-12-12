@@ -2,16 +2,25 @@
 
 error_found=0
 
-files=$(find . -type d \( -path './vendor' -o -path './node_modules' -o -path './shops' \) -prune -o -type f -name '*.php' -print)
-
-for file in $files; do
-    echo "Checking $file"
-    output=$(vendor/bin/phpmd "$file" text unusedcode)
-    if [ -n "$output" ]; then
+# Check src directory if it exists
+if [ -d "src" ]; then
+    echo "Checking src directory"
+    output=$(vendor/bin/phpmd src text unusedcode)
+    if [ $? -ne 0 ] || [ -n "$output" ]; then
         echo "$output"
         error_found=1
     fi
-done
+fi
+
+# Check tests directory if it exists
+if [ -d "tests" ]; then
+    echo "Checking tests directory"
+    output=$(vendor/bin/phpmd tests text unusedcode)
+    if [ $? -ne 0 ] || [ -n "$output" ]; then
+        echo "$output"
+        error_found=1
+    fi
+fi
 
 # Check if any errors were found
 if [ $error_found -eq 1 ]; then
