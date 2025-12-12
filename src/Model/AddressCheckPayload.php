@@ -129,7 +129,7 @@ class AddressCheckPayload implements AddressCheckPayloadInterface
     {
         return json_encode($this->data(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
     }
-    
+
     /**
      * Returns the format type of this payload.
      *

@@ -37,7 +37,7 @@ class AddressCheckResult
      * @var string A concatenated string of address fields used as fingerprint to detect address changes
      */
     protected $addressSignature = '';
-    
+
     /**
      * @var string The format type used when this result was generated (FORMAT_COMBINED or FORMAT_SPLIT)
      */
@@ -90,7 +90,7 @@ class AddressCheckResult
     {
         $this->addressSignature = $addressSignature;
     }
-    
+
     /**
      * @return string The format type used when this result was generated
      */
