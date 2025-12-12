@@ -3,21 +3,14 @@
 namespace Endereco\Shopware6Client\Model;
 
 /**
- * Represents a structured payload for address validation requests to the Endereco API.
+ * Represents an address check payload using split street format.
  *
- * This class encapsulates all necessary address components required for validation:
- * - Country code
- * - Postal/ZIP code
- * - City name
- * - Full street address
- * - Administrative subdivision code (state/province)
- *
- * The subdivision code has three possible states:
- * - null: The country has no states/subdivisions
- * - empty string: The country has states but none was selected
- * - string value: A specific state/subdivision was selected
+ * This class encapsulates address components where the street address
+ * is provided as separate fields for street name and house number.
+ * This format allows for more precise address validation and matches
+ * the API's native support for split address components.
  */
-class AddressCheckPayload implements AddressCheckPayloadInterface
+class AddressCheckPayloadSplit implements AddressCheckPayloadInterface
 {
     /**
      * The country code (ISO format) for the address
@@ -35,9 +28,14 @@ class AddressCheckPayload implements AddressCheckPayloadInterface
     private string $cityName;
 
     /**
-     * The complete street address including house number
+     * The street name without house number
      */
-    private string $streetFull;
+    private string $streetName;
+
+    /**
+     * The house number
+     */
+    private string $houseNumber;
 
     /**
      * The administrative subdivision (state/province) code
@@ -48,34 +46,35 @@ class AddressCheckPayload implements AddressCheckPayloadInterface
     private ?string $subdivisionCode;
 
     /**
-     * Additional info found in on of the two possible fields in the address form.
-     *
-     * @var string|null
+     * Additional info found in one of the two possible fields in the address form.
      */
     private ?string $additionalInfo;
 
     /**
-     * Creates a new address check payload with all required components.
+     * Creates a new split format address check payload.
      *
      * @param string $country The country code in ISO format
      * @param string $postCode The postal/ZIP code
      * @param string $cityName The city name
-     * @param string $streetFull The complete street address
+     * @param string $streetName The street name without house number
+     * @param string $houseNumber The house number
      * @param string|null $subdivisionCode The state/province code or null/empty string based on availability
-     * @param string|null $additionalInfo The additional info sometimes provided in the formulars
+     * @param string|null $additionalInfo The additional info sometimes provided in the forms
      */
     public function __construct(
         string $country,
         string $postCode,
         string $cityName,
-        string $streetFull,
+        string $streetName,
+        string $houseNumber,
         ?string $subdivisionCode,
         ?string $additionalInfo
     ) {
         $this->country = $country;
         $this->postCode = $postCode;
         $this->cityName = $cityName;
-        $this->streetFull = $streetFull;
+        $this->streetName = $streetName;
+        $this->houseNumber = $houseNumber;
         $this->subdivisionCode = $subdivisionCode;
         $this->additionalInfo = $additionalInfo;
     }
@@ -83,18 +82,10 @@ class AddressCheckPayload implements AddressCheckPayloadInterface
     /**
      * Converts the payload into an array format suitable for API submission.
      *
-     * The subdivision code is only included in the output if it's not null,
-     * allowing the API to distinguish between "no states exist" and "no state selected"
-     * scenarios.
+     * Uses separate 'street' and 'houseNumber' fields as per the API's split format support.
+     * The subdivision code is only included in the output if it's not null.
      *
-     * @return array{
-     *     country: string,
-     *     postCode: string,
-     *     cityName: string,
-     *     streetFull: string,
-     *     subdivisionCode?: string,
-     *     additionalInfo?: string
-     * } Array representation of the payload
+     * @return array<string, string> Array representation of the payload
      */
     public function data(): array
     {
@@ -102,7 +93,8 @@ class AddressCheckPayload implements AddressCheckPayloadInterface
             'country' => $this->country,
             'postCode' => $this->postCode,
             'cityName' => $this->cityName,
-            'streetFull' => $this->streetFull,
+            'street' => $this->streetName,
+            'houseNumber' => $this->houseNumber,
         ];
 
         if ($this->subdivisionCode !== null) {
@@ -129,14 +121,14 @@ class AddressCheckPayload implements AddressCheckPayloadInterface
     {
         return json_encode($this->data(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
     }
-    
+
     /**
      * Returns the format type of this payload.
      *
-     * @return string Always returns FORMAT_COMBINED for backward compatibility
+     * @return string Always returns FORMAT_SPLIT for this implementation
      */
     public function getFormatType(): string
     {
-        return self::FORMAT_COMBINED;
+        return AddressCheckPayloadInterface::FORMAT_SPLIT;
     }
 }

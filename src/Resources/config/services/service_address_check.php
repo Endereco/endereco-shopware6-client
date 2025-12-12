@@ -23,6 +23,8 @@ use Endereco\Shopware6Client\Service\AddressCheck\SubdivisionCodeFetcher;
 use Endereco\Shopware6Client\Service\AddressCheck\SubdivisionCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\PayloadPreparatorInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\RequestHeadersGeneratorInterface;
+use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterInterface;
+use Endereco\Shopware6Client\Service\EnderecoService;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
@@ -60,6 +62,11 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$subdivisionCodeFetcher' => service(SubdivisionCodeFetcherInterface::class),
             '$countryHasStatesChecker' => service(CountryHasStatesCheckerInterface::class),
             '$additionalAddressFieldChecker' => service(AdditionalAddressFieldCheckerInterface::class),
+            '$systemConfigService' => service(SystemConfigService::class),
+            '$streetSplitter' => service(StreetSplitterInterface::class),
+            '$customerAddressExtensionRepository' => service('endereco_customer_address_ext_gh.repository'),
+            '$orderAddressExtensionRepository' => service('endereco_order_address_ext_gh.repository'),
+            '$enderecoService' => service(EnderecoService::class),
         ]);
     $services->alias(AddressCheckPayloadBuilderInterface::class, AddressCheckPayloadBuilder::class);
 

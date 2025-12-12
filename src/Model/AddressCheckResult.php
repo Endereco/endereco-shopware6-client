@@ -37,6 +37,11 @@ class AddressCheckResult
      * @var string A concatenated string of address fields used as fingerprint to detect address changes
      */
     protected $addressSignature = '';
+    
+    /**
+     * @var string The format type used when this result was generated (FORMAT_COMBINED or FORMAT_SPLIT)
+     */
+    protected $formatType = AddressCheckPayloadInterface::FORMAT_COMBINED;
 
     /**
      * Checks if automatic correction has been applied.
@@ -84,6 +89,22 @@ class AddressCheckResult
     public function setAddressSignature(string $addressSignature): void
     {
         $this->addressSignature = $addressSignature;
+    }
+    
+    /**
+     * @return string The format type used when this result was generated
+     */
+    public function getFormatType(): string
+    {
+        return $this->formatType;
+    }
+
+    /**
+     * @param string $formatType The format type (FORMAT_COMBINED or FORMAT_SPLIT)
+     */
+    public function setFormatType(string $formatType): void
+    {
+        $this->formatType = $formatType;
     }
 
     /**

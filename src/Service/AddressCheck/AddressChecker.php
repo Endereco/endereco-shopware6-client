@@ -124,6 +124,7 @@ final class AddressChecker implements AddressCheckerInterface
 
         $addressCheckResult->setUsedSessionId($sessionId);
         $addressCheckResult->setAddressSignature($payloadBody->toJSON());
+        $addressCheckResult->setFormatType($payloadBody->getFormatType());
 
         return $addressCheckResult;
     }

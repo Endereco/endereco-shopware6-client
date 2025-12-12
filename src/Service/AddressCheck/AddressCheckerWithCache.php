@@ -101,7 +101,6 @@ final class AddressCheckerWithCache implements AddressCheckerInterface
     {
         $addressCheckPayload = $this->addressCheckPayloadBuilder->buildFromCustomerAddress($addressEntity, $context);
 
-        // Include address entity ID to ensure different records with same content get separate cache entries
         $cacheData = [
             'addressContent' => $addressCheckPayload->toJSON(),
             'entityId' => $addressEntity->getId()

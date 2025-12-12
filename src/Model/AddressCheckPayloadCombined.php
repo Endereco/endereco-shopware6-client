@@ -3,21 +3,13 @@
 namespace Endereco\Shopware6Client\Model;
 
 /**
- * Represents a structured payload for address validation requests to the Endereco API.
+ * Represents an address check payload using combined street format.
  *
- * This class encapsulates all necessary address components required for validation:
- * - Country code
- * - Postal/ZIP code
- * - City name
- * - Full street address
- * - Administrative subdivision code (state/province)
- *
- * The subdivision code has three possible states:
- * - null: The country has no states/subdivisions
- * - empty string: The country has states but none was selected
- * - string value: A specific state/subdivision was selected
+ * This class encapsulates address components where the street address
+ * is provided as a single field containing both street name and house number.
+ * This is the traditional format used by the plugin.
  */
-class AddressCheckPayload implements AddressCheckPayloadInterface
+class AddressCheckPayloadCombined implements AddressCheckPayloadInterface
 {
     /**
      * The country code (ISO format) for the address
@@ -48,21 +40,19 @@ class AddressCheckPayload implements AddressCheckPayloadInterface
     private ?string $subdivisionCode;
 
     /**
-     * Additional info found in on of the two possible fields in the address form.
-     *
-     * @var string|null
+     * Additional info found in one of the two possible fields in the address form.
      */
     private ?string $additionalInfo;
 
     /**
-     * Creates a new address check payload with all required components.
+     * Creates a new combined format address check payload.
      *
      * @param string $country The country code in ISO format
      * @param string $postCode The postal/ZIP code
      * @param string $cityName The city name
-     * @param string $streetFull The complete street address
+     * @param string $streetFull The complete street address including house number
      * @param string|null $subdivisionCode The state/province code or null/empty string based on availability
-     * @param string|null $additionalInfo The additional info sometimes provided in the formulars
+     * @param string|null $additionalInfo The additional info sometimes provided in the forms
      */
     public function __construct(
         string $country,
@@ -87,14 +77,7 @@ class AddressCheckPayload implements AddressCheckPayloadInterface
      * allowing the API to distinguish between "no states exist" and "no state selected"
      * scenarios.
      *
-     * @return array{
-     *     country: string,
-     *     postCode: string,
-     *     cityName: string,
-     *     streetFull: string,
-     *     subdivisionCode?: string,
-     *     additionalInfo?: string
-     * } Array representation of the payload
+     * @return array<string, string> Array representation of the payload
      */
     public function data(): array
     {
@@ -129,14 +112,14 @@ class AddressCheckPayload implements AddressCheckPayloadInterface
     {
         return json_encode($this->data(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
     }
-    
+
     /**
      * Returns the format type of this payload.
      *
-     * @return string Always returns FORMAT_COMBINED for backward compatibility
+     * @return string Always returns FORMAT_COMBINED for this implementation
      */
     public function getFormatType(): string
     {
-        return self::FORMAT_COMBINED;
+        return AddressCheckPayloadInterface::FORMAT_COMBINED;
     }
 }
