@@ -4,7 +4,7 @@
 mysql_versions=("8.0" "8.1" "8.2" "8.3" "8.4")
 
 # Shopware version for dockware image
-shopware_version="6.7.0.1"
+shopware_version="6.6.10.6"
 
 # Plugin variables
 plugin_host_dir="./"  # Directory on host where your plugin files are stored
