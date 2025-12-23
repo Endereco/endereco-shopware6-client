@@ -1,0 +1,55 @@
+{
+    "enderecoshopware6client": {
+        "texts": {
+            "popUpHeadline": "Verifica indirizzo",
+            "popUpSubline": "L'indirizzo inserito non sembra essere corretto o completo. Seleziona l'indirizzo corretto.",
+            "yourInput": "I dati inseriti:",
+            "editYourInput": "(modifica)",
+            "ourSuggestions": "I nostri suggerimenti:",
+            "useSelected": "Conferma la selezione",
+            "general_address": "Verifica indirizzo",
+            "billing_address": "Verifica indirizzo di fatturazione",
+            "shipping_address": "Verifica indirizzo di consegna",
+            "mistakeNoPredictionSubline": "Il tuo indirizzo non ha potuto essere verificato. Controlla i dati inseriti e modificali oppure confermali.",
+            "notFoundSubline": "Il tuo indirizzo non ha potuto essere verificato. Controlla i dati inseriti e modificali oppure confermali.",
+            "confirmAddress": "Conferma indirizzo",
+            "editAddress": "Modifica indirizzo",
+            "warningText": "Indirizzi errati possono causare problemi nella consegna e generare costi aggiuntivi.",
+            "confirmMyAddressCheckbox": "Confermo che il mio indirizzo è corretto e valido per la consegna."
+        },
+        "statuses": {
+            "email_not_correct": "L'indirizzo e-mail sembra non essere corretto",
+            "email_cant_receive": "La casella e-mail non è raggiungibile",
+            "email_syntax_error": "Controlla l'ortografia",
+            "email_no_mx": "L'indirizzo e-mail non esiste. Controlla l'ortografia.",
+            "building_number_is_missing": "Il numero civico non è indicato.",
+            "building_number_not_found": "Questo numero civico non è stato trovato.",
+            "street_name_needs_correction": "L'ortografia della via è errata.",
+            "locality_needs_correction": "L'ortografia della località è errata.",
+            "postal_code_needs_correction": "Il codice postale non è valido.",
+            "country_code_needs_correction": "L'indirizzo inserito è stato trovato in un altro Paese.",
+            "phone_invalid": "Il numero di telefono non è valido.",
+            "phone_format_needs_correction": "Il numero di telefono non è formattato correttamente.",
+            "phone_should_be_fixed": "Inserisci un numero di telefono fisso.",
+            "phone_should_be_mobile": "Inserisci un numero di telefono cellulare."
+        },
+        "errorMessages": {
+            "address_has_missing_building_number_content": "Il numero civico non è stato inserito.",
+            "address_has_unresolvable_building_number_content": "L'indirizzo non ha potuto essere verificato con il numero civico inserito.",
+            "packstation_has_unresolvable_address": "L'indirizzo della Packstation non è stato trovato.",
+            "postoffice_has_unresolvable_address": "L'indirizzo dell'ufficio postale non è stato trovato.",
+            "packstation_has_unresolvable_postnummer": "Il numero postale non è valido."
+        },
+        "requiredFormat": {
+            "hintFormatE164": "Scrivi il numero nel formato E.164, ad es. +4917678134170",
+            "hintFormatInternational": "Scrivi il numero nel formato internazionale, ad es. +49 176 78134170",
+            "hintFormatNational": "Scrivi il numero nel formato nazionale, ad es. 0176 78134170"
+        },
+        "inputFields": {
+            "enderedoStreetLabel": "Via",
+            "enderedoStreetPlaceholder": "Inserisci la via ...",
+            "enderedoHousenumberLabel": "Numero civico",
+            "enderedoHousenumberPlaceholder": "Inserisci il numero civico ..."
+        }
+    }
+}
