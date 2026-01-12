@@ -1,0 +1,55 @@
+{
+    "enderecoshopware6client": {
+        "texts": {
+            "popUpHeadline": "Adres controleren",
+            "popUpSubline": "Het door jou ingevoerde adres lijkt onjuist of onvolledig. Selecteer het juiste adres.",
+            "yourInput": "Jouw invoer:",
+            "editYourInput": "(bewerken)",
+            "ourSuggestions": "Onze suggesties:",
+            "useSelected": "Selectie bevestigen",
+            "general_address": "Adres controleren",
+            "billing_address": "Factuuradres controleren",
+            "shipping_address": "Afleveradres controleren",
+            "mistakeNoPredictionSubline": "Jouw adres kon niet worden geverifieerd. Controleer je invoer en pas deze aan of bevestig deze.",
+            "notFoundSubline": "Jouw adres kon niet worden geverifieerd. Controleer je invoer en pas deze aan of bevestig deze.",
+            "confirmAddress": "Adres bevestigen",
+            "editAddress": "Adres bewerken",
+            "warningText": "Onjuiste adressen kunnen leiden tot problemen bij de levering en extra kosten veroorzaken.",
+            "confirmMyAddressCheckbox": "Ik bevestig dat mijn adres correct is en geschikt voor bezorging."
+        },
+        "statuses": {
+            "email_not_correct": "Het e-mailadres lijkt niet correct te zijn",
+            "email_cant_receive": "De e-mailbox is niet bereikbaar",
+            "email_syntax_error": "Controleer de spelling",
+            "email_no_mx": "Het e-mailadres bestaat niet. Controleer de spelling.",
+            "building_number_is_missing": "Er is geen huisnummer ingevuld.",
+            "building_number_not_found": "Dit huisnummer is niet gevonden.",
+            "street_name_needs_correction": "De spelling van de straat is onjuist.",
+            "locality_needs_correction": "De spelling van de woonplaats is onjuist.",
+            "postal_code_needs_correction": "De postcode is ongeldig.",
+            "country_code_needs_correction": "Het ingevoerde adres is gevonden in een ander land.",
+            "phone_invalid": "Het telefoonnummer is ongeldig.",
+            "phone_format_needs_correction": "Het telefoonnummer heeft een onjuiste opmaak.",
+            "phone_should_be_fixed": "Voer een vast telefoonnummer in.",
+            "phone_should_be_mobile": "Voer een mobiel telefoonnummer in."
+        },
+        "errorMessages": {
+            "address_has_missing_building_number_content": "Het huisnummer ontbreekt in de invoer.",
+            "address_has_unresolvable_building_number_content": "Het adres kon niet worden geverifieerd met het ingevoerde huisnummer.",
+            "packstation_has_unresolvable_address": "Het Packstation-adres kon niet worden gevonden.",
+            "postoffice_has_unresolvable_address": "Het postkantooradres kon niet worden gevonden.",
+            "packstation_has_unresolvable_postnummer": "Het postnummer is ongeldig."
+        },
+        "requiredFormat": {
+            "hintFormatE164": "Schrijf het nummer in E.164-formaat, bijv. +4917678134170",
+            "hintFormatInternational": "Schrijf het nummer in internationaal formaat, bijv. +49 176 78134170",
+            "hintFormatNational": "Schrijf het nummer in nationaal formaat, bijv. 0176 78134170"
+        },
+        "inputFields": {
+            "enderedoStreetLabel": "Straat",
+            "enderedoStreetPlaceholder": "Straat invoeren ...",
+            "enderedoHousenumberLabel": "Huisnummer",
+            "enderedoHousenumberPlaceholder": "Huisnummer invoeren ..."
+        }
+    }
+}

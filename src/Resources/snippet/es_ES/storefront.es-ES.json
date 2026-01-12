@@ -1,0 +1,55 @@
+{
+    "enderecoshopware6client": {
+        "texts": {
+            "popUpHeadline": "Verificar dirección",
+            "popUpSubline": "La dirección que has introducido parece incorrecta o incompleta. Selecciona la dirección correcta.",
+            "yourInput": "Tus datos:",
+            "editYourInput": "(editar)",
+            "ourSuggestions": "Nuestras sugerencias:",
+            "useSelected": "Confirmar selección",
+            "general_address": "Verificar dirección",
+            "billing_address": "Verificar dirección de facturación",
+            "shipping_address": "Verificar dirección de envío",
+            "mistakeNoPredictionSubline": "No se ha podido verificar tu dirección. Revisa tus datos y modifícalos o confírmalos.",
+            "notFoundSubline": "No se ha podido verificar tu dirección. Revisa tus datos y modifícalos o confírmalos.",
+            "confirmAddress": "Confirmar dirección",
+            "editAddress": "Editar dirección",
+            "warningText": "Las direcciones incorrectas pueden provocar problemas en la entrega y generar costes adicionales.",
+            "confirmMyAddressCheckbox": "Confirmo que mi dirección es correcta y válida para la entrega."
+        },
+        "statuses": {
+            "email_not_correct": "La dirección de correo electrónico no parece ser correcta",
+            "email_cant_receive": "El buzón de correo electrónico no está disponible",
+            "email_syntax_error": "Comprueba la ortografía",
+            "email_no_mx": "La dirección de correo electrónico no existe. Comprueba la ortografía.",
+            "building_number_is_missing": "Falta el número de la vivienda.",
+            "building_number_not_found": "No se ha encontrado este número de la vivienda.",
+            "street_name_needs_correction": "La ortografía de la calle es incorrecta.",
+            "locality_needs_correction": "La ortografía de la localidad es incorrecta.",
+            "postal_code_needs_correction": "El código postal no es válido.",
+            "country_code_needs_correction": "La dirección introducida se ha encontrado en otro país.",
+            "phone_invalid": "El número de teléfono no es válido.",
+            "phone_format_needs_correction": "El número de teléfono tiene un formato incorrecto.",
+            "phone_should_be_fixed": "Introduce un número de teléfono fijo.",
+            "phone_should_be_mobile": "Introduce un número de teléfono móvil."
+        },
+        "errorMessages": {
+            "address_has_missing_building_number_content": "Falta el número de la vivienda en los datos introducidos.",
+            "address_has_unresolvable_building_number_content": "No se ha podido verificar la dirección con el número introducido.",
+            "packstation_has_unresolvable_address": "No se ha encontrado la dirección de Packstation.",
+            "postoffice_has_unresolvable_address": "No se ha encontrado la dirección de la oficina de correos.",
+            "packstation_has_unresolvable_postnummer": "El número postal no es válido."
+        },
+        "requiredFormat": {
+            "hintFormatE164": "Escribe el número en formato E.164, por ejemplo +4917678134170",
+            "hintFormatInternational": "Escribe el número en formato internacional, por ejemplo +49 176 78134170",
+            "hintFormatNational": "Escribe el número en formato nacional, por ejemplo 0176 78134170"
+        },
+        "inputFields": {
+            "enderedoStreetLabel": "Calle",
+            "enderedoStreetPlaceholder": "Introduce la calle ...",
+            "enderedoHousenumberLabel": "Número",
+            "enderedoHousenumberPlaceholder": "Introduce el número ..."
+        }
+    }
+}
