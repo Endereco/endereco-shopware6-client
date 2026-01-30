@@ -218,15 +218,17 @@
                                                 selectorsCollection.additionalInfo = `[data-endereco-${markerValue}-form-id="${formId}"] ${additionalInfoSelector}`;
                                             }
 
-                                            var EAO = window.EnderecoIntegrator.initAMS(
+                                            enderecoInitAMS(
                                                 selectorsCollection,
                                                 {
                                                     name: objectName,
                                                     addressType: addressType,
                                                     ajaxForm: isAjax,
                                                     intent: intent
-                                                }
+                                                },
+                                                afterCreateHandler
                                             );
+
                                         } else if ('phoneServices' === markerValue) {
                                             var countryCodeSelector = MarkerElement.getAttribute('data-country-code-selector');
                                             var phoneSelector = MarkerElement.getAttribute('data-phone-selector');
@@ -292,6 +294,32 @@
                             clearInterval(interval);
                         }
                     }, 50);
+                }
+
+                async function afterCreateHandler(EAO) {
+                    EAO.then(EAO => {
+                        EAO.waitForAllExtension().then(function () {
+
+                            if(EAO.addressType !== 'shipping_address' && EAO.addressType !== 'general_address') {
+                               return;
+                            }
+
+                            window.EAO = EAO;
+
+                            EAO.onAfterAddressPersisted.push((event, result) => {
+                                if (result.processStatus === 'finished') {
+                                    document.dispatchEvent(
+                                        new CustomEvent('EAO.onAfterAddressPersisted', {
+                                            detail: {
+                                                EAOEventData: event
+                                            }
+                                        })
+                                    );
+                                }
+                                return Promise.resolve();
+                            });
+                        });
+                    });
                 }
             </script>
         {% endif %}
