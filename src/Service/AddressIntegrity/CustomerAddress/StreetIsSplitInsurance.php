@@ -7,6 +7,7 @@ namespace Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress;
 use Endereco\Shopware6Client\DTO\CustomerAddressDTO;
 use Endereco\Shopware6Client\DTO\SplitStreetResultDto;
 use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
+use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\EnderecoBaseAddressExtensionEntity;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
 use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
@@ -90,6 +91,14 @@ final class StreetIsSplitInsurance implements IntegrityInsurance
         $addressExtension = $addressEntity->getExtension(CustomerAddressExtension::ENDERECO_EXTENSION);
         if (!$addressExtension instanceof EnderecoCustomerAddressExtensionEntity) {
             throw new \RuntimeException('The address extension should be set at this point');
+        }
+
+        // If the user explicitly confirmed the original address, skip street splitting entirely
+        // to prevent the API from overwriting street/additionalAddressLine
+        // (e.g. "Nr." being extracted as additionalInfo).
+        $amsStatus = $addressExtension->getAmsStatus();
+        if (str_contains($amsStatus, EnderecoBaseAddressExtensionEntity::AMS_STATUS_SELECTED_BY_CUSTOMER)) {
+            return;
         }
 
         list($countryCode, $fullStreet, $additionalInfo) = $this->getRelevantData($addressEntity, $context);
