@@ -26,7 +26,15 @@ Component.register('endereco-api-check-button', {
                 $parent = $parent.$parent;
             }
 
-            return $parent.actualConfigData.null;
+            const salesChannelId = $parent.currentSalesChannelId;
+
+            // Merge global config with sales channel-specific overrides
+            // so the test always uses the correct credentials, even for
+            // subshops with channel-specific API keys.
+            return {
+                ...$parent.actualConfigData.null,
+                ...$parent.actualConfigData[salesChannelId]
+            };
         }
     },
 
