@@ -10,8 +10,8 @@
             <name>enderecoApiKey</name>
             <label>API Key</label>
             <label lang="de-DE">API Key</label>
-            <helpText>Access key for the Endereco API.</helpText>
-            <helpText lang="de-DE">Zugriffsschlüssel für die Endereco Schnittstelle.</helpText>
+            <helpText>Access key for the endereco API.</helpText>
+            <helpText lang="de-DE">Zugriffsschlüssel für die endereco API.</helpText>
         </input-field>
 
         <input-field type="text">
@@ -20,8 +20,8 @@
             <label lang="de-DE">API URL</label>
             <defaultValue>https://endereco-service.de/rpc/v1</defaultValue>
             <placeholder>https://endereco-service.de/rpc/v1</placeholder>
-            <helpText>Access URL for the Endereco API.</helpText>
-            <helpText lang="de-DE">URL der Endereco API.</helpText>
+            <helpText>Access URL for the endereco API.</helpText>
+            <helpText lang="de-DE">URL der endereco API.</helpText>
         </input-field>
 
         <component name="endereco-api-check-button">
@@ -41,10 +41,10 @@
             <label lang="de-DE">Aktiv</label>
             <defaultValue>true</defaultValue>
             <helpText>
-                If this toggle is set to active, then the plugin will be activated in this sales channel.
+                If this toggle is set to active, the plugin will be activated in this sales channel.
             </helpText>
             <helpText lang="de-DE">
-                Mit dieser Einstellung kann man das Plugin in bestimmten Verkaufkanälen deaktivieren.
+                Mit dieser Einstellung kann man das Plugin in bestimmten Verkaufskanälen deaktivieren.
             </helpText>
         </input-field>
     </card>
@@ -59,11 +59,11 @@
             <label lang="de-DE">Namensprüfung und -normierung aktivieren und Anrede automatisch setzen</label>
             <helpText>
                 Standardizes the spelling of first and last names, sets the salutation automatically, and possibly
-                moves the academic title if this input field is activated
+                moves the academic title if the title input field is activated.
             </helpText>
             <helpText lang="de-DE">
                 Normiert die Schreibweise des Vor- und Nachnamens, setzt die Anrede automatisch und verschiebt ggf.
-                den akademischen Titel, wenn dieses Eingabefeld aktiviert ist
+                den akademischen Titel, wenn das Titel Eingabefeld aktiviert ist.
             </helpText>
             <defaultValue>false</defaultValue>
         </input-field>
@@ -73,11 +73,11 @@
             <label>Correction for clearly swapped first and last names (BETA)</label>
             <label lang="de-DE">Korrektur für eindeutig vertauschte Vor- und Nachnamen (BETA)</label>
             <helpText>
-                If wrong first and last names are entered into the wrong fields, these will be written into the
+                If first and last names are entered into the wrong fields, these will be written into the
                 correct fields if clearly assignable.
             </helpText>
             <helpText lang="de-DE">
-                Werden falsche Vor- und Nachnamen in die falsche Felder reingeschrieben, werden diese, sofern
+                Werden Vor- und Nachnamen in die falschen Felder eingetragen, werden diese, sofern
                 eindeutig zuordenbar, in die richtigen Felder geschrieben.
             </helpText>
             <defaultValue>false</defaultValue>
@@ -86,17 +86,17 @@
 
     <card>
         <title>Email Address Check</title>
-        <title lang="de-DE">Prüfung von E-Mail Adressen</title>
+        <title lang="de-DE">Prüfung von E-Mail-Adressen</title>
 
         <input-field type="bool">
             <name>enderecoEmailCheckActive</name>
-            <label>Activate the check for email addresses</label>
-            <label lang="de-DE">Die Prüfung von E-Mail Adressen aktivieren</label>
+            <label>Activate email address check</label>
+            <label lang="de-DE">Die Prüfung von E-Mail-Adressen aktivieren</label>
             <helpText>
-                The email addresses are checked for validity and deliverability in real time immediately after entry.
+                Email addresses are checked for validity and deliverability in real time immediately after entry.
             </helpText>
             <helpText lang="de-DE">
-                Die E-Mail Adressen werden sofort nach der Eingabe in Echtzeit auf Gültigkeit und Zustellbarkeit
+                Die E-Mail-Adressen werden sofort nach der Eingabe in Echtzeit auf Gültigkeit und Zustellbarkeit
                 geprüft.
             </helpText>
             <defaultValue>false</defaultValue>
@@ -105,14 +105,14 @@
         <input-field type="bool">
             <name>enderecoShowEmailStatus</name>
             <label>Display status messages below the email input field</label>
-            <label lang="de-DE">Statusmeldungen unterhalb des E-Mail Eingabefeldes anzeigen</label>
+            <label lang="de-DE">Statusmeldungen unterhalb des E-Mail-Eingabefeldes anzeigen</label>
             <helpText>
-                With this setting, you can alert users to correct them when entering invalid email addresses before
+                With this setting, users will be prompted to correct invalid email addresses before
                 submitting a form or an order.
             </helpText>
             <helpText lang="de-DE">
-                Mit dieser Einstellung kannst du Nutzer bei der Eingabe von ungültigen E-Mail-Adressen darauf
-                hinweisen, diese zu korrigieren, bevor sie ein Formular oder eine Bestellung absenden.
+                Mit dieser Einstellung werden Nutzer bei der Eingabe von ungültigen E-Mail-Adressen darauf
+                hingewiesen, diese zu korrigieren, bevor sie ein Formular oder eine Bestellung absenden.
             </helpText>
             <defaultValue>true</defaultValue>
         </input-field>
@@ -128,22 +128,22 @@
             <label lang="de-DE">AMS aktivieren (Adressprüfung und Eingabe-Assistent)</label>
             <defaultValue>true</defaultValue>
             <helpText>
-                This is the master switch for endereco's Address Management System (AMS). When enabled, it activates both address validation and the input assistant features. Address validation checks entered addresses before form submission and prompts users to correct issues when found. The input assistant provides autocomplete functionality and optimizes field ordering for better user experience. Note: The Input Assistant setting below requires this to be enabled to function.
+                This is the master switch for endereco's Address Management System (AMS). When enabled, it activates both address validation and the Input Assistant features. Address validation checks entered addresses before form submission and prompts users to correct issues when found. The Input Assistant provides autocomplete functionality and optimizes field ordering for better user experience. Note: The Input Assistant setting below requires this setting to be enabled.
             </helpText>
             <helpText lang="de-DE">
-                Dies ist der Hauptschalter für endereco's Address Management System (AMS). Wenn aktiviert, werden sowohl die Adressvalidierung als auch die Eingabe-Assistent-Funktionen aktiviert. Die Adressvalidierung prüft eingegebene Adressen vor dem Absenden des Formulars und fordert Nutzer auf, Probleme zu korrigieren. Der Eingabe-Assistent bietet Autocomplete-Funktionen und optimiert die Feldreihenfolge für eine bessere Benutzererfahrung. Hinweis: Die Eingabe-Assistent-Einstellung unten benötigt diese Aktivierung, um zu funktionieren.</helpText>
+                Dies ist der Hauptschalter für enderecos Address Management System (AMS). Wenn aktiviert, werden sowohl die Adressvalidierung als auch die Eingabe-Assistent-Funktionen aktiviert. Die Adressvalidierung prüft eingegebene Adressen vor dem Absenden des Formulars und fordert Nutzer auf, Probleme zu korrigieren. Der Eingabe-Assistent bietet Autocomplete-Funktionen und optimiert die Feldreihenfolge für eine bessere Benutzererfahrung. Hinweis: Die Eingabe-Assistent-Einstellung unten benötigt diese Aktivierung, um zu funktionieren.</helpText>
         </input-field>
 
         <input-field type="bool">
             <name>enderecoAddressInputAssistantActive</name>
-            <label>InputAssistant (Autocomplete) is active</label>
+            <label>Enable Input Assistant (Autocomplete)</label>
             <label lang="de-DE">Eingabe-Assistent (Autocomplete) aktivieren</label>
             <defaultValue>true</defaultValue>
             <helpText>
-                If input-assistant is activated, then endereco will disable default browser autocomplete for the relevant fields, optimize (change) the field order for top-to-bottom address entry and display autocomplete dropdowns for address fields that can be autocompleted (zip code, locality, street at the moment). Note: Requires "Enable AMS" setting above to be activated.
+                If the Input Assistant is activated, endereco will disable default browser autocomplete for the relevant fields, optimize (change) the field order for top-to-bottom address entry and display autocomplete dropdowns for address fields that can be autocompleted (currently: zip code, locality, street). Note: Requires "Enable AMS" setting above to be activated.
             </helpText>
             <helpText lang="de-DE">
-                Wenn der Eingabe-Assistent aktiviert ist, deaktiviert endereco die Standard-Browser-Autovervollständigung für die relevanten Felder, optimiert (ändert) die Feldreihenfolge für die Adresseingabe und zeigt Autocomplete-Dropdowns für Adressfelder an, die automatisch vervollständigt werden können (derzeit Postleitzahl, Ort, Straße). Hinweis: Benötigt die Aktivierung der "AMS aktivieren" Einstellung oben.
+                Wenn der Eingabe-Assistent aktiviert ist, deaktiviert endereco die Standard-Browser-Autovervollständigung für die relevanten Felder, optimiert (ändert) die Feldreihenfolge für die Adresseingabe und zeigt Autocomplete-Dropdowns für Adressfelder an, die automatisch vervollständigt werden können (derzeit: Postleitzahl, Ort, Straße). Hinweis: Benötigt die oben stehende Einstellung "AMS aktivieren".
             </helpText>
         </input-field>
 
@@ -153,11 +153,11 @@
             <label lang="de-DE">Schließen der Korrekturhinweise erlauben</label>
             <defaultValue>true</defaultValue>
             <helpText>
-                If this function is active, a user can skip address suggestions of the address check without having
+                If this function is active, a user can skip address suggestions from the address check without having
                 to make a selection.
             </helpText>
             <helpText lang="de-DE">
-                Ist diese Funktion aktiv, kann ein Nutzer Adressvorschläge der Adressprüfung übergehen ohne eine
+                Ist diese Funktion aktiv, kann ein Nutzer Adressvorschläge der Adressprüfung übergehen, ohne eine
                 Auswahl treffen zu müssen.
             </helpText>
         </input-field>
@@ -168,18 +168,18 @@
             <label lang="de-DE">Kunde muss eine fehlerhafte Adresse mit einer Checkbox bestätigen</label>
             <defaultValue>false</defaultValue>
             <helpText>
-                If this function is active, the user must confirm his entered address if he does not want to accept an
-                address suggestion from Endereco.
+                If this function is active, users must confirm their entered address if they do not want to accept an
+                address suggestion from endereco.
             </helpText>
             <helpText lang="de-DE">
                 Ist diese Funktion aktiv, muss der Nutzer seine eingegebene Adresse bestätigen,
-                wenn er kein Adressvorschlag von Endereco übernehmen möchte.
+                wenn er keinen Adressvorschlag von endereco übernehmen möchte.
             </helpText>
         </input-field>
 
         <input-field type="bool">
             <name>enderecoSplitStreetAndHouseNumber</name>
-            <label>Divide street into street name and house number</label>
+            <label>Split street into street name and house number</label>
             <label lang="de-DE">Straße in Straßenname und Hausnummer unterteilen</label>
             <defaultValue>false</defaultValue>
         </input-field>
@@ -189,13 +189,13 @@
             <label>Check addresses of existing customers once</label>
             <label lang="de-DE">Adressen der Bestandskunden einmalig prüfen</label>
             <helpText>
-                Invoice and delivery addresses of customers who had already registered before using the Endereco plugin
+                Billing and shipping addresses of customers who registered prior to using the endereco plugin
                 can be validated once with the existing customer check. These customers are shown a correction
                 suggestion if they want to place an order through their customer account and there is an error in the
                 address.
             </helpText>
             <helpText lang="de-DE">
-                Rechnungs- und Lieferadressen von Kunden, die bereits vor Nutzung des Endereco Plugins registriert
+                Rechnungs- und Lieferadressen von Kunden, die bereits vor Nutzung des endereco Plugins registriert
                 waren, können mit der Bestandskundenprüfung einmalig validiert werden. Diese Kunden bekommen einen
                 Korrekturvorschlag angezeigt, wenn sie über ihr Kundenkonto eine Bestellung tätigen möchten und ein
                 Fehler in der Adresse vorliegt.
@@ -207,8 +207,8 @@
             <name>enderecoCheckPayPalExpressAddress</name>
             <label>Check addresses via PayPal Express Checkout</label>
             <label lang="de-DE">Adressen über PayPal Express Checkout prüfen</label>
-            <helpText>The PayPal Express check activates the validation of addresses for customers who place an order via PayPal Express. When returning from PayPal to the shop, a correction suggestion is displayed in case of an address error.</helpText>
-            <helpText lang="de-DE">Die PayPal Express Prüfung aktiviert die Validierung von Adressen für Kunden, die über PayPal Express eine Bestellung tätigen. Beim Rücksprung aus PayPal zum Shop wird bei einem Adressfehler ein Korrekturvorschlag angezeigt.</helpText>
+            <helpText>The PayPal Express check activates the validation of addresses for customers who place an order via PayPal Express. Upon returning from PayPal to the shop, a correction suggestion is displayed in case of an address error.</helpText>
+            <helpText lang="de-DE">Die PayPal-Express-Prüfung aktiviert die Validierung von Adressen für Kunden, die über PayPal Express eine Bestellung tätigen. Beim Rücksprung von PayPal zum Shop wird bei einem Adressfehler ein Korrekturvorschlag angezeigt.</helpText>
             <defaultValue>false</defaultValue>
         </input-field>
 
@@ -218,8 +218,8 @@
             <name>enderecoWriteOrderCustomFields</name>
             <label>Write order billing and shipping address validation data to order `custom_fields`</label>
             <label lang="de-DE">Validierungsdaten der Rechnungs- und Lieferadressen einer Bestellung in `custom_fields` schreiben</label>
-            <helpText>The billing and shipping address validation data are present in the address extensions. They can be written redundantly into `custom_fields` of the `Order` entity to simplify the access and processing.</helpText>
-            <helpText lang="de-DE">Die Validierungsdaten der Rechnungs- und Lieferadressen befinden sich in der Adresserweiterung. Sie können redundant in die `custom_fields` der `Order` Entität geschrieben werden um den Zugriff und die Verarbeitung zu vereinfachen.</helpText>
+            <helpText>The billing and shipping address validation data is present in the address extensions. They can be written redundantly into `custom_fields` of the `Order` entity to simplify access and processing.</helpText>
+            <helpText lang="de-DE">Die Validierungsdaten der Rechnungs- und Lieferadressen befinden sich in der Adresserweiterung. Sie können redundant in die `custom_fields` der `Order` Entität geschrieben werden, um den Zugriff und die Verarbeitung zu vereinfachen.</helpText>
             <defaultValue>false</defaultValue>
         </input-field>
         -->
@@ -232,11 +232,11 @@
             <label lang="de-DE">Adressprüfung beim Kundenimport durchführen</label>
             <defaultValue>false</defaultValue>
             <helpText>
-                If enabled, Endereco will perform address checks on customer addresses during import operations. 
+                If enabled, endereco will perform address checks on customer addresses during import operations. 
                 This can help ensure data quality but may slow down the import process.
             </helpText>
             <helpText lang="de-DE">
-                Wenn aktiviert, führt Endereco während des Importvorgangs Adressprüfungen für Kundenadressen durch. 
+                Wenn aktiviert, führt endereco während des Importvorgangs Adressprüfungen für Kundenadressen durch. 
                 Dies kann die Datenqualität verbessern, könnte aber den Importvorgang verlangsamen.
             </helpText>
         </input-field>
@@ -245,7 +245,7 @@
 
     <card>
         <title>Phone Number Check</title>
-        <title lang="de-DE">Prüfung der Telefonnummer</title>
+        <title lang="de-DE">Prüfung von Telefonnummern</title>
 
         <input-field type="bool">
             <name>enderecoPhsActive</name>
@@ -279,8 +279,8 @@
                 </option>
             </options>
             <defaultValue>E164</defaultValue>
-            <label>Following format is expected</label>
-            <label lang="de-DE">Folgendes Format wird erwartet</label>
+            <label>Allowed formats</label>
+            <label lang="de-DE">Erlaubte Formate</label>
         </input-field>
 
         <input-field type="single-select">
@@ -303,14 +303,14 @@
                 </option>
             </options>
             <defaultValue>general</defaultValue>
-            <label>Allowed phone number</label>
-            <label lang="de-DE">Erlaubte Telefonnummer</label>
+            <label>Allowed phone number types</label>
+            <label lang="de-DE">Erlaubte Rufnummerntypen</label>
         </input-field>
 
         <input-field type="bool">
             <name>enderecoShowPhoneErrors</name>
             <label>Display phone status messages</label>
-            <label lang="de-DE">Rufnummer Statusmeldungen anzeigen</label>
+            <label lang="de-DE">Rufnummer-Statusmeldungen anzeigen</label>
             <defaultValue>true</defaultValue>
         </input-field>
 
@@ -570,8 +570,8 @@
             <defaultValue>DE</defaultValue>
             <label>Default country</label>
             <label lang="de-DE">Standardland</label>
-            <helpText>Default country used to interpret phone numbers entered in national format (without country code) when no country is selected in the frontend UI or is obvious from the entered number.</helpText>
-            <helpText lang="de-DE">Standardland zur Interpretation von Telefonnummern im nationalen Format (ohne Ländercode), wenn kein Land in der Benutzeroberfläche ausgewählt ist oder das Land nicht automatisch aus der Nummerstruktur ermittelt werden kann.</helpText>
+            <helpText>Default country used to interpret phone numbers entered in national format (without country code) when no country is selected in the frontend UI or can be inferred from the entered number.</helpText>
+            <helpText lang="de-DE">Standardland zur Interpretation von Telefonnummern im nationalen Format (ohne Ländercode), wenn kein Land in der Benutzeroberfläche ausgewählt ist oder das Land nicht automatisch aus der Rufnummernstruktur ermittelt werden kann.</helpText>
         </input-field>
     </card>
 
@@ -585,10 +585,10 @@
             <label lang="de-DE">Adressprüfung sofort nach der Eingabe der Adresse ausführen</label>
             <defaultValue>true</defaultValue>
             <helpText>
-                If the function is active, the address check is triggered immediately after the address is entered.
+                If this function is active, the address check is triggered immediately after the address is entered.
             </helpText>
             <helpText lang="de-DE">
-                Ist die Funktion aktiv, wird die Adressprüfung sofort nach der Eingabe der Adresse angestoßen.
+                Ist diese Funktion aktiv, wird die Adressprüfung sofort nach der Eingabe der Adresse angestoßen.
             </helpText>
         </input-field>
 
@@ -598,12 +598,12 @@
             <label lang="de-DE">Adressprüfung beim Absenden des Adressformulars ausführen</label>
             <defaultValue>true</defaultValue>
             <helpText>
-                Endereco blocks the sending of the address form and checks the address. If it needs to be corrected,
+                When active, endereco intercepts form submission to validate the address. If it needs to be corrected,
                 a message box appears with suggested corrections. (This function should be active)
             </helpText>
             <helpText lang="de-DE">
-                Endereco blockiert das Absenden des Adressformulars und prüft die Adresse. Falls sie korrigiert werden
-                muss, erscheint ein Hinweisfenster mit Korrekturvorschlägen. (Diese Funktion soll aktiv sein)
+                Ist diese Funktion aktiv, blockiert endereco das Absenden des Adressformulars und prüft die Adresse. Falls sie korrigiert werden
+                muss, erscheint ein Hinweisfenster mit Korrekturvorschlägen. (Diese Funktion sollte aktiv sein)
             </helpText>
         </input-field>
 
@@ -613,14 +613,12 @@
             <label lang="de-DE">Absenden des Adressformulars nach der Adressprüfung fortsetzen</label>
             <defaultValue>true</defaultValue>
             <helpText>
-                If this function is active, after selecting an address from the correction suggestions, the sending of
-                the address form is automatically continued. If it is inactive, the user remains on the same page and
-                has to submit the address form again.
+                When active, the form is automatically submitted after the user selects an address suggestion. 
+                If inactive, the user remains on the page and must click the submit button again.
             </helpText>
             <helpText lang="de-DE">
-                Ist diese Funktion aktiv, wird nach der Auswahl einer Adresse aus den Korrekturvorschlägen das Absenden
-                des Adressformulars automatisch fortgesetzt. Ist sie inaktiv, bleibt der Nutzer auf der gleichen
-                Seite und muss das Adressformular nochmal absenden.
+                Ist diese Funktion aktiv, wird das Formular nach der Auswahl eines Adressvorschlags automatisch abgesendet. 
+                Ist sie inaktiv, bleibt der Nutzer auf der Seite und muss das Formular erneut absenden.
             </helpText>
         </input-field>
 
@@ -630,13 +628,13 @@
             <label lang="de-DE">Überschreiben der nativen Shopware-Adressfelder erlauben</label>
             <defaultValue>true</defaultValue>
             <helpText>
-                If this function is active, the native Shopware address fields are overwritten with the corrected address
-                data. There is an exception: if a payment is made via AmazonPay, the native Shopware address fields are
-                not overwritten.
+                When active, native Shopware address fields are overwritten with the corrected address
+                data. There is an exception: If a payment is processed via AmazonPay, native Shopware address fields will
+                not be overwritten.
             </helpText>
             <helpText lang="de-DE">
                 Ist diese Funktion aktiv, werden die nativen Shopware-Adressfelder mit den korrigierten Adressdaten
-                überschrieben. Es gibt einen Sonderfall: wird eine Zahlung per AmazonPay vorgenommen, werden die
+                überschrieben. Es gibt einen Sonderfall: Wird eine Zahlung per AmazonPay abgewickelt, werden die
                 nativen Shopware-Adressfelder nicht überschrieben.
             </helpText>
         </input-field>
@@ -648,15 +646,15 @@
             <defaultValue></defaultValue>
             <placeholder>%SHOP_URL%/io.php</placeholder>
             <helpText>
-                If there are problems with the proxy file "io.php" (e.g. when using AMAZON AWS) or plugin bundles are
-                stored in another folder, the path to the "io.php" file can be defined manually. A copy of the io.php
+                If problems occur with the proxy file "io.php" (e.g. when using Amazon AWS, or if plugin bundles are
+                stored in a different folder), the path to the "io.php" file can be defined manually. A copy of the io.php
                 should be in the "/public" folder. Thus, "%SHOP_URL%/io.php" can be entered as the path.
             </helpText>
             <helpText lang="de-DE">
-                Wenn Probleme bei der Ausführung der Proxy-Datei "io.php" bestehen (z.B. beim Einsatz von AMAZON AWS,
+                Wenn Probleme bei der Ausführung der Proxy-Datei "io.php" auftreten (z.B. beim Einsatz von Amazon AWS,
                 oder wenn Plugin-Bundles in einem anderen Ordner gespeichert werden), kann der Pfad zur "io.php" Datei
                 manuell hinterlegt werden. Eine Kopie der io.php Datei kann im "/public" Ordner erstellt werden. Dann
-                kann z.B.  der Pfad "%SHOP_URL%/io.php" eingetragen werden.
+                kann z.B. der Pfad "%SHOP_URL%/io.php" eingetragen werden.
             </helpText>
         </input-field>
 
@@ -671,51 +669,51 @@
                 <option>
                     <id>link</id>
                     <name>Load default CSS from link</name>
-                    <name lang="de-DE">Laden Sie Standard-CSS aus dem Link</name>
+                    <name lang="de-DE">Standard-CSS über Link laden</name>
                 </option>
                 <option>
                     <id>none</id>
-                    <name>Don't load default CSS</name>
-                    <name lang="de-DE">Laden Sie kein Standard-CSS</name>
+                    <name>Do not load default CSS</name>
+                    <name lang="de-DE">Standard-CSS nicht laden</name>
                 </option>
             </options>
             <defaultValue>file</defaultValue>
-            <label>Default CSS loading</label>
-            <label lang="de-DE">Standard-CSS-Laden</label>
+            <label>Default CSS loading method</label>
+            <label lang="de-DE">Lademethode für Standard-CSS</label>
         </input-field>
 
         <input-field type="bool">
             <name>enderecoWhitelistController</name>
             <label>
-                Load endereco.min.js only on whitelisted pages (standard pages containing address forms).
+                Load endereco.min.js only on whitelisted pages (standard pages containing address forms)
             </label>
             <label lang="de-DE">
-                Endereco JavaScript Datei nur auf bestimmten Seiten laden (Standardseiten mit Adressformularen).
+                endereco JavaScript Datei nur auf bestimmten Seiten laden (Standardseiten mit Adressformularen)
             </label>
             <defaultValue>true</defaultValue>
             <helpText>
-                If this function is active, the endereco.min.js file will be loaded only on defined pages which
-                increases the performance of the site. Standard controller namens are already whitelisted.
+                When active, the endereco.min.js file will only be loaded on defined pages, which
+                improves site performance. Standard controller names are already whitelisted.
             </helpText>
             <helpText lang="de-DE">
-                Ist diese Funktion aktiv, wird die endereco.min.js Datei nur auf bestimmten Seiten geladen. Dadurch
-                verbessert sich die Ladezeit des Shops. Standard Controller Namen sind bereits in der Whitelist.
+                Ist diese Funktion aktiv, wird die endereco.min.js Datei nur auf festgelegten Seiten geladen. Dadurch
+                verbessert sich die Ladezeit des Shops. Standard-Controller-Namen sind bereits in der Whitelist hinterlegt.
             </helpText>
         </input-field>
 
         <input-field type="text">
             <name>enderecoWhitelistControllerList</name>
             <label>Activate plugin also for the following controllers (optional, comma-separated)</label>
-            <label lang="de-DE">Plugin auch für folgende Controllern aktivieren (optional, kommagetrennt)</label>
+            <label lang="de-DE">Plugin auch für folgende Controller aktivieren (optional, kommagetrennt)</label>
             <defaultValue></defaultValue>
             <placeholder>ControllerName1,ControllerName2</placeholder>
             <helpText>
-                The Javascript from Endereco is loaded for the controllers specified here. The controller names
-                must be entered separated by ",".
+                The endereco Javascript file is loaded for the controllers specified here. Please enter the 
+                controller names as a comma-separated list.
             </helpText>
             <helpText lang="de-DE">
-                Das Javascript von Endereco wird bei den hier hinterlegten Controllern ausgegeben. Die Controller
-                Namen müssen mit "," getrennt eingeben werden.
+                Das JavaScript von endereco wird bei den hier hinterlegten Controllern ausgegeben. Die Controller-Namen
+                müssen als kommagetrennte Liste eingegeben werden.
             </helpText>
         </input-field>
     </card>

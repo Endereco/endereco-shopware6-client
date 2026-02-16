@@ -3,6 +3,6 @@
     "title": "API Prüfung",
     "success": "Verbindung wurde erfolgreich geprüft",
     "error": "Verbindung konnte nicht hergestellt werden. Bitte prüfe den API Key und die Server URL",
-    "button": "Verbindung zum Endereco Server prüfen"
+    "button": "Verbindung zum endereco Server prüfen"
   }
 }
