@@ -154,7 +154,7 @@
                         emailService: {{ page.endereco_config.enderecoEmailCheckActive ? 'true':'false' }},
                         personService: {{ page.endereco_config.enderecoNameCheckActive ? 'true':'false' }},
                         phs: {{ page.endereco_config.enderecoPhsActive ? 'true':'false' }}
-                    }
+                    };
 
                     // Execute all function that have been called throughout the page.
                     window.EnderecoIntegrator.onLoad.forEach(function (callback) {
@@ -269,7 +269,7 @@
                             stop: function () {
 
                             }
-                        }
+                        };
                         window.EnderecoIntegrator.$formScanner.start();
                     })();
                 }
