@@ -58,7 +58,9 @@ final class AmazonFlagIsSetInsurance implements IntegrityInsurance
 
         $customer = $this->getCustomer($addressEntity->getCustomerId(), $context);
         $flagValue = $this->checkIfFromAmazon($customer);
-        $this->persistFlagValue($addressExtension, $flagValue, $context);
+        if ($addressExtension->isAmazonPayAddress() !== $flagValue) {
+            $this->persistFlagValue($addressExtension, $flagValue, $context);
+        }
         $this->setFlagInExtension($addressExtension, $flagValue);
     }
 
