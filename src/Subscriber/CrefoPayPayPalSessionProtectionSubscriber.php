@@ -145,28 +145,6 @@ class CrefoPayPayPalSessionProtectionSubscriber implements EventSubscriberInterf
             return;
         }
 
-        // Clear session data on checkout completion or homepage
-        if ($path === '/checkout/order' || $path === '/') {
-            $this->clearSessionData($request);
-            return;
-        }
-
-        // Try to load from request attributes first (same request), then from persistent storage
-        $savedData = $request->attributes->get(self::REQUEST_ATTR_SAVED_SESSION);
-
-        if ((!$savedData || !is_array($savedData)) && $request->hasSession()) {
-            try {
-                $session = $request->getSession();
-                $savedData = $session->get(self::SESSION_KEY_SAVED_DATA);
-            } catch (\RuntimeException $e) {
-                return;
-            }
-        }
-
-        if (!$savedData || !is_array($savedData)) {
-            return;
-        }
-
         if (!$request->hasSession()) {
             return;
         }
@@ -174,7 +152,25 @@ class CrefoPayPayPalSessionProtectionSubscriber implements EventSubscriberInterf
         try {
             $session = $request->getSession();
 
+            // Try to load from request attributes first (same request), then from persistent storage
+            $savedData = $request->attributes->get(self::REQUEST_ATTR_SAVED_SESSION);
+
+            if (!$savedData || !is_array($savedData)) {
+                $savedData = $session->get(self::SESSION_KEY_SAVED_DATA);
+            }
+
+            if (!$savedData || !is_array($savedData)) {
+                return;
+            }
+
+            // Clear session data on checkout completion or homepage (only if we have session data)
+            if ($path === '/checkout/order' || $path === '/') {
+                $this->clearSessionData($request);
+                return;
+            }
+
             // Restore session values if they were cleared by CrefoPay
+            // Note: paypalExpressActive uses $_SESSION as it's used directly by CrefoPay
             if (isset($savedData['crefopay-paypal-express-transaction'])) {
                 $session->set('crefopay-paypal-express-transaction', $savedData['crefopay-paypal-express-transaction']);
             }
@@ -183,7 +179,6 @@ class CrefoPayPayPalSessionProtectionSubscriber implements EventSubscriberInterf
                 $_SESSION['paypalExpressActive'] = $savedData['paypalExpressActive'];
             }
 
-            // Update persistent storage if needed
             $currentPersistentData = $session->get(self::SESSION_KEY_SAVED_DATA);
             if (!empty($savedData) && $currentPersistentData !== $savedData) {
                 $session->set(self::SESSION_KEY_SAVED_DATA, $savedData);
@@ -208,16 +203,12 @@ class CrefoPayPayPalSessionProtectionSubscriber implements EventSubscriberInterf
         try {
             $session = $request->getSession();
 
-            // Clear session variables
             $session->remove('crefopay-paypal-express-transaction');
             if (isset($_SESSION['paypalExpressActive'])) {
                 unset($_SESSION['paypalExpressActive']);
             }
 
-            // Clear persistent storage
             $session->remove(self::SESSION_KEY_SAVED_DATA);
-
-            // Clear request attributes
             $request->attributes->remove(self::REQUEST_ATTR_SAVED_SESSION);
         } catch (\RuntimeException $e) {
             return;
