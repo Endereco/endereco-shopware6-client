@@ -621,11 +621,11 @@ class EnderecoService
      * This method checks if the Endereco plugin is active for a specified sales channel and if the API key is set.
      * Both of these conditions must be met for the plugin to be considered active.
      *
-     * @param string $salesChannelId The ID of the sales channel to check. If null, the default channel is used.
+     * @param string|null $salesChannelId The ID of the sales channel to check. If null, the default channel is used.
      * @return bool Returns true if the plugin is active for the given sales channel and the API key is set,
      *              false otherwise.
      */
-    public function isEnderecoPluginActive(string $salesChannelId): bool
+    public function isEnderecoPluginActive(?string $salesChannelId): bool
     {
         // Check if the plugin is active for this channel
         $isActiveForThisChannel = $this->systemConfigService

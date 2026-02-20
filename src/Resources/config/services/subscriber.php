@@ -23,6 +23,8 @@ use Endereco\Shopware6Client\Subscriber\ConvertCartToOrderSubscriber;
 use Endereco\Shopware6Client\Subscriber\CustomerAddressSubscriber;
 use Endereco\Shopware6Client\Subscriber\OrderSubscriber;
 use Endereco\Shopware6Client\Subscriber\OrderAddressSubscriber;
+use Endereco\Shopware6Client\Subscriber\CrefoPayPayPalCustomerSubscriber;
+use Endereco\Shopware6Client\Subscriber\CrefoPayPayPalSessionProtectionSubscriber;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Endereco\Shopware6Client\Subscriber\AddDataToPageSubscriber;
@@ -85,6 +87,21 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$orderAddressRepository' => service('order_address.repository'),
             '$bySystemConfigFilter' => service(BySystemConfigFilterInterface::class),
             '$ordersCustomFieldsUpdater' => service(OrdersCustomFieldsUpdaterInterface::class),
+        ])
+        ->tag('kernel.event_subscriber');
+
+    $services->set(CrefoPayPayPalCustomerSubscriber::class)
+        ->args([
+            '$customerRepository' => service('customer.repository'),
+            '$systemConfigService' => service(SystemConfigService::class),
+            '$enderecoService' => service(EnderecoService::class),
+        ])
+        ->tag('kernel.event_subscriber');
+
+    $services->set(CrefoPayPayPalSessionProtectionSubscriber::class)
+        ->args([
+            '$systemConfigService' => service(SystemConfigService::class),
+            '$enderecoService' => service(EnderecoService::class),
         ])
         ->tag('kernel.event_subscriber');
 };
