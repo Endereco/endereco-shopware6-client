@@ -152,6 +152,19 @@ abstract class EnderecoBaseAddressExtensionEntity extends Entity
     }
 
     /**
+     * Returns predictions as a WAF-safe base64-encoded JSON string for use in
+     * HTML form hidden fields. City names containing parentheses (e.g. "Halle (Saale)")
+     * would otherwise trigger WAF rules that interpret "word(word)" as a function call.
+     *
+     * TODO: Consider moving this encoding into a Twig extension filter so the
+     * entity does not need to know about the transport format.
+     */
+    public function getAmsPredictionsEncoded(): string
+    {
+        return base64_encode((string) json_encode($this->amsPredictions));
+    }
+
+    /**
      * Set the predictions of the AMS check.
      *
      * @param array<array<string, string>> $amsPredictions The predictions of the AMS check.

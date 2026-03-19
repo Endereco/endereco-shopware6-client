@@ -95,8 +95,8 @@
                     {% if data.extensions.enderecoAddress.amsTimestamp is defined %}
                         {% set amsTimestamp = data.extensions.enderecoAddress.amsTimestamp %}
                     {% endif %}
-                    {% if data.extensions.enderecoAddress.amsPredictions is defined %}
-                        {% set amsPredictions = data.extensions.enderecoAddress.amsPredictions|json_encode %}
+                    {% if data.extensions.enderecoAddress.amsPredictionsEncoded is defined %}
+                        {% set amsPredictions = data.extensions.enderecoAddress.amsPredictionsEncoded %}
                     {% endif %}
                 {% endif %}
 

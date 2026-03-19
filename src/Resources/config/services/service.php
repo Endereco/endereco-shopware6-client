@@ -26,6 +26,7 @@ use Endereco\Shopware6Client\Service\OrderCustomFieldsBuilder;
 use Endereco\Shopware6Client\Service\OrderCustomFieldsBuilderInterface;
 use Endereco\Shopware6Client\Service\OrdersCustomFieldsUpdater;
 use Endereco\Shopware6Client\Service\OrdersCustomFieldsUpdaterInterface;
+use Endereco\Shopware6Client\Service\PredictionSerializer;
 use Endereco\Shopware6Client\Service\ProcessContextService;
 use Endereco\Shopware6Client\Service\SessionManagementService;
 use Shopware\Core\Framework\Api\Sync\SyncService;
@@ -38,6 +39,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->defaults()
         ->autowire()
         ->autoconfigure();
+
+    $services->set(PredictionSerializer::class);
 
     $services->set(ProcessContextService::class);
 

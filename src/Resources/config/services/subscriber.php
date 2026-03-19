@@ -14,6 +14,7 @@ use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddressIntegrityInsur
 use Endereco\Shopware6Client\Service\BySystemConfigFilterInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\EnderecoService\AgentInfoGeneratorInterface;
+use Endereco\Shopware6Client\Service\PredictionSerializer;
 use Endereco\Shopware6Client\Service\SessionManagementService;
 use Endereco\Shopware6Client\Service\EnderecoService\PluginVersionFetcherInterface;
 use Endereco\Shopware6Client\Service\PluginStatusService;
@@ -72,6 +73,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$customerAddressIntegrityInsurance' => service(CustomerAddressIntegrityInsuranceInterface::class),
             '$requestStack' => service('request_stack'),
             '$pluginStatusService' => service(PluginStatusService::class),
+            '$predictionSerializer' => service(PredictionSerializer::class),
         ])
         ->tag('kernel.event_subscriber');
 
