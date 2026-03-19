@@ -9,6 +9,7 @@ use Endereco\Shopware6Client\Model\CustomerAddressUpdatePayload;
 use Endereco\Shopware6Client\Model\EnderecoExtensionData;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
+use Endereco\Shopware6Client\Service\PredictionSerializer;
 use Endereco\Shopware6Client\Service\SessionManagementService;
 use Exception;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
@@ -41,17 +42,20 @@ class AddressController extends StorefrontController
     protected AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder;
     protected EnderecoService $enderecoService;
     protected SessionManagementService $sessionManagementService;
+    private PredictionSerializer $predictionSerializer;
 
     public function __construct(
         EnderecoService $enderecoService,
         SessionManagementService $sessionManagementService,
         EntityRepository $addressRepository,
-        AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder
+        AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder,
+        PredictionSerializer $predictionSerializer
     ) {
         $this->enderecoService = $enderecoService;
         $this->sessionManagementService = $sessionManagementService;
         $this->addressRepository = $addressRepository;
         $this->addressCheckPayloadBuilder = $addressCheckPayloadBuilder;
+        $this->predictionSerializer = $predictionSerializer;
     }
 
     /**
@@ -127,7 +131,7 @@ class AddressController extends StorefrontController
         if (empty($address['amsPredictions'])) {
             $predictions = [];
         } else {
-            $predictions = json_decode($address['amsPredictions'], true);
+            $predictions = $this->predictionSerializer->decode($address['amsPredictions']);
         }
 
         $payload = new CustomerAddressUpdatePayload($addressId);

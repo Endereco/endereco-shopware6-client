@@ -10,6 +10,7 @@ use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInte
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityInsuranceInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
+use Endereco\Shopware6Client\Service\PredictionSerializer;
 use Endereco\Shopware6Client\Service\ProcessContextService;
 use Endereco\Shopware6Client\Service\SessionManagementService;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
@@ -51,6 +52,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
     protected RequestStack $requestStack;
     private AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder;
     private ProcessContextService $processContext;
+    private PredictionSerializer $predictionSerializer;
 
     public function __construct(
         ProcessContextService $processContext,
@@ -65,7 +67,8 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         EntityRepository $countryStateRepository,
         CountryCodeFetcherInterface $countryCodeFetcher,
         CustomerAddressIntegrityInsuranceInterface $customerAddressIntegrityInsurance,
-        RequestStack $requestStack
+        RequestStack $requestStack,
+        PredictionSerializer $predictionSerializer
     ) {
         // Other assignments...
         $this->processContext = $processContext;
@@ -81,6 +84,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         $this->countryCodeFetcher = $countryCodeFetcher;
         $this->customerAddressIntegrityInsurance = $customerAddressIntegrityInsurance;
         $this->requestStack = $requestStack;
+        $this->predictionSerializer = $predictionSerializer;
     }
 
     /**
@@ -376,7 +380,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         if (is_null($input->get('amsPredictions'))) {
             $predictions = [];
         } else {
-            $predictions = json_decode($input->get('amsPredictions'), true) ?? [];
+            $predictions = $this->predictionSerializer->decode($input->get('amsPredictions'));
         }
 
         // Add relevant endereco data.

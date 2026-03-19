@@ -141,6 +141,58 @@ EnderecoIntegrator.resolvers.salutationRead = function (value) {
     });
 }
 
+// Encode addressPredictions as base64 when writing to DOM so that city names
+// containing parentheses (e.g. "Halle (Saale)") do not trigger WAF rules that
+// interpret "word(word)" patterns as function calls. The DOM field always holds
+// base64 after initialisation; the PHP backend decodes it transparently.
+// See DEV-410.
+EnderecoIntegrator.resolvers.addressPredictionsWrite = function (value) {
+    if (value === null || value === undefined) {
+        return Promise.resolve('');
+    }
+    // syncValues() can pass the raw array from the getter instead of a string.
+    if (typeof value !== 'string') {
+        value = JSON.stringify(value);
+    }
+    // Guard against double encoding: if the value is already base64(JSON array),
+    // return it as-is.
+    try {
+        var decoded = JSON.parse(decodeURIComponent(escape(atob(value))));
+        if (Array.isArray(decoded)) {
+            return Promise.resolve(value);
+        }
+    } catch {
+        // Not already encoded — encode below.
+    }
+    return Promise.resolve(btoa(unescape(encodeURIComponent(value))));
+};
+
+// Decode base64 back to the original JSON string when reading from DOM, so the
+// SDK sees plain JSON internally regardless of the DOM transport format.
+// Mirrors the PHP PredictionSerializer::decode() strategy: try plain JSON first,
+// then base64. This prevents double-decoding if the value is already plain JSON.
+EnderecoIntegrator.resolvers.addressPredictionsRead = function (value) {
+    if (!value || typeof value !== 'string') {
+        return Promise.resolve(value);
+    }
+
+    // If it's already valid JSON, return as-is — no base64 decoding needed.
+    try {
+        var parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) {
+            return Promise.resolve(value);
+        }
+    } catch {
+        // Not JSON — fall through to base64.
+    }
+
+    try {
+        return Promise.resolve(decodeURIComponent(escape(atob(value))));
+    } catch {
+        return Promise.resolve(value);
+    }
+};
+
 EnderecoIntegrator.resolvers.targetSelectorResolve = (targetSelector, addressObject) => {
     const form = addressObject.forms[0];
     if (!form) {

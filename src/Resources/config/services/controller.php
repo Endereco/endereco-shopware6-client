@@ -8,6 +8,7 @@ use Endereco\Shopware6Client\Controller\Storefront\AddressController;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\ApiConfiguration\ApiConfigurationFetcherInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
+use Endereco\Shopware6Client\Service\PredictionSerializer;
 use Endereco\Shopware6Client\Service\SessionManagementService;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -37,12 +38,13 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$sessionManagementService' => service(SessionManagementService::class),
             '$addressRepository' => service('customer_address.repository'),
             '$addressCheckPayloadBuilder' => service(AddressCheckPayloadBuilderInterface::class),
+            '$predictionSerializer' => service(PredictionSerializer::class),
         ])
         ->call('setContainer', [
             service('service_container')
         ])
         ->public();
-    
+
     $services->set(EnderecoApiProxyController::class)
         ->args([
             '$httpClient' => service('endereco.http_client'),
