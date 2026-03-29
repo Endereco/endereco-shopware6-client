@@ -213,6 +213,15 @@
         </input-field>
 
         <input-field type="bool">
+            <name>enderecoCheckCrefoPayPayPalExpressAddress</name>
+            <label>Check addresses via CrefoPay PayPal Express Checkout</label>
+            <label lang="de-DE">Adressen über CrefoPay PayPal Express Checkout prüfen</label>
+            <helpText>The CrefoPay PayPal Express check activates the validation of addresses for customers who place an order via CrefoPay with PayPal Express payment method. When returning from PayPal to the shop, a correction suggestion is displayed in case of an address error. This feature works analogously to the standard PayPal Express address check.</helpText>
+            <helpText lang="de-DE">Die CrefoPay PayPal Express Prüfung aktiviert die Validierung von Adressen für Kunden, die über CrefoPay mit der Zahlungsart PayPal Express eine Bestellung tätigen. Beim Rücksprung aus PayPal zum Shop wird bei einem Adressfehler ein Korrekturvorschlag angezeigt. Diese Funktion arbeitet analog zur Standard PayPal Express Adressprüfung.</helpText>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
             <name>enderecoWriteOrderCustomFields</name>
             <label>Write order billing and shipping address validation data to order `custom_fields`</label>
             <label lang="de-DE">Validierungsdaten der Rechnungs- und Lieferadressen einer Bestellung in `custom_fields` schreiben</label>
