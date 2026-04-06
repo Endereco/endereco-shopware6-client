@@ -22,7 +22,7 @@ class SessionManagementService
     private RequestHeadersGeneratorInterface $requestHeadersGenerator;
     private PayloadPreparatorInterface $payloadPreparator;
     private LoggerInterface $logger;
-    private ?SessionInterface $session;
+    private RequestStack $requestStack;
 
     public bool $isProcessingInsurances = false;
 
@@ -37,13 +37,18 @@ class SessionManagementService
         $this->systemConfigService = $systemConfigService;
         $this->requestHeadersGenerator = $requestHeadersGenerator;
         $this->payloadPreparator = $payloadPreparator;
+        $this->requestStack = $requestStack;
         $this->logger = $logger;
+    }
 
-        if (!is_null($requestStack->getMainRequest())) {
-            $this->session = $requestStack->getMainRequest()->getSession();
-        } else {
-            $this->session = null;
+    private function getCurrentSession(): ?SessionInterface
+    {
+        $request = $this->requestStack->getMainRequest();
+        if ($request === null || !$request->hasSession()) {
+            return null;
         }
+
+        return $request->getSession();
     }
 
     /**
@@ -178,7 +183,8 @@ class SessionManagementService
      */
     public function closeStoredSessions(Context $context, string $salesChannelId): void
     {
-        if (!$this->session instanceof SessionInterface) {
+        $session = $this->getCurrentSession();
+        if (!$session instanceof SessionInterface) {
             return;
         }
 
@@ -190,22 +196,23 @@ class SessionManagementService
         }
 
         // Check if there are any stored sessions in 'enderecoAccountableSessions'
-        if ($this->session->get('enderecoAccountableSessions')) {
+        if ($session->get('enderecoAccountableSessions')) {
 
             /** @var string[] $existingSessionIds */
-            $existingSessionIds = $this->session->get('enderecoAccountableSessions');
+            $existingSessionIds = $session->get('enderecoAccountableSessions');
 
             // If the retrieved session IDs array is not empty, proceed to close the sessions
             if (!empty($existingSessionIds)) {
                 // Call the service method to close the sessions
                 $this->sendDoAccountings($existingSessionIds, $context, $salesChannelId);
 
-                if (!$this->session instanceof SessionInterface) {
+                $sessionAfter = $this->getCurrentSession();
+                if (!$sessionAfter instanceof SessionInterface) {
                     return;
                 }
 
                 // Reset the 'enderecoAccountableSessions' array in the session
-                $this->session->set('enderecoAccountableSessions', []);
+                $sessionAfter->set('enderecoAccountableSessions', []);
             }
         }
     }
@@ -226,15 +233,16 @@ class SessionManagementService
      */
     public function addAccountableSessionIdsToStorage(array $sessionIds): void
     {
-        if (!$this->session instanceof SessionInterface) {
+        $session = $this->getCurrentSession();
+        if (!$session instanceof SessionInterface) {
             return;
         }
 
         // Fetch any existing sessions stored under 'enderecoAccountableSessions'
         $existingSessions = [];
 
-        if ($this->session->get('enderecoAccountableSessions')) {
-            $existingSessions = $this->session->get('enderecoAccountableSessions');
+        if ($session->get('enderecoAccountableSessions')) {
+            $existingSessions = $session->get('enderecoAccountableSessions');
         }
 
         // Merge the existing sessions with the new ones
@@ -244,7 +252,7 @@ class SessionManagementService
         $allSessions = array_unique($allSessions);
 
         // Store the resulting array back into the 'enderecoAccountableSessions' session storage
-        $this->session->set('enderecoAccountableSessions', $allSessions);
+        $session->set('enderecoAccountableSessions', $allSessions);
     }
 
     /**

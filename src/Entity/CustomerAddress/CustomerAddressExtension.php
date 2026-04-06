@@ -33,13 +33,8 @@ class CustomerAddressExtension extends EntityExtension
         );
     }
 
-    /**
-     * Get the class name of the definition that is extended by this extension.
-     *
-     * @return string The class name of the extended definition.
-     */
-    public function getDefinitionClass(): string
+    public function getEntityName(): string
     {
-        return CustomerAddressDefinition::class;
+        return CustomerAddressDefinition::ENTITY_NAME;
     }
 }
