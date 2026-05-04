@@ -26,15 +26,22 @@
                         data-subdivision-code-selector="[name='{{ prefix }}[countryStateId]']"
                         data-postal-code-selector="[name='{{ prefix }}[zipcode]']"
                         data-locality-selector="[name='{{ prefix }}[city]']"
-                        data-street-full-selector="[name='{{ prefix }}[street]']"
+                        {% if not enderecoIsAcrisStreetActive() %}
+                            data-street-full-selector="[name='{{ prefix }}[street]']"
+                        {% endif %}
                         {% if page.endereco_config.hasAnyAdditionalFields %}
                             data-additional-info-selector="[name='{{ prefix }}[{{ page.endereco_config.additionalInfoFieldName }}]']"
                         {% endif %}
                         data-ams-status-selector="[name='{{ prefix }}[amsStatus]']"
                         data-ams-timestamp-selector="[name='{{ prefix }}[amsTimestamp]']"
                         data-ams-predictions-selector="[name='{{ prefix }}[amsPredictions]']"
-                        data-street-selector="[name='{{ prefix }}[enderecoStreet]']"
-                        data-house-number-selector="[name='{{ prefix }}[enderecoHousenumber]']"
+                        {% if enderecoIsAcrisStreetActive() %}
+                            data-street-selector="[name='{{ prefix }}[street]']"
+                            data-house-number-selector="[name='{{ prefix }}[houseNumber]']"
+                        {% else %}
+                            data-street-selector="[name='{{ prefix }}[enderecoStreet]']"
+                            data-house-number-selector="[name='{{ prefix }}[enderecoHousenumber]']"
+                        {% endif %}
                         data-address-type="{{ addressType }}"
                         data-intent="{{ enderecoIntent is defined ? enderecoIntent : 'edit' }}"
                 >
