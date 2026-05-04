@@ -16,6 +16,7 @@ use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\EnderecoService\AgentInfoGeneratorInterface;
 use Endereco\Shopware6Client\Service\SessionManagementService;
 use Endereco\Shopware6Client\Service\EnderecoService\PluginVersionFetcherInterface;
+use Endereco\Shopware6Client\Service\PluginStatusService;
 use Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcherInterface;
 use Endereco\Shopware6Client\Service\OrdersCustomFieldsUpdaterInterface;
 use Endereco\Shopware6Client\Service\ProcessContextService;
@@ -70,6 +71,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$countryCodeFetcher' => service(CountryCodeFetcherInterface::class),
             '$customerAddressIntegrityInsurance' => service(CustomerAddressIntegrityInsuranceInterface::class),
             '$requestStack' => service('request_stack'),
+            '$pluginStatusService' => service(PluginStatusService::class),
         ])
         ->tag('kernel.event_subscriber');
 

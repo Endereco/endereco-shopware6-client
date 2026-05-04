@@ -11,6 +11,7 @@ use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInte
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityInsuranceInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
+use Endereco\Shopware6Client\Service\PluginStatusService;
 use Endereco\Shopware6Client\Service\ProcessContextService;
 use Endereco\Shopware6Client\Service\SessionManagementService;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressCollection;
@@ -71,6 +72,8 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
 
     protected RequestStack $requestStack;
 
+    protected PluginStatusService $pluginStatusService;
+
     private AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder;
 
     private ProcessContextService $processContext;
@@ -95,7 +98,8 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         EntityRepository $countryStateRepository,
         CountryCodeFetcherInterface $countryCodeFetcher,
         CustomerAddressIntegrityInsuranceInterface $customerAddressIntegrityInsurance,
-        RequestStack $requestStack
+        RequestStack $requestStack,
+        PluginStatusService $pluginStatusService
     ) {
         $this->processContext = $processContext;
         $this->addressCheckPayloadBuilder = $addressCheckPayloadBuilder;
@@ -110,6 +114,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         $this->countryCodeFetcher = $countryCodeFetcher;
         $this->customerAddressIntegrityInsurance = $customerAddressIntegrityInsurance;
         $this->requestStack = $requestStack;
+        $this->pluginStatusService = $pluginStatusService;
     }
 
     /**
@@ -318,6 +323,11 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
      */
     public function modifyValidationConstraints(BuildValidationEvent $event): void
     {
+        // Break execution if AcrisSeparateStreetCS plugin is active
+        if ($this->pluginStatusService->isAcrisStreetActive()) {
+            return;
+        }
+
         // Fetch context and sales channel ID
         $context = $event->getContext();
         $salesChannelId = $this->enderecoService->fetchSalesChannelId($context);
