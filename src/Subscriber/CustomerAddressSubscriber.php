@@ -125,10 +125,11 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
 
         // These events are used to extend the data that are used when an address is written.
         // This is a place to manipulate the data before the address entity is written.
+        // Priority was set to -1000 to ensure endereco hopefully runs after all other listeners.
         $beforeAddressWritingEvents = [
-            CustomerEvents::MAPPING_ADDRESS_CREATE => ['addMissingDataToAddressMapping'],
-            CustomerEvents::MAPPING_REGISTER_ADDRESS_BILLING => ['addMissingDataToAddressMapping'],
-            CustomerEvents::MAPPING_REGISTER_ADDRESS_SHIPPING => ['addMissingDataToAddressMapping'],
+            CustomerEvents::MAPPING_ADDRESS_CREATE => ['addMissingDataToAddressMapping', -1000],
+            CustomerEvents::MAPPING_REGISTER_ADDRESS_BILLING => ['addMissingDataToAddressMapping', -1000],
+            CustomerEvents::MAPPING_REGISTER_ADDRESS_SHIPPING => ['addMissingDataToAddressMapping', -1000],
         ];
 
         // This event is used after the address has been written to the database.
@@ -388,16 +389,20 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
             $predictions = json_decode($input->get('amsPredictions'), true) ?? [];
         }
 
+        // Initialize extensions array if it does not exist or is not an array, to avoid
+        // errors when adding endereco extension data.
+        if (!isset($output['extensions']) || !is_array($output['extensions'])) {
+            $output['extensions'] = [];
+        }
+
         // Add relevant endereco data.
-        $output['extensions'] = [
-            CustomerAddressExtension::ENDERECO_EXTENSION => [
-                'street' => $input->get('enderecoStreet', ''),
-                'houseNumber' => $input->get('enderecoHousenumber', ''),
-                'amsStatus' => $input->get('amsStatus') ?? EnderecoBaseAddressExtensionEntity::AMS_STATUS_NOT_CHECKED,
-                'amsTimestamp' => (int) $input->get('amsTimestamp', 0),
-                'amsPredictions' => $predictions,
-                'isPayPalAddress' => false // We will calculate it later.
-            ]
+        $output['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION] = [
+            'street' => $input->get('enderecoStreet', ''),
+            'houseNumber' => $input->get('enderecoHousenumber', ''),
+            'amsStatus' => $input->get('amsStatus') ?? EnderecoBaseAddressExtensionEntity::AMS_STATUS_NOT_CHECKED,
+            'amsTimestamp' => (int) $input->get('amsTimestamp', 0),
+            'amsPredictions' => $predictions,
+            'isPayPalAddress' => false // We will calculate it later.
         ];
 
         // Make sure the default street and endereco street name and house number are synchronized.
