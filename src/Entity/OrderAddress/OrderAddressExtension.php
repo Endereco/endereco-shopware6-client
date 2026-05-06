@@ -36,8 +36,13 @@ class OrderAddressExtension extends EntityExtension
         $collection->add($associationField);
     }
 
-    public function getEntityName(): string
+    /**
+     * Get the class name of the definition that is extended by this extension.
+     *
+     * @return string The class name of the extended definition.
+     */
+    public function getDefinitionClass(): string
     {
-        return OrderAddressDefinition::ENTITY_NAME;
+        return OrderAddressDefinition::class;
     }
 }
