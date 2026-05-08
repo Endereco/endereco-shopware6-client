@@ -37,6 +37,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$sessionManagementService' => service(SessionManagementService::class),
             '$addressRepository' => service('customer_address.repository'),
             '$addressCheckPayloadBuilder' => service(AddressCheckPayloadBuilderInterface::class),
+            '$pluginStatusService' => service(\Endereco\Shopware6Client\Service\PluginStatusService::class),
         ])
         ->call('setContainer', [
             service('service_container')

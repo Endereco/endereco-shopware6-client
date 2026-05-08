@@ -428,10 +428,24 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
             $output['extensions'] = [];
         }
 
+        $enderecoStreet = (string)$input->get('enderecoStreet', '');
+        $enderecoHouseNumber = (string)$input->get('enderecoHousenumber', '');
+        $skipSyncStreet = false;
+
+        if ($this->pluginStatusService->isAcrisStreetActive()) {
+            $acrisHouseNumber = (string)$input->get('houseNumber', '');
+            if ($acrisHouseNumber !== '') {
+                $enderecoStreet = (string)$input->get('street', '');
+                $enderecoHouseNumber = $acrisHouseNumber;
+                // ACRIS already successfully divided the address, skip endereco splitting.
+                $skipSyncStreet = true;
+            }
+        }
+
         // Add relevant endereco data.
         $output['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION] = [
-            'street' => $input->get('enderecoStreet', ''),
-            'houseNumber' => $input->get('enderecoHousenumber', ''),
+            'street' => $enderecoStreet,
+            'houseNumber' => $enderecoHouseNumber,
             'amsStatus' => $input->get('amsStatus') ?? EnderecoBaseAddressExtensionEntity::AMS_STATUS_NOT_CHECKED,
             'amsTimestamp' => (int) $input->get('amsTimestamp', 0),
             'amsPredictions' => $predictions,
@@ -439,7 +453,9 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         ];
 
         // Make sure the default street and endereco street name and house number are synchronized.
-        $this->enderecoService->syncStreet($output, $context, $salesChannelId);
+        if (!$skipSyncStreet) {
+            $this->enderecoService->syncStreet($output, $context, $salesChannelId);
+        }
 
         // Calculate payload
         $payloadBody = $this->addressCheckPayloadBuilder->buildFromArray(

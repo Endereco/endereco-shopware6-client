@@ -11,6 +11,7 @@ use Endereco\Shopware6Client\Model\EnderecoExtensionData;
 use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\SessionManagementService;
+use Endereco\Shopware6Client\Service\PluginStatusService;
 use Exception;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressCollection;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
@@ -48,19 +49,24 @@ class AddressController extends StorefrontController
 
     protected SessionManagementService $sessionManagementService;
 
+    protected PluginStatusService $pluginStatusService;
+
     /**
      * @param EntityRepository<CustomerAddressCollection> $addressRepository
+     * @param PluginStatusService $pluginStatusService
      */
     public function __construct(
         EnderecoService $enderecoService,
         SessionManagementService $sessionManagementService,
         EntityRepository $addressRepository,
-        AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder
+        AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder,
+        PluginStatusService $pluginStatusService
     ) {
         $this->enderecoService = $enderecoService;
         $this->sessionManagementService = $sessionManagementService;
         $this->addressRepository = $addressRepository;
         $this->addressCheckPayloadBuilder = $addressCheckPayloadBuilder;
+        $this->pluginStatusService = $pluginStatusService;
     }
 
     /**
@@ -150,10 +156,25 @@ class AddressController extends StorefrontController
         $payload->setCountryId($address['countryId'] ?? null);
         $payload->setCountryStateId(!empty($address['countryStateId']) ? $address['countryStateId'] : null);
         
+        $enderecoStreet = $address['enderecoStreet'] ?? '';
+        $enderecoHouseNumber = $address['enderecoHousenumber'] ?? '';
+        $skipSyncStreet = false;
+
+        if ($this->pluginStatusService->isAcrisStreetActive()) {
+            $acrisHouseNumber = $address['houseNumber'] ?? '';
+            if ($acrisHouseNumber !== '') {
+                $payload->setStreet(($address['street'] ?? '') . ' ' . $acrisHouseNumber);
+                $enderecoStreet = $address['street'] ?? '';
+                $enderecoHouseNumber = $acrisHouseNumber;
+                // ACRIS already successfully divided the address, skip endereco splitting.
+                $skipSyncStreet = true;
+            }
+        }
+
         $extensionData = new EnderecoExtensionData();
-        $extensionData->setStreet($address['enderecoStreet'] ?? '')
-            ->setHouseNumber($address['enderecoHousenumber'] ?? '')
-            ->setAmsStatus($address['amsStatus'])
+        $extensionData->setStreet($enderecoStreet)
+            ->setHouseNumber($enderecoHouseNumber)
+            ->setAmsStatus($address['amsStatus'] ?? '')
             ->setAmsPredictions($predictions)
             ->setAmsTimestamp(time());
         
@@ -162,7 +183,9 @@ class AddressController extends StorefrontController
         $updatePayload = $payload->toArray();
 
         // Make sure that custom "street name" and "house number" are filled or the default "street" is filled.
-        $this->enderecoService->syncStreet($updatePayload, $mainContext, $salesChannelId);
+        if (!$skipSyncStreet) {
+            $this->enderecoService->syncStreet($updatePayload, $mainContext, $salesChannelId);
+        }
 
         // Calculate payload
         $payloadBody = $this->addressCheckPayloadBuilder->buildFromArray(
@@ -173,7 +196,9 @@ class AddressController extends StorefrontController
                 'city' => $updatePayload['city'],
                 'street' => $updatePayload['street'],
                 'additionalAddressLine1' => $updatePayload['additionalAddressLine1'],
-                'additionalAddressLine2' => $updatePayload['additionalAddressLine2']
+                'additionalAddressLine2' => $updatePayload['additionalAddressLine2'],
+                'enderecoStreet' => $enderecoStreet,
+                'enderecoHousenumber' => $enderecoHouseNumber
             ],
             $mainContext
         );
