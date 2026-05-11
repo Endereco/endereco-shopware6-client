@@ -424,7 +424,8 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
             $this->enderecoService->syncStreet($output, $context, $salesChannelId);
         }
 
-        // Calculate payload
+        // Calculate payload. Pass the pre-split fields so the builder can skip its own
+        // street splitter (see AddressCheckPayloadBuilder::extractSplitAddressFromArray).
         $payloadBody = $this->addressCheckPayloadBuilder->buildFromArray(
             [
                 'countryId' => $output['countryId'],
@@ -434,6 +435,8 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
                 'street' => $output['street'],
                 'additionalAddressLine1' => $output['additionalAddressLine1'] ?? null,
                 'additionalAddressLine2' => $output['additionalAddressLine2'] ?? null,
+                'enderecoStreet' => $enderecoStreet,
+                'enderecoHousenumber' => $enderecoHouseNumber,
             ],
             $context
         );

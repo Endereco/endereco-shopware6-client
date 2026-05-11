@@ -4,28 +4,28 @@ declare(strict_types=1);
 
 namespace Endereco\Shopware6Client\Controller\Storefront;
 
-use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
 use Endereco\Shopware6Client\Model\CustomerAddressUpdatePayload;
-use Endereco\Shopware6Client\Model\EnderecoExtensionData;
-use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\SessionManagementService;
-use Endereco\Shopware6Client\Service\PluginStatusService;
 use Exception;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressCollection;
+use Shopware\Core\Checkout\Customer\CustomerEvents;
 use Shopware\Core\Checkout\Customer\Exception\AddressNotFoundException;
 use Shopware\Core\Checkout\Cart\Exception\CustomerNotLoggedInException;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\Event\DataMappingEvent;
+use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\StorefrontController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 use function count;
 
@@ -40,28 +40,25 @@ use function count;
 class AddressController extends StorefrontController
 {
     protected EntityRepository $addressRepository;
-    protected AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder;
+
     protected EnderecoService $enderecoService;
     protected SessionManagementService $sessionManagementService;
 
-    protected PluginStatusService $pluginStatusService;
+    protected EventDispatcherInterface $eventDispatcher;
 
     /**
      * @param EntityRepository<CustomerAddressCollection> $addressRepository
-     * @param PluginStatusService $pluginStatusService
      */
     public function __construct(
         EnderecoService $enderecoService,
         SessionManagementService $sessionManagementService,
         EntityRepository $addressRepository,
-        AddressCheckPayloadBuilderInterface $addressCheckPayloadBuilder,
-        PluginStatusService $pluginStatusService
+        EventDispatcherInterface $eventDispatcher
     ) {
         $this->enderecoService = $enderecoService;
         $this->sessionManagementService = $sessionManagementService;
         $this->addressRepository = $addressRepository;
-        $this->addressCheckPayloadBuilder = $addressCheckPayloadBuilder;
-        $this->pluginStatusService = $pluginStatusService;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -134,72 +131,53 @@ class AddressController extends StorefrontController
             throw new AddressNotFoundException($addressId);
         }
 
-        if (empty($address['amsPredictions'])) {
-            $predictions = [];
-        } else {
-            $predictions = json_decode($address['amsPredictions'], true);
-        }
+        // Address-shape input mirrors what UpsertAddressRoute would build before dispatching
+        // MAPPING_ADDRESS_CREATE. We deliberately do not include identity fields (firstName,
+        // lastName, salutationId, …) here because this endpoint is a partial update.
+        $addressData = [
+            'street' => $address['street'] ?? '',
+            'city' => $address['city'] ?? '',
+            'zipcode' => $address['zipcode'] ?? '',
+            'countryId' => $address['countryId'] ?? null,
+            'countryStateId' => !empty($address['countryStateId']) ? $address['countryStateId'] : null,
+            'additionalAddressLine1' => $address['additionalAddressLine1'] ?? null,
+            'additionalAddressLine2' => $address['additionalAddressLine2'] ?? null,
+        ];
 
-        $payload = new CustomerAddressUpdatePayload($addressId);
-        $payload->setCity($address['city']);
-        $payload->setZipcode($address['zipcode']);
-        $payload->setStreet($address['street'] ?? '');
-        $payload->setAdditionalAddressLine1($address['additionalAddressLine1'] ?? null);
-        $payload->setAdditionalAddressLine2($address['additionalAddressLine2'] ?? null);
-        
-        // Always set country and country state IDs to ensure they're present in the array
-        $payload->setCountryId($address['countryId'] ?? null);
-        $payload->setCountryStateId(!empty($address['countryStateId']) ? $address['countryStateId'] : null);
-        
-        $enderecoStreet = $address['enderecoStreet'] ?? '';
-        $enderecoHouseNumber = $address['enderecoHousenumber'] ?? '';
-        $skipSyncStreet = false;
+        // Same extension point Shopware uses in UpsertAddressRoute. Third-party plugins like
+        // ACRIS hook in here to split street/houseNumber. Endereco's own CustomerAddressSubscriber
+        // runs at priority -1000 and assembles the enderecoAddress extension + AMS payload.
+        $mappingEvent = new DataMappingEvent(
+            new RequestDataBag($address),
+            $addressData,
+            $mainContext
+        );
+        $this->eventDispatcher->dispatch($mappingEvent, CustomerEvents::MAPPING_ADDRESS_CREATE);
+        $addressData = $mappingEvent->getOutput();
 
-        if ($this->pluginStatusService->isAcrisStreetActive()) {
-            $acrisHouseNumber = $address['houseNumber'] ?? '';
-            if ($acrisHouseNumber !== '') {
-                $payload->setStreet(($address['street'] ?? '') . ' ' . $acrisHouseNumber);
-                $enderecoStreet = $address['street'] ?? '';
-                $enderecoHouseNumber = $acrisHouseNumber;
-                // ACRIS already successfully divided the address, skip endereco splitting.
-                $skipSyncStreet = true;
-            }
-        }
-
-        $extensionData = new EnderecoExtensionData();
-        $extensionData->setStreet($enderecoStreet)
-            ->setHouseNumber($enderecoHouseNumber)
-            ->setAmsStatus($address['amsStatus'] ?? '')
-            ->setAmsPredictions($predictions)
-            ->setAmsTimestamp(time());
-        
-        $payload->setEnderecoExtension($extensionData);
+        $payload = (new CustomerAddressUpdatePayload($addressId))
+            ->setStreet($addressData['street'] ?? '')
+            ->setZipcode($addressData['zipcode'] ?? '')
+            ->setCity($addressData['city'] ?? '')
+            ->setCountryId($addressData['countryId'] ?? null)
+            ->setCountryStateId($addressData['countryStateId'] ?? null)
+            ->setAdditionalAddressLine1($addressData['additionalAddressLine1'] ?? null)
+            ->setAdditionalAddressLine2($addressData['additionalAddressLine2'] ?? null);
 
         $updatePayload = $payload->toArray();
 
-        // Make sure that custom "street name" and "house number" are filled or the default "street" is filled.
-        if (!$skipSyncStreet) {
-            $this->enderecoService->syncStreet($updatePayload, $mainContext, $salesChannelId);
+        // Carry over what subscribers contributed: customFields (e.g. ACRIS) and
+        // extensions (enderecoAddress, plus anything else added by third parties).
+        if (isset($addressData['customFields']) && is_array($addressData['customFields'])) {
+            $updatePayload['customFields'] = $addressData['customFields'];
+        }
+        if (isset($addressData['extensions']) && is_array($addressData['extensions'])) {
+            $updatePayload['extensions'] = array_merge(
+                $updatePayload['extensions'] ?? [],   // should be empty in practice
+                $addressData['extensions']            // {enderecoAddress: …, anyOtherPluginExt: …}
+            );
         }
 
-        // Calculate payload
-        $payloadBody = $this->addressCheckPayloadBuilder->buildFromArray(
-            [
-                'countryId' => $updatePayload['countryId'],
-                'countryStateId' => $updatePayload['countryStateId'],
-                'zipcode' => $updatePayload['zipcode'],
-                'city' => $updatePayload['city'],
-                'street' => $updatePayload['street'],
-                'additionalAddressLine1' => $updatePayload['additionalAddressLine1'],
-                'additionalAddressLine2' => $updatePayload['additionalAddressLine2'],
-                'enderecoStreet' => $enderecoStreet,
-                'enderecoHousenumber' => $enderecoHouseNumber
-            ],
-            $mainContext
-        );
-        $updatePayload['extensions'][CustomerAddressExtension::ENDERECO_EXTENSION]['amsRequestPayload'] = $payloadBody->toJSON();
-
-        // Update the data in the database.
         $this->addressRepository->update([$updatePayload], $mainContext);
 
         return new JsonResponse(['addressSaved' => true]);
