@@ -10,8 +10,10 @@ use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\End
 use Endereco\Shopware6Client\Model\CustomerAddressPersistenceStrategy;
 use Endereco\Shopware6Client\Model\CustomerAddressUpdatePayload;
 use Endereco\Shopware6Client\Model\CustomerAddressField;
+use Endereco\Shopware6Client\Model\AcrisCustomField;
 use Endereco\Shopware6Client\Service\CustomerAddressEntityUpdater;
 use Endereco\Shopware6Client\Service\EnderecoExtensionEntityUpdater;
+use Endereco\Shopware6Client\Service\PluginStatusService;
 use Endereco\Shopware6Client\Model\EnderecoExtensionData;
 use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressCollection;
@@ -36,6 +38,7 @@ final class PersistNativeAndExtensionFields implements CustomerAddressPersistenc
     private Context $context;
     private CustomerAddressEntityUpdater $entityUpdater;
     private EnderecoExtensionEntityUpdater $extensionEntityUpdater;
+    private PluginStatusService $pluginStatusService;
 
     /**
      * @param AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker
@@ -49,7 +52,8 @@ final class PersistNativeAndExtensionFields implements CustomerAddressPersistenc
         EntityRepository $customerAddressExtensionRepository,
         Context $context,
         CustomerAddressEntityUpdater $entityUpdater,
-        EnderecoExtensionEntityUpdater $extensionEntityUpdater
+        EnderecoExtensionEntityUpdater $extensionEntityUpdater,
+        PluginStatusService $pluginStatusService
     )
     {
         $this->additionalAddressFieldChecker = $additionalAddressFieldChecker;
@@ -58,6 +62,7 @@ final class PersistNativeAndExtensionFields implements CustomerAddressPersistenc
         $this->context = $context;
         $this->entityUpdater = $entityUpdater;
         $this->extensionEntityUpdater = $extensionEntityUpdater;
+        $this->pluginStatusService = $pluginStatusService;
     }
 
     public function execute(
@@ -78,9 +83,25 @@ final class PersistNativeAndExtensionFields implements CustomerAddressPersistenc
             throw new \RuntimeException('Address entity cannot be null');
         }
 
-        $this->maybeUpdateNative(
-            $normalizedStreetFull,  $normalizedAdditionalInfo, $addressEntity
+        $payload = new CustomerAddressUpdatePayload($addressEntity->getId());
+        $isNativeChanged = $this->maybeUpdateNative(
+            $normalizedStreetFull,
+            $normalizedAdditionalInfo,
+            $addressEntity,
+            $payload
         );
+
+        $isCustomFieldsChanged = $this->maybeUpdateCustomFields(
+            $streetName,
+            $buildingNumber,
+            $addressEntity,
+            $payload
+        );
+
+        if ($isNativeChanged || $isCustomFieldsChanged) {
+            $this->addressRepository->update([$payload->toArray()], $this->context);
+            $this->entityUpdater->updateFromPayload($payload, $addressEntity);
+        }
 
         $this->maybeUpdateExtension(
             $streetName,
@@ -95,41 +116,39 @@ final class PersistNativeAndExtensionFields implements CustomerAddressPersistenc
      * @param string $streetFull Complete street address
      * @param string|null $additionalInfo Additional address information
      * @param CustomerAddressEntity $addressEntity Address entity to update
+     * @param CustomerAddressUpdatePayload $payload Payload to populate
      *
-     * @return void
+     * @return bool True if native fields have changed
      */
-    private function maybeUpdateNative(string $streetFull, ?string $additionalInfo, CustomerAddressEntity $addressEntity): void
-    {
+    private function maybeUpdateNative(
+        string $streetFull,
+        ?string $additionalInfo,
+        CustomerAddressEntity $addressEntity,
+        CustomerAddressUpdatePayload $payload
+    ): bool {
         if (!$this->areValuesChanged($streetFull, $additionalInfo, $addressEntity)) {
-            return;
+            return false;
         }
 
-        // Update in DB
-        $payload = $this->buildNativeUpdatePayload($streetFull, $additionalInfo, $addressEntity);
-        $this->addressRepository->update([$payload->toArray()], $this->context);
+        $payload = $this->buildNativeUpdatePayload($streetFull, $additionalInfo, $payload);
 
-        // Update in memory using normalized payload data
-        $this->entityUpdater->updateFromPayload($payload, $addressEntity);
+        return true;
     }
-
-
-
 
     /**
      * Builds the payload for updating native Shopware address fields
      *
      * @param string $streetFull Complete street address
      * @param string|null $additionalInfo Additional address information
-     * @param CustomerAddressEntity $addressEntity Address entity being updated
+     * @param CustomerAddressUpdatePayload $payload Update payload for the address repository
      *
-     * @return CustomerAddressUpdatePayload Update payload for the address repository
+     * @return CustomerAddressUpdatePayload
      */
     private function buildNativeUpdatePayload(
         string $streetFull,
         ?string $additionalInfo,
-        CustomerAddressEntity $addressEntity
+        CustomerAddressUpdatePayload $payload
     ): CustomerAddressUpdatePayload {
-        $payload = new CustomerAddressUpdatePayload($addressEntity->getId());
         $payload->setStreet($streetFull);
 
         if ($this->additionalAddressFieldChecker->hasAdditionalAddressField($this->context)) {
@@ -142,6 +161,62 @@ final class PersistNativeAndExtensionFields implements CustomerAddressPersistenc
         }
 
         return $payload;
+    }
+
+    /**
+     * Updates the custom fields in the payload if ACRIS values have changed
+     *
+     * @param string $streetName Street name
+     * @param string $buildingNumber Building number
+     * @param CustomerAddressEntity $addressEntity Address entity to update
+     * @param CustomerAddressUpdatePayload $payload Payload to populate
+     *
+     * @return bool True if custom fields have changed
+     */
+    private function maybeUpdateCustomFields(
+        string $streetName,
+        string $buildingNumber,
+        CustomerAddressEntity $addressEntity,
+        CustomerAddressUpdatePayload $payload
+    ): bool {
+        if (!$this->pluginStatusService->isAcrisStreetActive()) {
+            return false;
+        }
+
+        if (!$this->areCustomFieldsChanged($streetName, $buildingNumber, $addressEntity)) {
+            return false;
+        }
+
+        $currentCustomFields = $addressEntity->getCustomFields() ?? [];
+        $newCustomFields = array_merge($currentCustomFields, [
+            AcrisCustomField::STREET => $streetName,
+            AcrisCustomField::HOUSE_NUMBER => $buildingNumber,
+        ]);
+
+        $payload->setCustomFields($newCustomFields);
+
+        return true;
+    }
+
+    /**
+     * Checks if ACRIS custom fields have changed
+     *
+     * @param string $streetName New street name
+     * @param string $buildingNumber New building number
+     * @param CustomerAddressEntity $addressEntity The address entity to check against
+     *
+     * @return bool True if any custom values have changed
+     */
+    private function areCustomFieldsChanged(
+        string $streetName,
+        string $buildingNumber,
+        CustomerAddressEntity $addressEntity
+    ): bool {
+        $currentCustomFields = $addressEntity->getCustomFields() ?? [];
+        $acrisStreet = $currentCustomFields[AcrisCustomField::STREET] ?? null;
+        $acrisHouseNo = $currentCustomFields[AcrisCustomField::HOUSE_NUMBER] ?? null;
+
+        return $acrisStreet !== $streetName || $acrisHouseNo !== $buildingNumber;
     }
 
     /**
@@ -198,7 +273,7 @@ final class PersistNativeAndExtensionFields implements CustomerAddressPersistenc
             ->setAddressId($addressExtension->getAddressId())
             ->setStreet($streetName)
             ->setHouseNumber($buildingNumber);
-        
+
         $this->extensionRepository->update([$extensionData->toArray()], $this->context);
 
         // Update in memory using normalized payload data

@@ -16,6 +16,7 @@ use Endereco\Shopware6Client\Service\AddressCorrection\AddressCorrectionScopeBui
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressCollection;
 use Endereco\Shopware6Client\Service\CustomerAddressEntityUpdater;
 use Endereco\Shopware6Client\Service\EnderecoExtensionEntityUpdater;
+use Endereco\Shopware6Client\Service\PluginStatusService;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 
@@ -32,6 +33,7 @@ final class AddressPersistenceStrategyProvider implements AddressPersistenceStra
     private EntityRepository $customerAddressRepository;
     private CustomerAddressEntityUpdater $entityUpdater;
     private EnderecoExtensionEntityUpdater $extensionEntityUpdater;
+    private PluginStatusService $pluginStatusService;
 
     /**
      * @param EntityRepository<CustomerAddressCollection> $customerAddressRepository
@@ -43,7 +45,8 @@ final class AddressPersistenceStrategyProvider implements AddressPersistenceStra
         EntityRepository $customerAddressRepository,
         EntityRepository $customerAddressExtensionRepository,
         CustomerAddressEntityUpdater $entityUpdater,
-        EnderecoExtensionEntityUpdater $extensionEntityUpdater
+        EnderecoExtensionEntityUpdater $extensionEntityUpdater,
+        PluginStatusService $pluginStatusService
     ) {
         $this->additionalAddressFieldChecker = $additionalAddressFieldChecker;
         $this->addressCorrectionScopeBuilder = $addressCorrectionScopeBuilder;
@@ -51,6 +54,7 @@ final class AddressPersistenceStrategyProvider implements AddressPersistenceStra
         $this->customerAddressExtensionRepository = $customerAddressExtensionRepository;
         $this->entityUpdater = $entityUpdater;
         $this->extensionEntityUpdater = $extensionEntityUpdater;
+        $this->pluginStatusService = $pluginStatusService;
     }
 
     /**
@@ -83,7 +87,8 @@ final class AddressPersistenceStrategyProvider implements AddressPersistenceStra
                     $this->customerAddressExtensionRepository,
                     $context,
                     $this->entityUpdater,
-                    $this->extensionEntityUpdater
+                    $this->extensionEntityUpdater,
+                    $this->pluginStatusService
                 );
             }
 
@@ -91,7 +96,10 @@ final class AddressPersistenceStrategyProvider implements AddressPersistenceStra
                 return new PersistOnlyExtensionFields(
                     $this->customerAddressExtensionRepository,
                     $context,
-                    $this->extensionEntityUpdater
+                    $this->extensionEntityUpdater,
+                    $this->customerAddressRepository,
+                    $this->entityUpdater,
+                    $this->pluginStatusService
                 );
             }
         }
