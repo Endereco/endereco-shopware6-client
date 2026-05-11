@@ -44,7 +44,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     // Entity updaters
     $services->set(CustomerAddressEntityUpdater::class);
     $services->set(EnderecoExtensionEntityUpdater::class);
-    
+
     // Array updaters
     $services->set(AddressAsArrayUpdater::class);
     $services->set(AddressExtensionAsArrayUpdater::class);
@@ -81,6 +81,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$arrayUpdater' => service(AddressAsArrayUpdater::class),
             '$extensionArrayUpdater' => service(AddressExtensionAsArrayUpdater::class),
             '$logger' => service('Endereco\Shopware6Client\Run\Logger'),
+            '$pluginStatusService' => service(\Endereco\Shopware6Client\Service\PluginStatusService::class),
         ])
         ->public();
 

@@ -113,6 +113,17 @@ class CustomerAddressUpdatePayload
     }
 
     /**
+     * Set custom fields data
+     *
+     * @param array<string, mixed> $customFields
+     */
+    public function setCustomFields(array $customFields): self
+    {
+        $this->data[CustomerAddressField::CUSTOM_FIELDS] = $customFields;
+        return $this;
+    }
+
+    /**
      * Set Endereco extension data with type safety
      */
     public function setEnderecoExtension(EnderecoExtensionData $extensionData): self

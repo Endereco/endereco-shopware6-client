@@ -21,6 +21,7 @@ final class CustomerAddressField
     public const COUNTRY_ID = 'countryId';
     public const COUNTRY_STATE_ID = 'countryStateId';
     public const EXTENSIONS = 'extensions';
+    public const CUSTOM_FIELDS = 'customFields';
 
     private function __construct()
     {

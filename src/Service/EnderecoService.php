@@ -14,6 +14,7 @@ use Endereco\Shopware6Client\Misc\EnderecoConstants;
 use Endereco\Shopware6Client\Model\AddressCheckResult;
 use Endereco\Shopware6Client\Model\CustomerAddressUpdatePayload;
 use Endereco\Shopware6Client\Model\EnderecoExtensionData;
+use Endereco\Shopware6Client\Model\AcrisCustomField;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterInterface;
 use Endereco\Shopware6Client\Service\AddressAsArrayUpdater;
@@ -22,6 +23,7 @@ use Endereco\Shopware6Client\Service\CustomerAddressEntityUpdater;
 use Endereco\Shopware6Client\Service\EnderecoExtensionEntityUpdater;
 use Endereco\Shopware6Client\Service\EnderecoService\AgentInfoGeneratorInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\PayloadPreparatorInterface;
+use Endereco\Shopware6Client\Service\PluginStatusService;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Log\LoggerInterface;
@@ -75,6 +77,8 @@ class EnderecoService
 
     protected RequestStack $requestStack;
 
+    private PluginStatusService $pluginStatusService;
+
     /**
      * @param EntityRepository<CountryStateCollection> $countryStateRepository
      * @param EntityRepository<CustomerAddressCollection> $customerAddressRepository
@@ -95,7 +99,8 @@ class EnderecoService
         EnderecoExtensionEntityUpdater $extensionEntityUpdater,
         AddressAsArrayUpdater $arrayUpdater,
         AddressExtensionAsArrayUpdater $extensionArrayUpdater,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        PluginStatusService $pluginStatusService
     ) {
         $this->httpClient = new Client(['timeout' => 3.0, 'connection_timeout' => 2.0]);
         $this->systemConfigService = $systemConfigService;
@@ -113,6 +118,7 @@ class EnderecoService
         $this->arrayUpdater = $arrayUpdater;
         $this->extensionArrayUpdater = $extensionArrayUpdater;
         $this->logger = $logger;
+        $this->pluginStatusService = $pluginStatusService;
     }
 
     /**
@@ -274,6 +280,14 @@ class EnderecoService
             $payload->setCity($correction['locality']);
             $payload->setStreet($fullStreet);
 
+            if ($this->pluginStatusService->isAcrisStreetActive()) {
+                $currentCustomFields = $addressEntity->getCustomFields() ?? [];
+                $payload->setCustomFields(array_merge($currentCustomFields, [
+                    AcrisCustomField::STREET => $correction['streetName'],
+                    AcrisCustomField::HOUSE_NUMBER => $correction['buildingNumber']
+                ]));
+            }
+
             $this->entityUpdater->updateFromPayload($payload, $addressEntity);
 
             // If a subdivision code exists in the correction, find the corresponding country state ID and set it
@@ -327,6 +341,14 @@ class EnderecoService
             $payload->setZipcode($correction['postalCode']);
             $payload->setCity($correction['locality']);
             $payload->setStreet($fullStreet);
+
+            if ($this->pluginStatusService->isAcrisStreetActive()) {
+                $currentCustomFields = $addressEntity->getCustomFields() ?? [];
+                $payload->setCustomFields(array_merge($currentCustomFields, [
+                    AcrisCustomField::STREET => $correction['streetName'],
+                    AcrisCustomField::HOUSE_NUMBER => $correction['buildingNumber']
+                ]));
+            }
 
             $this->entityUpdater->updateFromPayload($payload, $addressEntity);
 

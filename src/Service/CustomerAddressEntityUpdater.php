@@ -53,5 +53,16 @@ final class CustomerAddressEntityUpdater
                 $addressEntity->$setterMethod($payloadData[$fieldName]);
             }
         }
+
+        // Update custom fields separately to merge with existing custom fields instead of overwriting
+        if (array_key_exists(CustomerAddressField::CUSTOM_FIELDS, $payloadData)) {
+            $currentFields = $addressEntity->getCustomFields() ?? [];
+            $addressEntity->setCustomFields(
+                array_merge(
+                    $currentFields,
+                    $payloadData[CustomerAddressField::CUSTOM_FIELDS]
+                )
+            );
+        }
     }
 }
