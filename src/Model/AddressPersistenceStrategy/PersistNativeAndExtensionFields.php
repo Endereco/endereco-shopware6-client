@@ -117,25 +117,23 @@ final class PersistNativeAndExtensionFields implements CustomerAddressPersistenc
             return false;
         }
 
-        $payload = $this->buildNativeUpdatePayload($streetFull, $additionalInfo, $payload);
+        $this->applyNativeFieldsToPayload($streetFull, $additionalInfo, $payload);
 
         return true;
     }
 
     /**
-     * Builds the payload for updating native Shopware address fields
+     * Applies the native Shopware address fields to the given payload
      *
      * @param string $streetFull Complete street address
      * @param string|null $additionalInfo Additional address information
-     * @param CustomerAddressUpdatePayload $payload Update payload for the address repository
-     *
-     * @return CustomerAddressUpdatePayload
+     * @param CustomerAddressUpdatePayload $payload Payload to populate
      */
-    private function buildNativeUpdatePayload(
+    private function applyNativeFieldsToPayload(
         string $streetFull,
         ?string $additionalInfo,
         CustomerAddressUpdatePayload $payload
-    ): CustomerAddressUpdatePayload {
+    ): void {
         $payload->setStreet($streetFull);
 
         if ($this->additionalAddressFieldChecker->hasAdditionalAddressField($this->context)) {
@@ -146,8 +144,6 @@ final class PersistNativeAndExtensionFields implements CustomerAddressPersistenc
                 $payload->setAdditionalAddressLine2($additionalInfo);
             }
         }
-
-        return $payload;
     }
 
     /**
