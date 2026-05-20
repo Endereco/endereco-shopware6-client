@@ -14,6 +14,7 @@ use Endereco\Shopware6Client\Service\AddressCheck\SubdivisionCodeFetcherInterfac
 use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterInterface;
 use Endereco\Shopware6Client\DTO\SplitStreetResultDto;
 use Endereco\Shopware6Client\Service\EnderecoService;
+use Endereco\Shopware6Client\Service\PluginStatusService;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Framework\Api\Context\SalesChannelApiSource;
 use Shopware\Core\Framework\Context;
@@ -31,6 +32,7 @@ class AddressCheckPayloadBuilderTest extends TestCase
     private EntityRepository $customerAddressExtensionRepository;
     private EntityRepository $orderAddressExtensionRepository;
     private EnderecoService $enderecoService;
+    private PluginStatusService $pluginStatusService;
     private Context $context;
 
     protected function setUp(): void
@@ -62,6 +64,7 @@ class AddressCheckPayloadBuilderTest extends TestCase
         $this->customerAddressExtensionRepository = $this->createMock(EntityRepository::class);
         $this->orderAddressExtensionRepository = $this->createMock(EntityRepository::class);
         $this->enderecoService = $this->createMock(EnderecoService::class);
+        $this->pluginStatusService = $this->createMock(PluginStatusService::class);
 
         // Configure common defaults that can be overridden
         if (isset($config['splitStreetEnabled'])) {
@@ -97,7 +100,8 @@ class AddressCheckPayloadBuilderTest extends TestCase
             $this->streetSplitter,
             $this->customerAddressExtensionRepository,
             $this->orderAddressExtensionRepository,
-            $this->enderecoService
+            $this->enderecoService,
+            $this->pluginStatusService
         );
     }
 

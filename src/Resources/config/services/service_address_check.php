@@ -25,6 +25,7 @@ use Endereco\Shopware6Client\Service\EnderecoService\PayloadPreparatorInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\RequestHeadersGeneratorInterface;
 use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
+use Endereco\Shopware6Client\Service\PluginStatusService;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
@@ -67,6 +68,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$customerAddressExtensionRepository' => service('endereco_customer_address_ext_gh.repository'),
             '$orderAddressExtensionRepository' => service('endereco_order_address_ext_gh.repository'),
             '$enderecoService' => service(EnderecoService::class),
+            '$pluginStatusService' => service(PluginStatusService::class),
         ]);
     $services->alias(AddressCheckPayloadBuilderInterface::class, AddressCheckPayloadBuilder::class);
 
