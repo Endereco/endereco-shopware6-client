@@ -15,6 +15,7 @@ use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\End
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionCollection;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionEntity;
 use Endereco\Shopware6Client\Model\AddressCheckData;
+use Endereco\Shopware6Client\Service\PluginStatusService;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressEntity;
 use Shopware\Core\Framework\Context;
@@ -86,7 +87,9 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
      * Service for getting sales channel ID from context
      */
     private EnderecoService $enderecoService;
-    
+
+    private PluginStatusService $pluginStatusService;
+
     /**
      * Creates a new AddressCheckPayloadBuilder with required dependencies.
      *
@@ -108,7 +111,8 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
         StreetSplitterInterface $streetSplitter,
         EntityRepository $customerAddressExtensionRepository,
         EntityRepository $orderAddressExtensionRepository,
-        EnderecoService $enderecoService
+        EnderecoService $enderecoService,
+        PluginStatusService $pluginStatusService
     ) {
         $this->countryCodeFetcher = $countryCodeFetcher;
         $this->subdivisionCodeFetcher = $subdivisionCodeFetcher;
@@ -119,6 +123,7 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
         $this->customerAddressExtensionRepository = $customerAddressExtensionRepository;
         $this->orderAddressExtensionRepository = $orderAddressExtensionRepository;
         $this->enderecoService = $enderecoService;
+        $this->pluginStatusService = $pluginStatusService;
     }
 
     /**
@@ -221,6 +226,10 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
      */
     private function shouldUseSplitFormat(Context $context): bool
     {
+        if ($this->pluginStatusService->isAcrisStreetActive()) {
+            return true;
+        }
+
         // Get the sales channel ID from context (if available)
         $salesChannelId = null;
         $source = $context->getSource();
