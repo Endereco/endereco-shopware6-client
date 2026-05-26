@@ -401,15 +401,13 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
 
         $enderecoStreet = (string)$input->get('enderecoStreet', '');
         $enderecoHouseNumber = (string)$input->get('enderecoHousenumber', '');
-        $skipSyncStreet = false;
 
         if ($this->pluginStatusService->isAcrisStreetActive()) {
             $acrisHouseNumber = (string)$input->get('houseNumber', '');
             if ($acrisHouseNumber !== '') {
                 $enderecoStreet = (string)$input->get('street', '');
                 $enderecoHouseNumber = $acrisHouseNumber;
-                // ACRIS already successfully divided the address, skip endereco splitting.
-                $skipSyncStreet = true;
+                $output['street'] = ''; // will be rebuild by syncStreet
             }
         }
 
@@ -424,9 +422,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         ];
 
         // Make sure the default street and endereco street name and house number are synchronized.
-        if (!$skipSyncStreet) {
-            $this->enderecoService->syncStreet($output, $context, $salesChannelId);
-        }
+        $this->enderecoService->syncStreet($output, $context, $salesChannelId);
 
         // Calculate payload. Pass the pre-split fields so the builder can skip its own
         // street splitter (see AddressCheckPayloadBuilder::extractSplitAddressFromArray).
