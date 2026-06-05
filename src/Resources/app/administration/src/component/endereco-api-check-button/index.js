@@ -28,12 +28,21 @@ Component.register('endereco-api-check-button', {
 
             const salesChannelId = $parent.currentSalesChannelId;
 
+            // Filter out null values from sales channel config.
+            // Inherited config values are null by default,
+            // so these null values must be removed before merging
+            // with the global config.
+            const salesChannelConfig = Object.fromEntries(
+                Object.entries($parent.actualConfigData[salesChannelId] || {})
+                    .filter(([, value]) => value !== null)
+            );
+
             // Merge global config with sales channel-specific overrides
             // so the test always uses the correct credentials, even for
             // subshops with channel-specific API keys.
             return {
                 ...$parent.actualConfigData.null,
-                ...$parent.actualConfigData[salesChannelId]
+                ...salesChannelConfig
             };
         }
     },
