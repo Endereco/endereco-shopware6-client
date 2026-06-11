@@ -42,7 +42,7 @@ final class PayPalExpressFlagIsSetInsurance implements IntegrityInsurance
      */
     public static function getPriority(): int
     {
-        return -10;
+        return -5;
     }
 
     /**
