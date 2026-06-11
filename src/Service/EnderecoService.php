@@ -179,7 +179,7 @@ class EnderecoService
         $addressExtension = EnderecoCustomerAddressExtensionEntity::createWithDefaultValues($addressEntity);
         $addressEntity->addExtension(CustomerAddressExtension::ENDERECO_EXTENSION, $addressExtension);
 
-        $payload = new CustomerAddressUpdatePayload($addressEntity->getId());
+        $payload = new CustomerAddressUpdatePayload($addressEntity->getId(), $addressEntity->getCustomerId());
         $extensionData = new EnderecoExtensionData();
         $extensionData->setAmsRequestPayload($addressExtension->getAmsRequestPayload())
             ->setAmsStatus($addressExtension->getAmsStatus())
@@ -260,8 +260,9 @@ class EnderecoService
         Context $context
     ): void {
         $addressId = $addressEntity->getId();
+        $customerId = $addressEntity->getCustomerId();
 
-        $payload = new CustomerAddressUpdatePayload($addressId);
+        $payload = new CustomerAddressUpdatePayload($addressId, $customerId);
 
         if ($addressCheckResult->isAutomaticCorrection() && $this->isAutocorrectionAllowedInSettings($context)) {
             // In case of automatic correction, apply the first prediction to the customer address and generate

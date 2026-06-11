@@ -36,9 +36,13 @@ class CustomerAddressUpdatePayload
 
     private ?EnderecoExtensionData $enderecoExtensionData = null;
 
-    public function __construct(string $addressId)
+    public function __construct(string $addressId, ?string $customerId = null)
     {
         $this->data[CustomerAddressField::ID] = $addressId;
+
+        if ($customerId !== null) {
+            $this->data[CustomerAddressField::CUSTOMER_ID] = $customerId;
+        }
     }
 
     /**

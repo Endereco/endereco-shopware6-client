@@ -70,7 +70,7 @@ final class PersistNativeAndExtensionFields implements CustomerAddressPersistenc
             throw new \RuntimeException('Address entity cannot be null');
         }
 
-        $payload = new CustomerAddressUpdatePayload($addressEntity->getId());
+        $payload = new CustomerAddressUpdatePayload($addressEntity->getId(), $addressEntity->getCustomerId());
         $isNativeChanged = $this->maybeUpdateNative(
             $normalizedStreetFull,
             $normalizedAdditionalInfo,
