@@ -29,6 +29,7 @@ use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\IntegrityI
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\StreetIsSplitInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityInsuranceInterface;
+use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AdditionalAddressFieldInStreetInsurance;
 use Endereco\Shopware6Client\Service\CustomerAddressEntityUpdater;
 use Endereco\Shopware6Client\Service\EnderecoExtensionEntityUpdater;
 use Endereco\Shopware6Client\Service\EnderecoService;
@@ -53,6 +54,18 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services
         ->instanceof(IntegrityInsurance::class)
         ->tag('endereco.shopware6_client.customer_address_integrity_insurance');
+
+    /**
+     * Ensures that additionalAddressLine1 is merged into the street field and then cleared.
+     * This normalizes PayPal addresses where street number data was stored in the wrong field.
+     */
+    $services->set(AdditionalAddressFieldInStreetInsurance::class)
+    -> args([
+            '$processContext' => service(ProcessContextService::class),
+            '$additionalAddressFieldChecker' => service(AdditionalAddressFieldCheckerInterface::class),
+            '$enderecoService' => service(EnderecoService::class),
+            '$customerAddressRepository' => service('customer_address.repository'),
+        ]);
 
     /**
      * Ensures the address extension entity exists both in the entity and the database.
