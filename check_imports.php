@@ -2,6 +2,13 @@
 
 require_once 'vendor/autoload.php';
 
+// Classes from optional third-party plugins that may not be installed in every environment.
+// These are loaded conditionally at runtime and are safe to skip here.
+$optionalNamespacePrefixes = [
+    'CrefoPay\\',
+
+    ];
+
 function findAllPhpFiles($dir, &$allFiles = []) {
     $files = scandir($dir);
 
@@ -45,6 +52,16 @@ foreach ($phpFiles as $file) {
 }
 
 $allClasses = array_unique($allClasses);
+$allClasses = array_filter($allClasses, function ($class) use ($optionalNamespacePrefixes) {
+    foreach ($optionalNamespacePrefixes as $prefix) {
+        if (str_starts_with($class, $prefix)) {
+            return false;
+        }
+    }
+    return true;
+});
+
+
 $missingClasses = checkClassExistence($allClasses);
 
 if (!empty($missingClasses)) {
