@@ -23,6 +23,7 @@ use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AddressPer
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AddressPersistenceStrategyProviderInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AmsRequestPayloadIsUpToDateInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AmsStatusIsSetInsurance;
+use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\CrefoPayExpressAbortedOnCorrectionInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\FlagIsSetInsurance\AmazonFlagIsSetInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\FlagIsSetInsurance\PayPalExpressFlagIsSetInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\IntegrityInsurance;
@@ -145,6 +146,16 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$addressExtensionRepository' => service(
                 EnderecoCustomerAddressExtensionDefinition::ENTITY_NAME . '.repository'
             ),
+        ]);
+
+    /**
+     * Aborts an active CrefoPay PayPal Express checkout when the address requires modal correction,
+     * preventing the express session from blocking the correction flow.
+     */
+    $services->set(CrefoPayExpressAbortedOnCorrectionInsurance::class)
+        ->args([
+            '$processContext' => service(ProcessContextService::class),
+            '$requestStack'   => service('request_stack'),
         ]);
 
     /**
