@@ -61,6 +61,10 @@ final class PayPalExpressFlagIsSetInsurance implements IntegrityInsurance
             throw new \RuntimeException('The address extension should be set at this point');
         }
 
+        if ($addressExtension->isPayPalAddress()) {
+            return; //PayPal flag latched, never reset to false
+        }
+
         $customer = $this->getCustomer($addressEntity->getCustomerId(), $context);
         $flagValue = $this->checkIfFromPayPal($customer);
         if ($addressExtension->isPayPalAddress() !== $flagValue) {
