@@ -12,6 +12,7 @@ use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Insurance class to handle PayPal Express address flag setting
@@ -23,6 +24,7 @@ final class PayPalExpressFlagIsSetInsurance implements IntegrityInsurance
 
     /** @var EntityRepository<EnderecoCustomerAddressExtensionCollection>  */
     private EntityRepository $addressExtensionRepository;
+    private RequestStack $requestStack;
 
     /**
      * @param EntityRepository<CustomerCollection> $customerRepository Repository to fetch customer data
@@ -30,10 +32,12 @@ final class PayPalExpressFlagIsSetInsurance implements IntegrityInsurance
      */
     public function __construct(
         EntityRepository $customerRepository,
-        EntityRepository $addressExtensionRepository
+        EntityRepository $addressExtensionRepository,
+        RequestStack $requestStack
     ) {
         $this->customerRepository = $customerRepository;
         $this->addressExtensionRepository = $addressExtensionRepository;
+        $this->requestStack = $requestStack;
     }
 
     /**
@@ -96,7 +100,16 @@ final class PayPalExpressFlagIsSetInsurance implements IntegrityInsurance
     {
         /** @var array<string, mixed>|null $customerCustomFields */
         $customerCustomFields = $customer->getCustomFields();
-        return isset($customerCustomFields['payPalExpressPayerId']);
+        if (isset($customerCustomFields['payPalExpressPayerId'])) {
+            return true;
+        }
+
+        if ($this->requestStack->getMainRequest() === null) {
+            return false; //CrefoPay-Session check not possible without Main Request
+        }
+
+        $session = $this->requestStack->getMainRequest()->getSession();
+        return $session->has('crefopay-paypal-express-transaction');
     }
 
     /**

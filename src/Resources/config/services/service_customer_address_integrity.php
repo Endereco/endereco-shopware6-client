@@ -156,6 +156,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$addressExtensionRepository' => service(
                 EnderecoCustomerAddressExtensionDefinition::ENTITY_NAME . '.repository'
             ),
+            '$requestStack' => service('request_stack'),
         ]);
 
     /**
