@@ -207,8 +207,14 @@
             <name>enderecoCheckPayPalExpressAddress</name>
             <label>Check addresses via PayPal Express Checkout</label>
             <label lang="de-DE">Adressen über PayPal Express Checkout prüfen</label>
-            <helpText>The PayPal Express check activates the validation of addresses for customers who place an order via PayPal Express. Upon returning from PayPal to the shop, a correction suggestion is displayed in case of an address error.</helpText>
-            <helpText lang="de-DE">Die PayPal-Express-Prüfung aktiviert die Validierung von Adressen für Kunden, die über PayPal Express eine Bestellung tätigen. Beim Rücksprung von PayPal zum Shop wird bei einem Adressfehler ein Korrekturvorschlag angezeigt.</helpText>
+            <helpText>The PayPal Express check activates the validation of addresses for customers who place an order via PayPal Express. When returning from PayPal to the shop, a correction suggestion is displayed in case of an address error.&lt;br&gt;&lt;br&gt;
+                Limitation when using "CrefoPay":&lt;br&gt;&lt;br&gt; In case of a bigger address-correction at the CreFo express checkout, the express checkout process will be terminated by the Crefo plugin for security reasons. The customer has to sign into PayPal again to complete the checkout. The checkout then will be completed as a guest account via PayPal(not PayPal Express).
+                Minor changes are not affected by this limitation.
+            </helpText>
+            <helpText lang="de-DE">Die PayPal Express Prüfung aktiviert die Validierung von Adressen für Kunden, die über PayPal Express eine Bestellung tätigen. Beim Rücksprung aus PayPal zum Shop wird bei einem Adressfehler ein Korrekturvorschlag angezeigt.&lt;br&gt;&lt;br&gt;
+                Einschränkungen bei der Verwendung des Plugins "CrefoPay":&lt;br&gt;&lt;br&gt; Im Falle einer größeren Adress-Korrektur, beim Express Checkout über CreFo wird der Express Checkout Prozess aus Sicherheitsgründen durch das Crefo Plugin beendet. Der Kunde muss sich dann nochmals bei Paypal Anmeldungen um den Kaufprozess abzuschließen. Der Kunde schließt dann den Kaufprozess als Gastbesteller via PayPal (nicht PayPal Express) ab.
+                Kleine Änderungen sind davon nicht betroffen.
+            </helpText>
             <defaultValue>false</defaultValue>
         </input-field>
 
