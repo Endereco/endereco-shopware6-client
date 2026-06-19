@@ -44,6 +44,36 @@ class EnderecoShopware6Client extends Plugin
         $confDir = \rtrim($this->getPath(), '/') . '/Resources/config';
 
         $configLoader->load($confDir . '/{packages}/*.yaml', 'glob');
+
+        if ($this->isCrefoPayActive($container)) {
+            $configLoader->load($confDir . '/compat_crefopay.php');
+        }
+    }
+
+    private function isCrefoPayActive(ContainerBuilder $container): bool
+    {
+        /** @var array<class-string, array{name: string, path: string, class: class-string}> $activePlugins */
+        $activePlugins = $container->getParameter('kernel.active_plugins');
+        $search = 'CrefoPay';
+        $isActive = false;
+        foreach (array_keys($activePlugins) as $key) {
+            if (is_string($key) && str_contains($key, $search)) {
+                $isActive = true;
+                break;
+            }
+        }
+
+        if (!$isActive) {
+            return false;
+        }
+
+        // Guard against CrefoPay renaming the class: if the decoration target no longer
+        // exists, skip loading rather than crashing the container.
+        if (!class_exists(\CrefoPay\Payment\Storefront\EventListener\Cart\CartEventListener::class)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
