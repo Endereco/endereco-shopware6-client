@@ -417,8 +417,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
             'houseNumber' => $enderecoHouseNumber,
             'amsStatus' => $input->get('amsStatus') ?? EnderecoBaseAddressExtensionEntity::AMS_STATUS_NOT_CHECKED,
             'amsTimestamp' => (int) $input->get('amsTimestamp', 0),
-            'amsPredictions' => $predictions,
-            'isPayPalAddress' => false // We will calculate it later.
+            'amsPredictions' => $predictions
         ];
 
         // Make sure the default street and endereco street name and house number are synchronized.
