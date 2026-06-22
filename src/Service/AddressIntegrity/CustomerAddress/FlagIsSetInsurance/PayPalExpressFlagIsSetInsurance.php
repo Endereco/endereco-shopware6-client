@@ -2,6 +2,7 @@
 
 namespace Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\FlagIsSetInsurance;
 
+use Endereco\Shopware6Client\Compatibility\CrefoPay\CrefoPaySessionKeys;
 use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\IntegrityInsurance;
@@ -108,7 +109,7 @@ final class PayPalExpressFlagIsSetInsurance implements IntegrityInsurance
         }
 
         $session = $this->requestStack->getMainRequest()->getSession();
-        return $session->has('crefopay-paypal-express-transaction');
+        return $session->has(CrefoPaySessionKeys::PAYPAL_EXPRESS_TRANSACTION);
     }
 
     /**
