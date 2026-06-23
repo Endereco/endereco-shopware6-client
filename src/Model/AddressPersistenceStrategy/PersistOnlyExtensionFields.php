@@ -176,7 +176,7 @@ final class PersistOnlyExtensionFields implements CustomerAddressPersistenceStra
             AcrisCustomField::HOUSE_NUMBER => $buildingNumber,
         ]);
 
-        $payload = new CustomerAddressUpdatePayload($addressEntity->getId());
+        $payload = new CustomerAddressUpdatePayload($addressEntity->getId(), $addressEntity->getCustomerId());
         $payload->setCustomFields($newCustomFields);
 
         $this->addressRepository->update([$payload->toArray()], $this->context);

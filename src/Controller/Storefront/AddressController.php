@@ -157,7 +157,7 @@ class AddressController extends StorefrontController
         $this->eventDispatcher->dispatch($mappingEvent, CustomerEvents::MAPPING_ADDRESS_CREATE);
         $addressData = $mappingEvent->getOutput();
 
-        $payload = (new CustomerAddressUpdatePayload($addressId))
+        $payload = (new CustomerAddressUpdatePayload($addressId, $customer->getId()))
             ->setStreet($addressData['street'] ?? '')
             ->setZipcode($addressData['zipcode'] ?? '')
             ->setCity($addressData['city'] ?? '')
