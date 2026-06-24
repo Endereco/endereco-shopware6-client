@@ -109,8 +109,9 @@ final class AdditionalAddressFieldInStreetInsurance implements IntegrityInsuranc
         $addressEntity->setAdditionalAddressLine1('');
 
         $addressId = $addressEntity->getId();
+        $customerId = $addressEntity->getCustomerId();
 
-        $payload = new CustomerAddressUpdatePayload($addressId);
+        $payload = new CustomerAddressUpdatePayload($addressId, $customerId);
 
         $payload->setStreet($mergedStreet);
         $payload->setAdditionalAddressLine1('');
