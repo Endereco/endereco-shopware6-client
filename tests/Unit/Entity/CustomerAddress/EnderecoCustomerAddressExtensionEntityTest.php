@@ -8,6 +8,7 @@
 
 namespace Endereco\Shopware6Client\Tests\Unit\Entity\CustomerAddress;
 
+use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionCollection;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionEntity;
@@ -181,6 +182,33 @@ class EnderecoCustomerAddressExtensionEntityTest extends TestCase
         $this->assertTrue($collection->has($customUniqueId));
         $this->assertFalse($collection->has($addressId));
         $this->assertSame($extension, $collection->get($customUniqueId));
+    }
+
+    /**
+     * Tests that json_encode() does not fail with a circular reference error when
+     * the extension holds a back-reference to its parent CustomerAddressEntity.
+     *
+     * Without jsonSerialize() being overridden to exclude $address, json_encode()
+     * would detect the cycle CustomerAddressEntity → extension → CustomerAddressEntity
+     * and return false with JSON_ERROR_RECURSION.
+     */
+    public function testJsonEncodeDoesNotProduceCircularReferenceError(): void
+    {
+        $addressId = Uuid::randomHex();
+        $customerAddress = $this->createCustomerAddress($addressId);
+
+        $extension = EnderecoCustomerAddressExtensionEntity::createWithDefaultValues($customerAddress);
+
+        // Set up the circular reference that triggered the production bug:
+        // CustomerAddressEntity → EnderecoCustomerAddressExtensionEntity → CustomerAddressEntity
+        $extension->setAddress($customerAddress);
+        $customerAddress->addExtension(CustomerAddressExtension::ENDERECO_EXTENSION, $extension);
+
+        // Mirrors what Shopware's StructNormalizer::normalize() does during webhook serialization:
+        // Without a jsonSerialize() override this cycle causes JSON_ERROR_RECURSION.
+        $result = json_encode($customerAddress);
+        $this->assertNotFalse($result, 'json_encode($customerAddress) failed: ' . json_last_error_msg());
+        $this->assertSame(JSON_ERROR_NONE, json_last_error());
     }
 
     /**

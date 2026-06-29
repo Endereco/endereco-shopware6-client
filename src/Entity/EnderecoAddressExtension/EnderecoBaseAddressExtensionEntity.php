@@ -320,4 +320,17 @@ abstract class EnderecoBaseAddressExtensionEntity extends Entity
     {
         return str_contains($this->amsStatus, self::AMS_STATUS_SELECTED_BY_CUSTOMER);
     }
+
+    /**
+     * Unset 'address' to prevent circular references
+     * during serialization
+     *
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        $vars = parent::jsonSerialize();
+        unset($vars['address']);
+        return $vars;
+    }
 }
