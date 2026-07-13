@@ -64,15 +64,15 @@ class ConvertCartToOrderSubscriber implements EventSubscriberInterface
      */
     public function copyEnderecoAddressExtension(CartConvertedEvent $event): void
     {
-        // TODO: Temporarily disabled due to order address handling bug - re-enable after tests pass
-        return;
-
-        // @phpstan-ignore-next-line Deadcode.UnreachableStatement
         $convertedCart = $event->getConvertedCart();
 
         if (isset($convertedCart['addresses']) && is_array($convertedCart['addresses'])) {
             foreach ($convertedCart['addresses'] as $key => $address) {
-                $this->amendOrderAddressData($address, $event->getCart(), $event->getSalesChannelContext());
+                $this->amendOrderAddressData(
+                    $address,
+                    $event->getCart(),
+                    $event->getSalesChannelContext()
+                );
                 $convertedCart['addresses'][$key] = $address;
             }
         }
@@ -105,7 +105,6 @@ class ConvertCartToOrderSubscriber implements EventSubscriberInterface
      * @param SalesChannelContext $context The sales channel context
      * @return void
      */
-    // @phpstan-ignore-next-line UnusedPrivateMethod
     private function amendOrderAddressData(array &$address, Cart $cart, SalesChannelContext $context): void
     {
         $matchingCustomerAddresses = $this->addressDataMatcher->findCustomerAddressesForOrderAddressDataInCart(
