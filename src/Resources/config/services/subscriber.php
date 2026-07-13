@@ -11,7 +11,6 @@ use Endereco\Shopware6Client\Service\AddressCheck\AddressCheckPayloadBuilderInte
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddressIntegrityInsuranceInterface;
 use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddressIntegrityInsuranceInterface;
-use Endereco\Shopware6Client\Service\BySystemConfigFilterInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\EnderecoService\AgentInfoGeneratorInterface;
 use Endereco\Shopware6Client\Service\PredictionSerializer;
@@ -19,13 +18,11 @@ use Endereco\Shopware6Client\Service\SessionManagementService;
 use Endereco\Shopware6Client\Service\EnderecoService\PluginVersionFetcherInterface;
 use Endereco\Shopware6Client\Service\PluginStatusService;
 use Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcherInterface;
-use Endereco\Shopware6Client\Service\OrdersCustomFieldsUpdaterInterface;
 use Endereco\Shopware6Client\Service\ProcessContextService;
 use Endereco\Shopware6Client\Subscriber\AddDataToPageSubscriber;
 use Endereco\Shopware6Client\Subscriber\ConvertCartToOrderSubscriber;
 use Endereco\Shopware6Client\Subscriber\CustomerAddressSubscriber;
 use Endereco\Shopware6Client\Subscriber\OrderAddressSubscriber;
-use Endereco\Shopware6Client\Subscriber\OrderSubscriber;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
@@ -80,14 +77,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services->set(OrderAddressSubscriber::class)
         ->args([
             '$orderAddressIntegrityInsurance' => service(OrderAddressIntegrityInsuranceInterface::class),
-        ])
-        ->tag('kernel.event_subscriber');
-
-    $services->set(OrderSubscriber::class)
-        ->args([
-            '$orderAddressRepository' => service('order_address.repository'),
-            '$bySystemConfigFilter' => service(BySystemConfigFilterInterface::class),
-            '$ordersCustomFieldsUpdater' => service(OrdersCustomFieldsUpdaterInterface::class),
         ])
         ->tag('kernel.event_subscriber');
 };
