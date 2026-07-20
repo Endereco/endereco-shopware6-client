@@ -287,7 +287,7 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
     protected function extractSplitAddressFromOrderAddress(OrderAddressEntity $address, Context $context): ?array
     {
         $extension = $address->getExtension(OrderAddressExtension::ENDERECO_EXTENSION);
-        
+
         // If extension is not loaded, try to load it from database
         if (!$extension instanceof EnderecoOrderAddressExtensionEntity) {
             $versionId = $address->getVersionId();
@@ -295,7 +295,7 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
                 $extension = $this->loadOrderAddressExtension($address->getId(), $versionId, $context);
             }
         }
-        
+
         if (!$extension instanceof EnderecoOrderAddressExtensionEntity) {
             return null;
         }
@@ -305,6 +305,16 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
 
         // Only return if we have at least the street name
         if (empty($streetName)) {
+            return null;
+        }
+
+        // A SplitStreetInsurance is not yet available for order addresses.
+        // So it must be evaluated wether the splitstreet cache is still up to date.
+        $currentStreet = mb_strtolower($address->getStreet());
+        $cacheStillMatches = str_contains($currentStreet, mb_strtolower($streetName))
+            && str_contains($currentStreet, mb_strtolower($houseNumber));
+
+        if (!$cacheStillMatches) {
             return null;
         }
 
