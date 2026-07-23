@@ -35,6 +35,9 @@ class EnderecoOrderAddressExtensionEntity extends EnderecoBaseAddressExtensionEn
     /** @var ?OrderAddressEntity The associated order address entity. */
     protected ?OrderAddressEntity $address = null;
 
+    /** @var string|null The sales channel ID this order address' order belongs to. */
+    protected ?string $salesChannelId = null;
+
     /**
      * Creates an order address extension instance with a random UUID and the default AMS data.
      * An order address ID is mandatory. An order address version ID is optional.
@@ -97,6 +100,26 @@ class EnderecoOrderAddressExtensionEntity extends EnderecoBaseAddressExtensionEn
     public function setAddressVersionId(string $addressId): void
     {
         $this->addressVersionId = $addressId;
+    }
+
+    /**
+     * Get the sales channel ID this order address' order belongs to.
+     *
+     * @return string|null
+     */
+    public function getSalesChannelId(): ?string
+    {
+        return $this->salesChannelId;
+    }
+
+    /**
+     * Set the sales channel ID this order address' order belongs to.
+     *
+     * @param string|null $salesChannelId
+     */
+    public function setSalesChannelId(?string $salesChannelId): void
+    {
+        $this->salesChannelId = $salesChannelId;
     }
 
     /**
