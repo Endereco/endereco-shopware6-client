@@ -139,6 +139,11 @@ class ConvertCartToOrderSubscriber implements EventSubscriberInterface
                 // Shopware will automatically do that and use the relation to set it in the extension as well.
 
                 $orderAddressExtensionEntity = $customerAddressExtension->createOrderAddressExtension($orderAddressId);
+
+                // Save the salesChannelId here since we already have it in the context - avoids having to
+                // resolve it again via an extra query on every later load of this order address
+                // during the IntegrityInsurances.
+                $orderAddressExtensionEntity->setSalesChannelId($context->getSalesChannelId());
                 $orderAddressExtensionData = $orderAddressExtensionEntity->buildCartToOrderConversionData();
                 $address[OrderAddressExtension::ENDERECO_EXTENSION] = $orderAddressExtensionData;
             }
