@@ -28,15 +28,15 @@ class Migration1784722853AddSalesChannelIdToOrderAddressExtension extends Migrat
     public function update(Connection $connection): void
     {
         $columnExists = (int) $connection->fetchOne(
-                <<<SQL
+            <<<SQL
             SELECT COUNT(*)
             FROM information_schema.COLUMNS
             WHERE TABLE_SCHEMA = :database
                 AND TABLE_NAME = 'endereco_order_address_ext_gh'
                 AND COLUMN_NAME = 'sales_channel_id'
             SQL,
-                ['database' => $connection->getDatabase()]
-            ) > 0;
+            ['database' => $connection->getDatabase()]
+        ) > 0;
 
         if (!$columnExists) {
             $connection->executeStatement(
@@ -48,15 +48,15 @@ class Migration1784722853AddSalesChannelIdToOrderAddressExtension extends Migrat
         }
 
         $constraintExists = (int) $connection->fetchOne(
-                <<<SQL
+            <<<SQL
             SELECT COUNT(*)
             FROM information_schema.TABLE_CONSTRAINTS
             WHERE TABLE_SCHEMA = :database
                 AND TABLE_NAME = 'endereco_order_address_ext_gh'
                 AND CONSTRAINT_NAME = 'fk.endereco_order_address_ext_gh.sales_channel_id'
             SQL,
-                ['database' => $connection->getDatabase()]
-            ) > 0;
+            ['database' => $connection->getDatabase()]
+        ) > 0;
 
         if (!$constraintExists) {
             // ON DELETE SET NULL, not CASCADE: this column is only a cache to avoid re-resolving the
