@@ -5,6 +5,7 @@ namespace Endereco\Shopware6Client\Subscriber;
 use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionEntity;
 use Endereco\Shopware6Client\Entity\OrderAddress\OrderAddressExtension;
+use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcherInterface;
 use Endereco\Shopware6Client\Struct\OrderAddressDataForComparison;
 use Shopware\Core\Checkout\Cart\Cart;
@@ -30,15 +31,22 @@ class ConvertCartToOrderSubscriber implements EventSubscriberInterface
     private OrderAddressToCustomerAddressDataMatcherInterface $addressDataMatcher;
 
     /**
+     * @var EnderecoService
+     */
+    private EnderecoService $enderecoService;
+
+    /**
      * Initializes the subscriber with required dependencies.
      *
      * @param OrderAddressToCustomerAddressDataMatcherInterface $orderAddressToCustomerAddressDataMatcher
-     *                                                                                  Service for matching addresses
+     * @param EnderecoService $enderecoService
      */
     public function __construct(
-        OrderAddressToCustomerAddressDataMatcherInterface $orderAddressToCustomerAddressDataMatcher
+        OrderAddressToCustomerAddressDataMatcherInterface $orderAddressToCustomerAddressDataMatcher,
+        EnderecoService $enderecoService
     ) {
         $this->addressDataMatcher = $orderAddressToCustomerAddressDataMatcher;
+        $this->enderecoService = $enderecoService;
     }
 
     /**
@@ -64,6 +72,11 @@ class ConvertCartToOrderSubscriber implements EventSubscriberInterface
      */
     public function copyEnderecoAddressExtension(CartConvertedEvent $event): void
     {
+        $salesChannelId = $event->getSalesChannelContext()->getSalesChannelId();
+        if (!$this->enderecoService->isUseOrderAddressExtensionFeatureEnabled($salesChannelId)) {
+            return;
+        }
+
         $convertedCart = $event->getConvertedCart();
 
         if (isset($convertedCart['addresses']) && is_array($convertedCart['addresses'])) {
