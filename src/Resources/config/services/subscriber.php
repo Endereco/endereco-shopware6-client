@@ -49,8 +49,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
     $services->set(ConvertCartToOrderSubscriber::class)
         ->args([
-            '$orderAddressToCustomerAddressDataMatcher'
-                => service(OrderAddressToCustomerAddressDataMatcherInterface::class),
+            '$orderAddressToCustomerAddressDataMatcher' => service(OrderAddressToCustomerAddressDataMatcherInterface::class),
+            '$enderecoService' => service(EnderecoService::class),
         ])
         ->tag('kernel.event_subscriber');
 
@@ -77,6 +77,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services->set(OrderAddressSubscriber::class)
         ->args([
             '$orderAddressIntegrityInsurance' => service(OrderAddressIntegrityInsuranceInterface::class),
+            '$enderecoService' => service(EnderecoService::class),
         ])
         ->tag('kernel.event_subscriber');
 };
