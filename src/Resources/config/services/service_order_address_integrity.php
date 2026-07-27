@@ -8,7 +8,6 @@ declare(strict_types=1);
 
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionDefinition;
 use Endereco\Shopware6Client\Service\AddressIntegrity\Check\IsAmsRequestPayloadIsUpToDateCheckerInterface;
-use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddress\AddressExtensionExistsInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddress\AmsRequestPayloadIsUpToDateInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddress\IntegrityInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddressIntegrityInsurance;
@@ -33,16 +32,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->instanceof(IntegrityInsurance::class)
         ->tag('endereco.shopware6_client.order_address_integrity_insurance');
 
-    /**
-     * Ensures existence of address extension records.
-     * Creates missing extension entities as needed.
-     */
-    $services->set(AddressExtensionExistsInsurance::class)
-        ->args([
-            '$addressExtensionRepository' => service(
-                EnderecoOrderAddressExtensionDefinition::ENTITY_NAME . '.repository'
-            ),
-        ]);
 
     /**
      * Validates and updates AMS request payloads.
