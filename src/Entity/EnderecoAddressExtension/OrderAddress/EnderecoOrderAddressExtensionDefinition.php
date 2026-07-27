@@ -15,6 +15,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToOneAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\ReferenceVersionField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\VersionField;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
+use Shopware\Core\System\SalesChannel\SalesChannelDefinition;
 
 /**
  * Class EnderecoOrderAddressExtensionDefinition
@@ -96,6 +97,10 @@ class EnderecoOrderAddressExtensionDefinition extends EnderecoBaseAddressExtensi
         $referenceVersionField = new ReferenceVersionField(OrderAddressDefinition::class, 'address_version_id');
         $referenceVersionField->addFlags(new Required());
         $fields->add($referenceVersionField);
+
+        // Store the salesChannelId of the order's origin, so it's available during operations
+        // that don't have a SalesChannelContext, e.g the IntegrityInsurance chain
+        $fields->add(new FkField('sales_channel_id', 'salesChannelId', SalesChannelDefinition::class));
 
         return $fields;
     }
