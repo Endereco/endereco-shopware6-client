@@ -287,7 +287,7 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
     protected function extractSplitAddressFromOrderAddress(OrderAddressEntity $address, Context $context): ?array
     {
         $extension = $address->getExtension(OrderAddressExtension::ENDERECO_EXTENSION);
-        
+
         // If extension is not loaded, try to load it from database
         if (!$extension instanceof EnderecoOrderAddressExtensionEntity) {
             $versionId = $address->getVersionId();
@@ -295,7 +295,7 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
                 $extension = $this->loadOrderAddressExtension($address->getId(), $versionId, $context);
             }
         }
-        
+
         if (!$extension instanceof EnderecoOrderAddressExtensionEntity) {
             return null;
         }
@@ -305,6 +305,22 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
 
         // Only return if we have at least the street name
         if (empty($streetName)) {
+            return null;
+        }
+
+        // A SplitStreetInsurance is not yet available for order addresses.
+        // So it must be evaluated wether the splitstreet cache is still up to date.
+        // The street name and house number order in the full address string is country-dependent
+        // (e.g. "Musterstraße 12" in Germany vs. "12 Rue de la Paix" in France), so both orders
+        // are accepted here instead of assuming a fixed one.
+        $currentStreet = $this->normalizeStreetForComparison($address->getStreet());
+        $expectedStreetNameFirst = $this->normalizeStreetForComparison(trim($streetName . ' ' . $houseNumber));
+        $expectedHouseNumberFirst = $this->normalizeStreetForComparison(trim($houseNumber . ' ' . $streetName));
+
+        $cacheStillMatches = $currentStreet === $expectedStreetNameFirst
+            || $currentStreet === $expectedHouseNumberFirst;
+
+        if (!$cacheStillMatches) {
             return null;
         }
 
@@ -687,5 +703,17 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
         
         $entity = $result->first();
         return $entity instanceof EnderecoOrderAddressExtensionEntity ? $entity : null;
+    }
+
+    /**
+     * Normalizes a street string for comparison: lowercases, collapses any run of
+     * whitespace into a single space, and trims the ends.
+     *
+     * @param string $value Street string to normalize
+     * @return string Normalized street string
+     */
+    private function normalizeStreetForComparison(string $value): string
+    {
+        return trim((string) preg_replace('/\s+/u', ' ', mb_strtolower($value)));
     }
 }

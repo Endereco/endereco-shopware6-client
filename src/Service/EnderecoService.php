@@ -223,6 +223,28 @@ class EnderecoService
             $addressEntity->getVersionId()
         );
 
+        $existingExtension = $addressEntity->getExtension(OrderAddressExtension::ENDERECO_EXTENSION);
+        if ($existingExtension instanceof EnderecoOrderAddressExtensionEntity) {
+            $updatePayload['extensions'][OrderAddressExtension::ENDERECO_EXTENSION]['id']
+                = $existingExtension->getId();
+            $updatePayload['extensions'][OrderAddressExtension::ENDERECO_EXTENSION]['versionId']
+                = $existingExtension->getVersionId();
+
+            // Keep the in-memory entity in sync with the reset values. Insurances running later in the
+            // same ensureAddressesIntegrity() read the extension
+            // straight off $addressEntity, and would otherwise still see the stale, pre-reset status
+            // until the address is loaded again in a separate request.
+            $existingExtension->setAmsRequestPayload($addressExtension->getAmsRequestPayload());
+            $existingExtension->setAmsStatus($addressExtension->getAmsStatus());
+            $existingExtension->setAmsPredictions($addressExtension->getAmsPredictions());
+            $existingExtension->setAmsTimestamp($addressExtension->getAmsTimestamp());
+            $existingExtension->setStreet($addressExtension->getStreet());
+            $existingExtension->setHouseNumber($addressExtension->getHouseNumber());
+        } else {
+            $addressEntity->addExtension(OrderAddressExtension::ENDERECO_EXTENSION, $addressExtension);
+        }
+
+        // Reset the values of the extension to their defaults
         $updatePayload['extensions'][OrderAddressExtension::ENDERECO_EXTENSION]['amsRequestPayload']
             = $addressExtension->getAmsRequestPayload();
         $updatePayload['extensions'][OrderAddressExtension::ENDERECO_EXTENSION]['amsStatus']
@@ -232,9 +254,11 @@ class EnderecoService
         $updatePayload['extensions'][OrderAddressExtension::ENDERECO_EXTENSION]['amsTimestamp']
             = $addressExtension->getAmsTimestamp();
 
-        // Update the customer address in the repository
-        // The update payload doesn't require an ID (and version ID) because it is persisted via the one-to-one
-        // relationship with the order address, which is unique.
+        $updatePayload['extensions'][OrderAddressExtension::ENDERECO_EXTENSION]['street']
+            = $addressExtension->getStreet();
+        $updatePayload['extensions'][OrderAddressExtension::ENDERECO_EXTENSION]['houseNumber']
+            = $addressExtension->getHouseNumber();
+
         $this->orderAddressRepository->update([$updatePayload], $context);
     }
 
