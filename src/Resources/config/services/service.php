@@ -58,7 +58,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$requestHeadersGenerator' => service(RequestHeadersGeneratorInterface::class),
             '$payloadPreparator' => service(PayloadPreparatorInterface::class),
             '$requestStack' => service('request_stack'),
-            '$logger' => service('Endereco\Shopware6Client\Run\Logger'),
+            '$logger' => service('monolog.logger.endereco_shopware6_client'),
         ]);
 
     $services->set(BySystemConfigFilter::class)
@@ -83,7 +83,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$extensionEntityUpdater' => service(EnderecoExtensionEntityUpdater::class),
             '$arrayUpdater' => service(AddressAsArrayUpdater::class),
             '$extensionArrayUpdater' => service(AddressExtensionAsArrayUpdater::class),
-            '$logger' => service('Endereco\Shopware6Client\Run\Logger'),
+            '$logger' => service('monolog.logger.endereco_shopware6_client'),
             '$pluginStatusService' => service(\Endereco\Shopware6Client\Service\PluginStatusService::class),
         ])
         ->public();

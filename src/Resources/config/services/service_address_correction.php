@@ -40,7 +40,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$systemConfigService' => service(SystemConfigService::class),
             '$requestHeadersGenerator' => service(RequestHeadersGeneratorInterface::class),
             '$payloadPreparator' => service(PayloadPreparatorInterface::class),
-            '$logger' => service('Endereco\Shopware6Client\Run\Logger'),
+            '$logger' => service('monolog.logger.endereco_shopware6_client'),
         ]);
     $services->set(StreetSplitterWithCache::class)
         ->args([
