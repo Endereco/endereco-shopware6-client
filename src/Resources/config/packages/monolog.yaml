@@ -1,2 +1,21 @@
 monolog:
     channels: ['endereco_shopware6_client']
+    handlers:
+        endereco_main_alias:
+            type: service
+            id: monolog.handler.main
+        endereco_shopware6_client_critical_escalation:
+            type: filter
+            handler: endereco_main_alias
+            min_level: critical
+            channels: ['endereco_shopware6_client']
+            priority: 20
+            bubble: true
+        endereco_shopware6_client:
+            type: rotating_file
+            path: "%kernel.logs_dir%/endereco_shopware6_client_%kernel.environment%.log"
+            max_files: 30
+            level: warning
+            channels: ['endereco_shopware6_client']
+            priority: 10
+            bubble: false
