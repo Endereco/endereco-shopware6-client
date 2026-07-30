@@ -8,7 +8,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $containerConfigurator->import(__DIR__ . '/services/console.php');
     $containerConfigurator->import(__DIR__ . '/services/controller.php');
     $containerConfigurator->import(__DIR__ . '/services/entity.php');
-    $containerConfigurator->import(__DIR__ . '/services/run.php');
     $containerConfigurator->import(__DIR__ . '/services/service.php');
     $containerConfigurator->import(__DIR__ . '/services/http_client.php');
     $containerConfigurator->import(__DIR__ . '/services/service_address_check.php');
