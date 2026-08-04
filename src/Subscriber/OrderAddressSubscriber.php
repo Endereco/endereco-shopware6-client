@@ -5,6 +5,7 @@ namespace Endereco\Shopware6Client\Subscriber;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionEntity;
 use Endereco\Shopware6Client\Entity\OrderAddress\OrderAddressExtension;
 use Endereco\Shopware6Client\Service\AddressIntegrity\OrderAddressIntegrityInsuranceInterface;
+use Endereco\Shopware6Client\Service\EnderecoService;
 use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressEntity;
 use Shopware\Core\Checkout\Order\OrderEvents;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityLoadedEvent;
@@ -12,12 +13,26 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class OrderAddressSubscriber implements EventSubscriberInterface
 {
+    /**
+     * @var OrderAddressIntegrityInsuranceInterface
+     */
     private OrderAddressIntegrityInsuranceInterface $orderAddressIntegrityInsurance;
 
+    /**
+     * @var EnderecoService
+     */
+    private EnderecoService $enderecoService;
+
+    /**
+     * @param OrderAddressIntegrityInsuranceInterface $orderAddressIntegrityInsurance
+     * @param EnderecoService $enderecoService
+     */
     public function __construct(
-        OrderAddressIntegrityInsuranceInterface $orderAddressIntegrityInsurance
+        OrderAddressIntegrityInsuranceInterface $orderAddressIntegrityInsurance,
+        EnderecoService $enderecoService
     ) {
         $this->orderAddressIntegrityInsurance = $orderAddressIntegrityInsurance;
+        $this->enderecoService = $enderecoService;
     }
 
     public static function getSubscribedEvents(): array
@@ -56,15 +71,30 @@ class OrderAddressSubscriber implements EventSubscriberInterface
                 continue;
             }
 
+
             $addressKey = $entity->getId() . '-' . $entity->getVersionId();
             if (isset($processedAddresses[$addressKey])) {
                 continue;
             }
             $processedAddresses[$addressKey] = true;
 
-            //Skip the entity if it does not already have an EnderecoOrderAddressExtension
+            // Skip the entity if it does not already have an EnderecoOrderAddressExtension
             $addressExtension = $entity->getExtension(OrderAddressExtension::ENDERECO_EXTENSION);
             if (!$addressExtension instanceof EnderecoOrderAddressExtensionEntity) {
+                continue;
+            }
+
+            $orderSalesChannelId = $addressExtension->getSalesChannelId();
+            if (is_null($orderSalesChannelId)) {
+                continue;
+            }
+
+            $useOrderAddressExtensionEnabled =
+                $this->enderecoService->isUseOrderAddressExtensionFeatureEnabled($orderSalesChannelId);
+
+            // Skip the entity if the feature enderecoCopyExtensionIntoOrderAddress is disabled
+            // for its originating sales channel
+            if (!$useOrderAddressExtensionEnabled) {
                 continue;
             }
 

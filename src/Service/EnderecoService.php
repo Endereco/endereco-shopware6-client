@@ -837,6 +837,41 @@ class EnderecoService
     }
 
     /**
+     * Checks whether the 'Copy data of the address check into the order address' feature is enabled.
+     *
+     * This method accepts a sales channel ID and checks two conditions:
+     * 1. Whether the Endereco plugin is active and ready to use for the given sales channel.
+     * 2. Whether the 'Copy data of the address check into the order address' feature
+     * is enabled in the settings for the given sales channel.
+     *
+     * The feature is considered active if both conditions are true. The method then returns this status.
+     *
+     * This feature is used to decide whether the result of the address check should be copied
+     * from the CustomerAddressExtension into the OrderAddressExtension on order finish and
+     * wether IntegrityInsurances should by applied to OrderAddressExtensions.
+     * It can be controlled via the EnderecoShopware6Client configuration, providing flexibility to meet different
+     * shop requirements.
+     *
+     * @param string $salesChannelId The ID of the sales channel for which to check the status of the feature.
+     *
+     * @return bool Returns true if the feature is enabled, false otherwise.
+     */
+    public function isUseOrderAddressExtensionFeatureEnabled(string $salesChannelId): bool
+    {
+        // Check if the Endereco plugin is active and ready to use for the given sales channel.
+        $pluginIsReadyToUse = $this->isEnderecoPluginActive($salesChannelId);
+
+        // Check if the order address extension feature is active in the settings for the given sales channel.
+        $featureIsActiveInSettings = $this->systemConfigService
+            ->getBool('EnderecoShopware6Client.config.enderecoCopyExtensionIntoOrderAddress', $salesChannelId);
+
+        // The feature is active if both the plugin is ready to use and the feature is active in settings.
+        $featureIsActive = $pluginIsReadyToUse && $featureIsActiveInSettings;
+
+        return $featureIsActive;
+    }
+
+    /**
      * Checks whether the given address is from a remote source.
      *
      * This method accepts a CustomerAddressEntity and retrieves the corresponding

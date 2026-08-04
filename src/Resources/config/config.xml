@@ -235,6 +235,23 @@
             </helpText>
         </input-field>
         -->
+        
+        <input-field type="bool">
+            <name>enderecoCopyExtensionIntoOrderAddress</name>
+            <label>Copy data of the address check into the order address</label>
+            <label lang="de-DE">Kopieren der Daten der Adressprüfung in die Bestelladresse</label>
+            <defaultValue>false</defaultValue>
+            <helpText>
+                If enabled, the result of the address validation is copied into the order address on order finish.
+                Relevant data like status of the check, street and housenumber stays available this way
+                and can be accessed by association of the order address extension.
+            </helpText>
+            <helpText lang="de-DE">
+                Wenn aktiviert, wird das Ergebnis der Adressprüfung bei Bestellabschluss in die Bestelladresse kopiert.
+                Relevante Daten, wie Status der Prüfung, Straße und Hausnummer bleiben somit erhalten
+                und können über Association auf die Order Address Extension gelesen werden.
+            </helpText>
+        </input-field>
     </card>
 
     <card>
