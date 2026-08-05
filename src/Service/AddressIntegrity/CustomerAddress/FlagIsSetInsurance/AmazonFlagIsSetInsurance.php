@@ -26,7 +26,8 @@ final class AmazonFlagIsSetInsurance implements IntegrityInsurance
 
     /**
      * @param EntityRepository<CustomerCollection> $customerRepository Repository to fetch customer data
-     * @param EntityRepository<EnderecoCustomerAddressExtensionCollection> $addressExtensionRepository Repository to manage address extension data
+     * @param EntityRepository<EnderecoCustomerAddressExtensionCollection> $addressExtensionRepository Repository to
+     *        manage address extension data
      */
     public function __construct(
         EntityRepository $customerRepository,

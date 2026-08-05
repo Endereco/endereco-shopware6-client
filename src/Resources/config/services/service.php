@@ -32,6 +32,7 @@ use Endereco\Shopware6Client\Service\SessionManagementService;
 use Shopware\Core\Framework\Api\Sync\SyncService;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $containerConfigurator): void {

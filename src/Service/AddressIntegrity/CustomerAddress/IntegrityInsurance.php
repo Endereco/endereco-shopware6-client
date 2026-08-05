@@ -13,5 +13,5 @@ interface IntegrityInsurance
      * @param CustomerAddressEntity $addressEntity
      * @param Context $context
      */
-    public function ensure(CustomerAddressEntity $addressEntity,  Context $context): void;
+    public function ensure(CustomerAddressEntity $addressEntity, Context $context): void;
 }

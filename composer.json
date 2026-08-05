@@ -61,8 +61,8 @@
         "test": "phpunit",
         "test-unit": "phpunit --testsuite=unit",
         "test-integration": "phpunit --testsuite=integration",
-        "phpcbf": "phpcbf --standard=PSR12 --ignore=vendor/*,shops/*,node_modules/* ./src/**/*.php",
-        "phpcs": "phpcs --standard=PSR12 --ignore=vendor/*,shops/*,node_modules/* ./src/**/*.php",
+        "phpcs":  "phpcs  --standard=PSR12 --extensions=php --ignore=vendor/*,shops/*,node_modules/* -p ./src",
+        "phpcbf": "phpcbf --standard=PSR12 --extensions=php --ignore=vendor/*,shops/*,node_modules/* -p ./src",
         "phpstan": [
             "phpstan analyse -c phpstan.6.7.0.1.neon --memory-limit=-1",
             "phpstan analyse -c phpstan.6.7.1.2.neon --memory-limit=-1",

@@ -45,8 +45,7 @@ final class PersistOnlyExtensionFields implements CustomerAddressPersistenceStra
         EntityRepository $customerAddressRepository,
         CustomerAddressEntityUpdater $entityUpdater,
         PluginStatusService $pluginStatusService
-    )
-    {
+    ) {
         $this->extensionRepository = $customerAddressExtensionRepository;
         $this->context = $context;
         $this->extensionEntityUpdater = $extensionEntityUpdater;

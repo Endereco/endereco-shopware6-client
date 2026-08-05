@@ -20,8 +20,7 @@ final class OverwriteNativeAndExtensionPostData implements CustomerAddressPersis
     public function __construct(
         AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker,
         Context $context
-    )
-    {
+    ) {
         $this->additionalAddressFieldChecker = $additionalAddressFieldChecker;
         $this->context = $context;
     }
@@ -82,16 +81,14 @@ final class OverwriteNativeAndExtensionPostData implements CustomerAddressPersis
         array &$postData
     ): void {
 
-        if (!isset($postData[CustomerAddressField::EXTENSIONS]) || !isset($postData[CustomerAddressField::EXTENSIONS][CustomerAddressExtension::ENDERECO_EXTENSION])) {
-            // Initialize the extension structure if it doesn't exist
-            if (!isset($postData[CustomerAddressField::EXTENSIONS])) {
-                $postData[CustomerAddressField::EXTENSIONS] = [];
-            }
+        // Initialize the extension structure if it doesn't exist
+        $extensions = $postData[CustomerAddressField::EXTENSIONS] ?? [];
+        $extension = $extensions[CustomerAddressExtension::ENDERECO_EXTENSION] ?? [];
 
-            $postData[CustomerAddressField::EXTENSIONS][CustomerAddressExtension::ENDERECO_EXTENSION] = [];
-        }
+        $extension[EnderecoExtensionField::STREET] = $streetName;
+        $extension[EnderecoExtensionField::HOUSE_NUMBER] = $buildingNumber;
 
-        $postData[CustomerAddressField::EXTENSIONS][CustomerAddressExtension::ENDERECO_EXTENSION][EnderecoExtensionField::STREET] = $streetName;
-        $postData[CustomerAddressField::EXTENSIONS][CustomerAddressExtension::ENDERECO_EXTENSION][EnderecoExtensionField::HOUSE_NUMBER] = $buildingNumber;
+        $extensions[CustomerAddressExtension::ENDERECO_EXTENSION] = $extension;
+        $postData[CustomerAddressField::EXTENSIONS] = $extensions;
     }
 }

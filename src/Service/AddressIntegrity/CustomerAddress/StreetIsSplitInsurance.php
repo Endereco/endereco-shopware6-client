@@ -38,8 +38,10 @@ final class StreetIsSplitInsurance implements IntegrityInsurance
      *
      * @param CountryCodeFetcherInterface $countryCodeFetcher Service to retrieve country codes
      * @param EnderecoService $enderecoService Service to handle address processing via Endereco API
-     * @param AddressPersistenceStrategyProviderInterface $addressPersistenceStrategyProvider Provider for address persistence strategies
-     * @param AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker Service to check additional address fields availability
+     * @param AddressPersistenceStrategyProviderInterface $addressPersistenceStrategyProvider Provider for address
+     *        persistence strategies
+     * @param AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker Service to check additional
+     *        address fields availability
      */
     public function __construct(
         CountryCodeFetcherInterface $countryCodeFetcher,

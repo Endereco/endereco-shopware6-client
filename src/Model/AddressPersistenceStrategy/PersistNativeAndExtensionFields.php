@@ -26,7 +26,6 @@ use Shopware\Core\Framework\Context;
  */
 final class PersistNativeAndExtensionFields implements CustomerAddressPersistenceStrategy
 {
-
     private AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker;
 
     /** @var EntityRepository<CustomerAddressCollection>  */
@@ -54,8 +53,7 @@ final class PersistNativeAndExtensionFields implements CustomerAddressPersistenc
         CustomerAddressEntityUpdater $entityUpdater,
         EnderecoExtensionEntityUpdater $extensionEntityUpdater,
         PluginStatusService $pluginStatusService
-    )
-    {
+    ) {
         $this->additionalAddressFieldChecker = $additionalAddressFieldChecker;
         $this->addressRepository = $customerAddressRepository;
         $this->extensionRepository = $customerAddressExtensionRepository;
@@ -236,7 +234,8 @@ final class PersistNativeAndExtensionFields implements CustomerAddressPersistenc
         if ($this->additionalAddressFieldChecker->hasAdditionalAddressField($this->context)) {
             $getter = $this->additionalAddressFieldChecker->getAvailableAdditionalAddressFieldGetter($this->context);
 
-            if ($getter !== null &&
+            if (
+                $getter !== null &&
                 method_exists($addressEntity, $getter) &&
                 $addressEntity->$getter() !== $additionalInfo
             ) {

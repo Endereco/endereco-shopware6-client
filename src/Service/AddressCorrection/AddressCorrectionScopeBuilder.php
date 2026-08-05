@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Endereco\Shopware6Client\Service\AddressCorrection;
@@ -41,6 +42,10 @@ final class AddressCorrectionScopeBuilder implements AddressCorrectionScopeBuild
         $isPayPalAddress = $customerAddressExtensionEntity->isPayPalAddress();
         $isAmazonPayAddress = $customerAddressExtensionEntity->isAmazonPayAddress();
 
-        return new CustomerAddressCorrectionScope($allowNativeAddressFieldsOverwrite, $isPayPalAddress, $isAmazonPayAddress);
+        return new CustomerAddressCorrectionScope(
+            $allowNativeAddressFieldsOverwrite,
+            $isPayPalAddress,
+            $isAmazonPayAddress
+        );
     }
 }

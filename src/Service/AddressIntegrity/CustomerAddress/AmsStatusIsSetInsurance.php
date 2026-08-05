@@ -119,7 +119,8 @@ final class AmsStatusIsSetInsurance implements IntegrityInsurance
             // "virtual" address check result.
             $this->enderecoService->applyAddressCheckResult($addressCheckResult, $addressEntity, $context);
 
-            $isRequestPayloadUpToDate = $this->isAmsRequestPayloadIsUpToDateChecker->checkIfCustomerAddressMetaIsUpToDate(
+            $payloadChecker = $this->isAmsRequestPayloadIsUpToDateChecker;
+            $isRequestPayloadUpToDate = $payloadChecker->checkIfCustomerAddressMetaIsUpToDate(
                 $addressEntity,
                 $addressExtension,
                 $context
@@ -140,10 +141,10 @@ final class AmsStatusIsSetInsurance implements IntegrityInsurance
         if ($sessionId !== '') {
             $isImportProcess = $this->enderecoService->isImport;
             $amsStatus = $addressExtension->getAmsStatus();
-            
-            $shouldAccountForBilling = $isImportProcess || 
+
+            $shouldAccountForBilling = $isImportProcess ||
                 ($amsStatus && strpos($amsStatus, 'address_selected_automatically') !== false);
-            
+
             if ($shouldAccountForBilling) {
                 $this->enderecoService->addAccountableSessionIdsToStorage([$sessionId]);
             }
