@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # List of supported Shopware versions
-declare -a versions=("6.6.0.0" "6.6.1.2" "6.6.2.0" "6.6.3.1" "6.6.4.1" "6.6.5.1" "6.6.6.1" "6.6.7.1" "6.6.8.2" "6.6.9.0" "6.6.10.19")
+declare -a versions=("6.6.0.0" "6.6.1.2" "6.6.2.0" "6.6.3.1" "6.6.4.1" "6.6.5.1" "6.6.6.1" "6.6.7.1" "6.6.8.2" "6.6.9.0" "6.6.10.21")
 
 # Function to determine which dockware image to use based on version
 get_dockware_image() {
@@ -35,13 +35,13 @@ read -p "Enable XDebug for debugging? (y/N): " enable_xdebug
 # Check if the version is valid
 if containsElement "$version" "${versions[@]}"; then
     echo "Preparing to start Shopware 6 in Dockware container with version $version"
-    
+
     # Check and remove existing container if necessary
     if [ "$(docker ps -aq -f name=^shopware-$version$)" ]; then
         echo "Removing existing container named shopware-$version"
         docker rm -f shopware-$version
     fi
-    
+
     # Determine which dockware image to use
     dockware_image=$(get_dockware_image "$version")
     echo "Using Docker image: $dockware_image:$version"
@@ -100,4 +100,3 @@ if containsElement "$version" "${versions[@]}"; then
 else
     echo "Invalid version. Please enter a valid version from the list."
 fi
-
