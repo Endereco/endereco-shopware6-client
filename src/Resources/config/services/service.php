@@ -12,8 +12,6 @@ use Endereco\Shopware6Client\Service\AddressCorrection\StreetSplitterInterface;
 use Endereco\Shopware6Client\Service\AddressAsArrayUpdater;
 use Endereco\Shopware6Client\Service\AddressExtensionAsArrayUpdater;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AddressPersistenceStrategyProviderInterface;
-use Endereco\Shopware6Client\Service\BySystemConfigFilter;
-use Endereco\Shopware6Client\Service\BySystemConfigFilterInterface;
 use Endereco\Shopware6Client\Service\CustomerAddressEntityUpdater;
 use Endereco\Shopware6Client\Service\EnderecoExtensionEntityUpdater;
 use Endereco\Shopware6Client\Service\EnderecoService;
@@ -22,14 +20,9 @@ use Endereco\Shopware6Client\Service\EnderecoService\PayloadPreparatorInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\RequestHeadersGeneratorInterface;
 use Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcher;
 use Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcherInterface;
-use Endereco\Shopware6Client\Service\OrderCustomFieldsBuilder;
-use Endereco\Shopware6Client\Service\OrderCustomFieldsBuilderInterface;
-use Endereco\Shopware6Client\Service\OrdersCustomFieldsUpdater;
-use Endereco\Shopware6Client\Service\OrdersCustomFieldsUpdaterInterface;
 use Endereco\Shopware6Client\Service\PredictionSerializer;
 use Endereco\Shopware6Client\Service\ProcessContextService;
 use Endereco\Shopware6Client\Service\SessionManagementService;
-use Shopware\Core\Framework\Api\Sync\SyncService;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
@@ -62,12 +55,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$logger' => service('monolog.logger.endereco_shopware6_client'),
         ]);
 
-    $services->set(BySystemConfigFilter::class)
-        ->args([
-            '$systemConfigService' => service(SystemConfigService::class)
-        ]);
-    $services->alias(BySystemConfigFilterInterface::class, BySystemConfigFilter::class);
-
     $services->set(EnderecoService::class)
         ->args([
             '$systemConfigService' => service(SystemConfigService::class),
@@ -94,15 +81,4 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         OrderAddressToCustomerAddressDataMatcherInterface::class,
         OrderAddressToCustomerAddressDataMatcher::class
     );
-
-    $services->set(OrderCustomFieldsBuilder::class);
-    $services->alias(OrderCustomFieldsBuilderInterface::class, OrderCustomFieldsBuilder::class);
-
-    $services->set(OrdersCustomFieldsUpdater::class)
-        ->args([
-            '$orderCustomFieldBuilder' => service(OrderCustomFieldsBuilderInterface::class),
-            '$orderRepository' => service('order.repository'),
-            '$syncService' => service(SyncService::class),
-        ]);
-    $services->alias(OrdersCustomFieldsUpdaterInterface::class, OrdersCustomFieldsUpdater::class);
 };
