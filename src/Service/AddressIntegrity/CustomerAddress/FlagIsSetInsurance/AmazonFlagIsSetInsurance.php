@@ -16,8 +16,8 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
  */
 final class AmazonFlagIsSetInsurance implements IntegrityInsurance
 {
-    private  EntityRepository $customerRepository;
-    private  EntityRepository $addressExtensionRepository;
+    private EntityRepository $customerRepository;
+    private EntityRepository $addressExtensionRepository;
 
     /**
      * @param EntityRepository $customerRepository Repository for customer entities

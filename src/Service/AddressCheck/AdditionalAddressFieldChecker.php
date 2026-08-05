@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Endereco\Shopware6Client\Service\AddressCheck;
@@ -30,8 +31,14 @@ class AdditionalAddressFieldChecker implements AdditionalAddressFieldCheckerInte
             ? $context->getSalesChannelId()
             : null;
 
-        $field1 = (bool) $this->systemConfigService->get('core.loginRegistration.showAdditionalAddressField1', $salesChannelId);
-        $field2 = (bool) $this->systemConfigService->get('core.loginRegistration.showAdditionalAddressField2', $salesChannelId);
+        $field1 = (bool) $this->systemConfigService->get(
+            'core.loginRegistration.showAdditionalAddressField1',
+            $salesChannelId
+        );
+        $field2 = (bool) $this->systemConfigService->get(
+            'core.loginRegistration.showAdditionalAddressField2',
+            $salesChannelId
+        );
 
         return $field1 || $field2;
     }
@@ -45,8 +52,14 @@ class AdditionalAddressFieldChecker implements AdditionalAddressFieldCheckerInte
             ? $context->getSalesChannelId()
             : null;
 
-        $field1 = (bool) $this->systemConfigService->get('core.loginRegistration.showAdditionalAddressField1', $salesChannelId);
-        $field2 = (bool) $this->systemConfigService->get('core.loginRegistration.showAdditionalAddressField2', $salesChannelId);
+        $field1 = (bool) $this->systemConfigService->get(
+            'core.loginRegistration.showAdditionalAddressField1',
+            $salesChannelId
+        );
+        $field2 = (bool) $this->systemConfigService->get(
+            'core.loginRegistration.showAdditionalAddressField2',
+            $salesChannelId
+        );
 
         if ($field1) {
             return 'additionalAddressLine1';
@@ -78,5 +91,4 @@ class AdditionalAddressFieldChecker implements AdditionalAddressFieldCheckerInte
 
         return 'set' . ucfirst($fieldName);
     }
-
 }

@@ -25,6 +25,7 @@ use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AmsRequest
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\AmsStatusIsSetInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\CrefoPayExpressAbortedOnCorrectionInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\FlagIsSetInsurance\AmazonFlagIsSetInsurance;
+// phpcs:ignore Generic.Files.LineLength.TooLong -- a fully qualified import cannot be wrapped
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\FlagIsSetInsurance\PayPalExpressFlagIsSetInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\IntegrityInsurance;
 use Endereco\Shopware6Client\Service\AddressIntegrity\CustomerAddress\StreetIsSplitInsurance;
@@ -37,6 +38,7 @@ use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\PluginStatusService;
 use Endereco\Shopware6Client\Service\ProcessContextService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\tagged_iterator;
 

@@ -25,6 +25,7 @@ use Endereco\Shopware6Client\Subscriber\CustomerAddressSubscriber;
 use Endereco\Shopware6Client\Subscriber\OrderAddressSubscriber;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $containerConfigurator): void {
@@ -49,7 +50,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
     $services->set(ConvertCartToOrderSubscriber::class)
         ->args([
-            '$orderAddressToCustomerAddressDataMatcher' => service(OrderAddressToCustomerAddressDataMatcherInterface::class),
+            '$orderAddressToCustomerAddressDataMatcher' =>
+                service(OrderAddressToCustomerAddressDataMatcherInterface::class),
             '$enderecoService' => service(EnderecoService::class),
         ])
         ->tag('kernel.event_subscriber');

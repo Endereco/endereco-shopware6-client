@@ -38,7 +38,10 @@ interface AddressCheckPayloadBuilderInterface
      * @param Context $context
      * @return AddressCheckPayloadInterface
      */
-    public function buildFromCustomerAddress(CustomerAddressEntity $address, Context $context): AddressCheckPayloadInterface;
+    public function buildFromCustomerAddress(
+        CustomerAddressEntity $address,
+        Context $context
+    ): AddressCheckPayloadInterface;
 
     /**
      * Builds payload from OrderAddressEntity

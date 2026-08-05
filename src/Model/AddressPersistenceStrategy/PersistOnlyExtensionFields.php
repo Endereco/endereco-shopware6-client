@@ -19,10 +19,8 @@ use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEnt
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 
-
 final class PersistOnlyExtensionFields implements CustomerAddressPersistenceStrategy
 {
-
     private EntityRepository $extensionRepository;
     private Context $context;
     private EnderecoExtensionEntityUpdater $extensionEntityUpdater;
@@ -45,8 +43,7 @@ final class PersistOnlyExtensionFields implements CustomerAddressPersistenceStra
         EntityRepository $customerAddressRepository,
         CustomerAddressEntityUpdater $entityUpdater,
         PluginStatusService $pluginStatusService
-    )
-    {
+    ) {
         $this->extensionRepository = $customerAddressExtensionRepository;
         $this->context = $context;
         $this->extensionEntityUpdater = $extensionEntityUpdater;

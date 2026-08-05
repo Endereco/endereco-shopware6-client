@@ -7,7 +7,6 @@ namespace Endereco\Shopware6Client\Model\AddressPersistenceStrategy;
 use Endereco\Shopware6Client\DTO\CustomerAddressDTO;
 use Endereco\Shopware6Client\Model\CustomerAddressPersistenceStrategy;
 
-
 final class DoNothing implements CustomerAddressPersistenceStrategy
 {
     /**

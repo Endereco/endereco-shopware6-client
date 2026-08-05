@@ -49,11 +49,11 @@ class EnderecoApiProxyController
 
     /**
      * Proxies requests to the Endereco API.
-     * 
+     *
      * This method forwards POST requests containing data to the configured
      * Endereco API endpoint while preserving transaction tracking headers
      * for correlation and debugging purposes.
-     * 
+     *
      * @param Request $request The HTTP request containing data as JSON
      * @return Response The proxied response from Endereco API or error response
      */

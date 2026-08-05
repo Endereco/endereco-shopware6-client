@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Registers and configures API and Storefront controllers
+ */
+
 declare(strict_types=1);
 
 use Endereco\Shopware6Client\Controller\Api\ApiTestController;
@@ -9,11 +13,9 @@ use Endereco\Shopware6Client\Service\ApiConfiguration\ApiConfigurationFetcherInt
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\SessionManagementService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
-/**
- * Registers and configures API and Storefront controllers
- */
 return static function (ContainerConfigurator $containerConfigurator): void {
     $services = $containerConfigurator->services()
         ->defaults()
@@ -39,7 +41,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             service('service_container')
         ])
         ->public();
-    
+
     $services->set(EnderecoApiProxyController::class)
         ->args([
             '$httpClient' => service('endereco.http_client'),

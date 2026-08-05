@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Registers Endereco address extensions and definitions
+ */
+
 declare(strict_types=1);
 
 use Endereco\Shopware6Client\Entity\CustomerAddress\CustomerAddressExtension;
@@ -8,9 +12,6 @@ use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\Endere
 use Endereco\Shopware6Client\Entity\OrderAddress\OrderAddressExtension;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
-/**
- * Registers Endereco address extensions and definitions
- */
 return static function (ContainerConfigurator $containerConfigurator): void {
     $services = $containerConfigurator->services()
         ->defaults()

@@ -138,7 +138,7 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
         if ($this->shouldUseSplitFormat($context)) {
             return $this->buildSplitPayload($addressData, $context);
         }
-        
+
         return $this->buildCombinedPayload($addressData, $context);
     }
 
@@ -156,7 +156,7 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
         if ($this->shouldUseSplitFormat($context)) {
             return $this->buildSplitPayloadFromCustomerAddress($address, $context);
         }
-        
+
         return $this->buildCombinedPayloadFromCustomerAddress($address, $context);
     }
 
@@ -174,7 +174,7 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
         if ($this->shouldUseSplitFormat($context)) {
             return $this->buildSplitPayloadFromOrderAddress($address, $context);
         }
-        
+
         return $this->buildCombinedPayloadFromOrderAddress($address, $context);
     }
 
@@ -217,7 +217,7 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
         $fieldName = $this->additionalAddressFieldChecker->getAvailableAdditionalAddressFieldName($context);
         return $addressData[$fieldName] ?? '';
     }
-    
+
     /**
      * Determines whether to use split address format based on system configuration.
      *
@@ -253,12 +253,12 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
     protected function extractSplitAddressFromCustomerAddress(CustomerAddressEntity $address, Context $context): ?array
     {
         $extension = $address->getExtension(CustomerAddressExtension::ENDERECO_EXTENSION);
-        
+
         // If extension is not loaded, try to load it from database
         if (!$extension instanceof EnderecoCustomerAddressExtensionEntity) {
             $extension = $this->loadCustomerAddressExtension($address->getId(), $context);
         }
-        
+
         if (!$extension instanceof EnderecoCustomerAddressExtensionEntity) {
             return null;
         }
@@ -332,7 +332,7 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
 
     /**
      * Extracts split address data from array input (e.g., from frontend).
-     * 
+     *
      * Checks for various possible field names that might contain split address data.
      *
      * @param array<string, mixed> $addressData Address data array
@@ -465,8 +465,10 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
      * @param Context $context Shopware context
      * @return AddressCheckPayloadCombined
      */
-    private function buildCombinedPayloadFromCustomerAddress(CustomerAddressEntity $address, Context $context): AddressCheckPayloadCombined
-    {
+    private function buildCombinedPayloadFromCustomerAddress(
+        CustomerAddressEntity $address,
+        Context $context
+    ): AddressCheckPayloadCombined {
         $countryCode = $this->countryCodeFetcher->fetchCountryCodeByCountryIdAndContext(
             $address->getCountryId(),
             $context
@@ -506,8 +508,10 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
      * @param Context $context Shopware context
      * @return AddressCheckPayloadSplit
      */
-    private function buildSplitPayloadFromCustomerAddress(CustomerAddressEntity $address, Context $context): AddressCheckPayloadSplit
-    {
+    private function buildSplitPayloadFromCustomerAddress(
+        CustomerAddressEntity $address,
+        Context $context
+    ): AddressCheckPayloadSplit {
         $countryCode = $this->countryCodeFetcher->fetchCountryCodeByCountryIdAndContext(
             $address->getCountryId(),
             $context
@@ -568,8 +572,10 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
      * @param Context $context Shopware context
      * @return AddressCheckPayloadCombined
      */
-    private function buildCombinedPayloadFromOrderAddress(OrderAddressEntity $address, Context $context): AddressCheckPayloadCombined
-    {
+    private function buildCombinedPayloadFromOrderAddress(
+        OrderAddressEntity $address,
+        Context $context
+    ): AddressCheckPayloadCombined {
         $countryCode = $this->countryCodeFetcher->fetchCountryCodeByCountryIdAndContext(
             $address->getCountryId(),
             $context
@@ -609,8 +615,10 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
      * @param Context $context Shopware context
      * @return AddressCheckPayloadSplit
      */
-    private function buildSplitPayloadFromOrderAddress(OrderAddressEntity $address, Context $context): AddressCheckPayloadSplit
-    {
+    private function buildSplitPayloadFromOrderAddress(
+        OrderAddressEntity $address,
+        Context $context
+    ): AddressCheckPayloadSplit {
         $countryCode = $this->countryCodeFetcher->fetchCountryCodeByCountryIdAndContext(
             $address->getCountryId(),
             $context
@@ -671,20 +679,22 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
      * @param Context $context Shopware context
      * @return EnderecoCustomerAddressExtensionEntity|null Extension entity or null if not found
      */
-    private function loadCustomerAddressExtension(string $customerAddressId, Context $context): ?EnderecoCustomerAddressExtensionEntity
-    {
+    private function loadCustomerAddressExtension(
+        string $customerAddressId,
+        Context $context
+    ): ?EnderecoCustomerAddressExtensionEntity {
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('addressId', $customerAddressId));
-        
+
         $result = $this->customerAddressExtensionRepository->search($criteria, $context);
-        
+
         $entity = $result->first();
         return $entity instanceof EnderecoCustomerAddressExtensionEntity ? $entity : null;
     }
 
     /**
      * Loads order address extension from database if not already loaded.
-     * 
+     *
      * Order addresses are versioned entities, so we need to match both
      * the address ID and version ID for precise identification.
      *
@@ -693,14 +703,17 @@ final class AddressCheckPayloadBuilder implements AddressCheckPayloadBuilderInte
      * @param Context $context Shopware context
      * @return EnderecoOrderAddressExtensionEntity|null Extension entity or null if not found
      */
-    private function loadOrderAddressExtension(string $orderAddressId, string $orderAddressVersionId, Context $context): ?EnderecoOrderAddressExtensionEntity
-    {
+    private function loadOrderAddressExtension(
+        string $orderAddressId,
+        string $orderAddressVersionId,
+        Context $context
+    ): ?EnderecoOrderAddressExtensionEntity {
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('addressId', $orderAddressId));
         $criteria->addFilter(new EqualsFilter('addressVersionId', $orderAddressVersionId));
-        
+
         $result = $this->orderAddressExtensionRepository->search($criteria, $context);
-        
+
         $entity = $result->first();
         return $entity instanceof EnderecoOrderAddressExtensionEntity ? $entity : null;
     }
