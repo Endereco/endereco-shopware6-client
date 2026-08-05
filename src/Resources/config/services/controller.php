@@ -8,7 +8,6 @@ use Endereco\Shopware6Client\Controller\Storefront\AddressController;
 use Endereco\Shopware6Client\Service\ApiConfiguration\ApiConfigurationFetcherInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\SessionManagementService;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
@@ -45,7 +44,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->args([
             '$httpClient' => service('endereco.http_client'),
             '$apiConfigurationFetcher' => service(ApiConfigurationFetcherInterface::class),
-            '$logger' => service(LoggerInterface::class),
+            '$logger' => service('monolog.logger.endereco_shopware6_client'),
         ])
         ->tag('controller.service_arguments')
         ->public();
