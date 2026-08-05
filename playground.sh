@@ -3,7 +3,7 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # List of supported Shopware versions
-declare -a versions=("6.7.0.1" "6.7.1.2" "6.7.2.2" "6.7.3.1" "6.7.4.2" "6.7.5.1" "6.7.6.2" "6.7.7.1" "6.7.8.2" "6.7.9.1" "6.7.10.2" "6.7.11.1")
+declare -a versions=("6.7.0.1" "6.7.1.2" "6.7.2.2" "6.7.3.1" "6.7.4.2" "6.7.5.1" "6.7.6.2" "6.7.7.1" "6.7.8.2" "6.7.9.1" "6.7.10.2" "6.7.11.1" "6.7.12.2")
 
 # Function to determine which dockware image to use based on version
 get_dockware_image() {
