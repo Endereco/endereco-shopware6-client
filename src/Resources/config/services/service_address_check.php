@@ -43,7 +43,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$requestHeadersGenerator' => service(RequestHeadersGeneratorInterface::class),
             '$addressCheckPayloadBuilder' => service(AddressCheckPayloadBuilderInterface::class),
             '$payloadPreparator' => service(PayloadPreparatorInterface::class),
-            '$logger' => service('Endereco\Shopware6Client\Run\Logger'),
+            '$logger' => service('monolog.logger.endereco_shopware6_client'),
         ]);
     $services->set(AddressCheckerWithCache::class)
         ->args([
