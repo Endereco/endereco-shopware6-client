@@ -17,8 +17,6 @@ use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcher;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryHasStatesChecker;
 use Endereco\Shopware6Client\Service\AddressCheck\CountryHasStatesCheckerInterface;
-use Endereco\Shopware6Client\Service\AddressCheck\LocaleFetcher;
-use Endereco\Shopware6Client\Service\AddressCheck\LocaleFetcherInterface;
 use Endereco\Shopware6Client\Service\AddressCheck\SubdivisionCodeFetcher;
 use Endereco\Shopware6Client\Service\AddressCheck\SubdivisionCodeFetcherInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\PayloadPreparatorInterface;
@@ -91,15 +89,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$countryRepository' => service('country.repository')
         ]);
     $services->alias(CountryHasStatesCheckerInterface::class, CountryHasStatesChecker::class);
-
-    /**
-     * Fetches locale information from sales channel domains. Currently not really needed.
-     */
-    $services->set(LocaleFetcher::class)
-        ->args([
-            '$salesChannelDomainRepository' => service('sales_channel_domain.repository')
-        ]);
-    $services->alias(LocaleFetcherInterface::class, LocaleFetcher::class);
 
     /**
      * Retrieves standardized codes for states/provinces.
