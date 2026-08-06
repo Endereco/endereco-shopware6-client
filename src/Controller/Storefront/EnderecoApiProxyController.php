@@ -121,7 +121,7 @@ class EnderecoApiProxyController
             );
         } catch (TransportExceptionInterface $e) {
             // Network/timeout errors (connection failed, timeout, DNS issues, etc.)
-            $this->logger->error('Endereco API transport error', [
+            $this->logger->warning('Endereco API transport error', [
                 'error' => $e->getMessage(),
                 'sales_channel_id' => $salesChannelId,
             ]);
