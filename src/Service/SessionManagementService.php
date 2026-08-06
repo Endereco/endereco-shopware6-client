@@ -7,6 +7,7 @@ namespace Endereco\Shopware6Client\Service;
 use Endereco\Shopware6Client\Service\EnderecoService\PayloadPreparatorInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\RequestHeadersGeneratorInterface;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Framework\Context;
@@ -115,6 +116,12 @@ class SessionManagementService
                         $this->logger->error('Serverside doAccounting failed', ['error' => $e->getMessage()]);
                     }
                 }
+            } catch (ConnectException $e) {
+                // Log timeout and transport errors during 'doAccounting'
+                $this->logger->warning(
+                    'Serverside doAccounting failed',
+                    ['error' => $e->getMessage(), 'sales_channel_id' => $salesChannelId, 'session_id' => $sessionId]
+                );
             } catch (Throwable $e) {
                 // Log error message for any other exceptions during 'doAccounting'
                 $this->logger->error('Serverside doAccounting failed', ['error' => $e->getMessage()]);

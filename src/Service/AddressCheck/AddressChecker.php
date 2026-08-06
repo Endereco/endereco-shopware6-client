@@ -11,6 +11,7 @@ use Endereco\Shopware6Client\Service\EnderecoService\PayloadPreparatorInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\RequestHeadersGeneratorInterface;
 use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
@@ -114,6 +115,13 @@ final class AddressChecker implements AddressCheckerInterface
                     $this->logger->error('Serverside checkAddress failed', ['error' => $e->getMessage()]);
                 }
             }
+
+            $addressCheckResult = new FailedAddressCheckResult();
+        } catch (ConnectException $e) {
+            $this->logger->warning(
+                'Serverside checkAddress failed',
+                ['error' => $e->getMessage(), 'sales_channel_id' => $salesChannelId, 'session_id' => $sessionId]
+            );
 
             $addressCheckResult = new FailedAddressCheckResult();
         } catch (Throwable $e) {
