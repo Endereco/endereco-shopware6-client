@@ -8,6 +8,7 @@ use Endereco\Shopware6Client\DTO\SplitStreetResultDto;
 use Endereco\Shopware6Client\Service\EnderecoService\PayloadPreparatorInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\RequestHeadersGeneratorInterface;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Framework\Context;
@@ -104,6 +105,12 @@ final class StreetSplitter implements StreetSplitterInterface
                     $this->logger->error('Serverside splitStreet failed', ['error' => $e->getMessage()]);
                 }
             }
+        } catch (ConnectException $e) {
+            // Handle and log timeout and transport errors.
+            $this->logger->warning(
+                'Serverside splitStreet failed',
+                ['error' => $e->getMessage(), 'sales_channel_id' => $salesChannelId]
+            );
         } catch (Throwable $e) {
             // Handle and log any other types of errors.
             $this->logger->error('Serverside splitStreet failed', ['error' => $e->getMessage()]);
