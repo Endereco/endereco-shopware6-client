@@ -26,6 +26,7 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Controller\StorefrontController;
 use Shopware\Storefront\Event\StorefrontRenderEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -461,16 +462,14 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
      */
     public function saveAccountableSessionForLater(BuildValidationEvent $event)
     {
-        $isPostRequest =
-            is_array($_SERVER)
-            && array_key_exists('REQUEST_METHOD', $_SERVER)
-            && 'POST' === $_SERVER['REQUEST_METHOD']
-            && $_POST;
+        $request = $this->requestStack->getCurrentRequest();
+        if (!$request instanceof Request) {
+            return;
+        }
 
-        if ($isPostRequest) {
+        if ($request->getRealMethod() === 'POST') {
             // Look for accountable session id's in $_POST
-            $accountableSessionIds = $this->enderecoService->findAccountableSessionIds($_POST);
-
+            $accountableSessionIds = $this->enderecoService->findAccountableSessionIds($request->getPayload()->all());
 
             // Save them to session variable, if any found.
             if (!empty($accountableSessionIds)) {
