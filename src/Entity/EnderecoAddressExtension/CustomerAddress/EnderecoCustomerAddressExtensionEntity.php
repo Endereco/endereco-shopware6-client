@@ -76,6 +76,21 @@ class EnderecoCustomerAddressExtensionEntity extends EnderecoBaseAddressExtensio
     }
 
     /**
+     * Fixes the circular reference to address when cloning.
+     *
+     * CustomerAddressEntity holds this extension in its `extensions` array, and this
+     * extension holds a back-reference to that same CustomerAddressEntity via `$address`.
+     * Shopware's CloneTrait::__clone() deep-clones every object property with no cycle
+     * detection, so cloning either side of this pair recurses infinitely and exhausts the
+     * PHP call stack. Nulling the back-reference on the clone breaks the cycle.
+     */
+    public function __clone()
+    {
+        $this->address = null;
+        parent::__clone();
+    }
+
+    /**
      * Creates a new order address extension entity based on this customer address extension.
      * Copies all relevant address verification data to the new order address extension.
      *
