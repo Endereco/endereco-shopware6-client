@@ -15,8 +15,19 @@ use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\Endere
 use Endereco\Shopware6Client\Tests\Unit\Entity\CustomerAddress\CreatesCustomerAddressTrait;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Shopware\Core\Checkout\Cart\Cart;
+use Shopware\Core\Checkout\Cart\Delivery\Struct\Delivery;
+use Shopware\Core\Checkout\Cart\Delivery\Struct\DeliveryCollection;
+use Shopware\Core\Checkout\Cart\Delivery\Struct\DeliveryDate;
+use Shopware\Core\Checkout\Cart\Delivery\Struct\DeliveryPositionCollection;
+use Shopware\Core\Checkout\Cart\Delivery\Struct\ShippingLocation;
+use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
+use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
+use Shopware\Core\Checkout\Cart\Tax\Struct\TaxRuleCollection;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Shopware\Core\Checkout\Shipping\ShippingMethodEntity;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\Country\CountryEntity;
 
 /**
  * Tests for EnderecoCustomerAddressExtensionEntity
@@ -209,6 +220,64 @@ class EnderecoCustomerAddressExtensionEntityTest extends TestCase
         $result = json_encode($customerAddress);
         $this->assertNotFalse($result, 'json_encode($customerAddress) failed: ' . json_last_error_msg());
         $this->assertSame(JSON_ERROR_NONE, json_last_error());
+    }
+
+    /**
+     * Tests that cloning the EnderecoCustomerAddressExtension does not lead
+     * to infinite recursions.
+     *
+     * Cloning a Cart that contains a CustomerAddressEntity must not recurse
+     * infinitely through the address ↔ enderecoAddress back-reference cycle.
+     * This is the case, if the address property of the EnderecoCustomerAddressExtension
+     * is not dropped before copying.
+ */
+    public function testCloningCartWithDeliveryDoesNotProduceInfiniteRecursion(): void
+    {
+        $addressId = Uuid::randomHex();
+        $address = $this->createCustomerAddress($addressId);
+
+        $country = new CountryEntity();
+        $country->setId(Uuid::randomHex());
+        $country->setUniqueIdentifier($country->getId());
+        $address->setCountry($country);
+
+        $extension = EnderecoCustomerAddressExtensionEntity::createWithDefaultValues($address);
+        $address->addExtension(CustomerAddressExtension::ENDERECO_EXTENSION, $extension);
+
+        $location = ShippingLocation::createFromAddress($address);
+
+        $shippingMethod = new ShippingMethodEntity();
+        $shippingMethod->setId(Uuid::randomHex());
+        $shippingMethod->setUniqueIdentifier($shippingMethod->getId());
+
+        $delivery = new Delivery(
+            new DeliveryPositionCollection(),
+            new DeliveryDate(new \DateTimeImmutable(), new \DateTimeImmutable()),
+            $shippingMethod,
+            $location,
+            new CalculatedPrice(0.0, 0.0, new CalculatedTaxCollection(), new TaxRuleCollection())
+        );
+
+        $cart = new Cart('test-token');
+        $cart->setDeliveries(new DeliveryCollection([$delivery]));
+
+        // Without the __clone() fix, this line throws:
+        // "Maximum call stack size of ... bytes ... reached. Infinite recursion?"
+        $clonedCart = clone $cart;
+
+        $this->assertNotSame($cart, $clonedCart);
+
+        $clonedAddress = $clonedCart->getDeliveries()->first()?->getLocation()->getAddress();
+        $this->assertInstanceOf(CustomerAddressEntity::class, $clonedAddress);
+        $this->assertNotSame($address, $clonedAddress);
+
+        // The clone's back-reference must be nulled to have broken the cycle.
+        $clonedExtension = $clonedAddress->getExtension(CustomerAddressExtension::ENDERECO_EXTENSION);
+        $this->assertInstanceOf(EnderecoCustomerAddressExtensionEntity::class, $clonedExtension);
+        $this->assertNull($clonedExtension->getAddress());
+
+        // The original object graph must remain untouched by cloning.
+        $this->assertSame($address, $extension->getAddress());
     }
 
     /**
