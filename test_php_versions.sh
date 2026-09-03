@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define PHP versions to test against
-versions=("8.2" "8.3")
+versions=("8.2" "8.3" "8.4")
 
 # Find all PHP files in the current directory and subdirectories, excluding vendor, node_modules and shops folders
 php_files=$(find . -type d \( -path './vendor' -o -path './node_modules' -o -path './shops' \) -prune -o -type f -name '*.php' -print)
