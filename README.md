@@ -6,7 +6,7 @@ autocomplete, email verification, and more for improved customer data quality.
 ## Requirements
 
 - Shopware 6.6.0.0 or higher
-- PHP 8.2 or 8.3 (PHP 8.4 not supported)
+- PHP 8.2, 8.3 or 8.4
 - Composer (for development)
 - Node.js and npm (for development)
 
@@ -15,7 +15,7 @@ autocomplete, email verification, and more for improved customer data quality.
 
 ### Prerequisites
 
-- PHP 8.2 or 8.3 with the following extensions:
+- PHP 8.2, 8.3 or 8.4 with the following extensions:
   - curl
   - json
   - pdo_mysql
