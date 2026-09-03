@@ -150,6 +150,9 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
 
             // Enrich the structure with phone check settings.
             $this->addPhoneCheckData($configContainer, $salesChannelId);
+
+            // Enrich the structure with rate limiting settings
+            $this->addRateLimitingData($configContainer, $salesChannelId);
         }
 
         // Assign the configuration to the page.
@@ -506,5 +509,27 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
             $this->additionalAddressFieldChecker->hasAdditionalAddressField($context);
         $configContainer->additionalInfoFieldName =
             $this->additionalAddressFieldChecker->getAvailableAdditionalAddressFieldName($context);
+    }
+
+    /**
+     * Enriches the given configContainer object with information whether rate limiting is active.
+     * The information is fetched from the system config.
+     * This setting is used to display in the frontend whether rate limiting is active.
+     *
+     * @param stdClass $configContainer The object that holds the configuration settings. Passed by reference.
+     * @param string $salesChannelId The ID of the sales channel from which the settings are fetched.
+     *
+     * The method fetches the following setting:
+     * - 'EnderecoShopware6Client.config.enderecoRateLimitingActive': Determines if rate limiting is active.
+     *
+     * This setting is stored in the passed configContainer object.
+     *
+     * @return void
+     */
+    private function addRateLimitingData(stdClass $configContainer, string $salesChannelId): void
+    {
+        $configContainer->enderecoRateLimitingActive =
+            $this->systemConfigService
+                ->get('EnderecoShopware6Client.config.enderecoRateLimitingActive', $salesChannelId);
     }
 }

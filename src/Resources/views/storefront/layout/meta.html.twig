@@ -290,6 +290,10 @@
                     }, 50);
                 }
             </script>
+
+            {% if page.endereco_config.enderecoRateLimitingActive %}
+                <meta name="endereco-rl" content="">
+            {% endif %}
         {% endif %}
     {% endblock %}
     {{ parent() }}
