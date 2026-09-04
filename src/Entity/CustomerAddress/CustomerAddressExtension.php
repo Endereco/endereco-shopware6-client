@@ -42,4 +42,14 @@ class CustomerAddressExtension extends EntityExtension
     {
         return CustomerAddressDefinition::class;
     }
+
+    /**
+     * Get the entity name that is extended by this extension.
+     *
+     * @return string The entity name.
+     */
+    public function getEntityName(): string
+    {
+        return 'customer_address';
+    }
 }
