@@ -45,4 +45,14 @@ class OrderAddressExtension extends EntityExtension
     {
         return OrderAddressDefinition::class;
     }
+
+    /**
+     * Get the entity name that is extended by this extension.
+     *
+     * @return string The entity name.
+     */
+    public function getEntityName(): string
+    {
+        return 'order_address';
+    }
 }
