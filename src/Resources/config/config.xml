@@ -731,6 +731,15 @@
         </input-field>
 
         <input-field type="int">
+            <name>enderecoPerSessionLimit</name>
+            <label>Max. requests per session per hour</label>
+            <label lang="de-DE">Max. Anfragen pro Session und Stunde</label>
+            <helpText>Maximum number of requests to the Endereco proxy endpoint allowed from a session per hour.</helpText>
+            <helpText lang="de-DE">Maximale Anzahl an Anfragen an den Endereco-Proxy-Endpunkt pro Session und Stunde.</helpText>
+            <defaultValue>50</defaultValue>
+        </input-field>
+
+        <input-field type="int">
             <name>enderecoGlobalLimit</name>
             <label>Max. global requests per hour</label>
             <label lang="de-DE">Max. globale Anfragen pro Stunde</label>
