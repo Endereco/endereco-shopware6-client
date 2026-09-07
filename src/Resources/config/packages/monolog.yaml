@@ -1,16 +1,22 @@
+services:
+    Endereco\Shopware6Client\Run\OptionalMainHandlerFactory: ~
+
+    # Resolves to Shopware's "main" handler when it exists, and to a no-op
+    # handler otherwise. monolog.handler.main only exists in dev and prod.
+    # Referencing it directly would break container
+    # compilation in every other environment (test, phpstan_dev, ...).
+    # The "@?" reference makes the argument null instead of failing when the
+    # target service does not exist, so this works in any environment
+    # without having to name it explicitly.
+    endereco_shopware6_client.main_or_null_handler:
+        class: Monolog\Handler\HandlerInterface
+        factory: ['Endereco\Shopware6Client\Run\OptionalMainHandlerFactory', 'create']
+        arguments:
+            - '@?monolog.handler.main'
+
 monolog:
     channels: ['endereco_shopware6_client']
     handlers:
-        endereco_main_alias:
-            type: service
-            id: monolog.handler.main
-        endereco_shopware6_client_critical_escalation:
-            type: filter
-            handler: endereco_main_alias
-            min_level: critical
-            channels: ['endereco_shopware6_client']
-            priority: 20
-            bubble: true
         endereco_shopware6_client:
             type: rotating_file
             path: "%kernel.logs_dir%/endereco_shopware6_client_%kernel.environment%.log"
@@ -19,3 +25,13 @@ monolog:
             channels: ['endereco_shopware6_client']
             priority: 10
             bubble: false
+        endereco_main_alias:
+            type: service
+            id: endereco_shopware6_client.main_or_null_handler
+        endereco_shopware6_client_critical_escalation:
+            type: filter
+            handler: endereco_main_alias
+            min_level: critical
+            channels: ['endereco_shopware6_client']
+            priority: 20
+            bubble: true
