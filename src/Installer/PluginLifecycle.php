@@ -9,6 +9,7 @@ use Doctrine\DBAL\Exception;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\CustomerAddress\EnderecoCustomerAddressExtensionDefinition;
 use Endereco\Shopware6Client\Entity\EnderecoAddressExtension\OrderAddress\EnderecoOrderAddressExtensionDefinition;
 use Endereco\Shopware6Client\Model\OrderCustomFieldsKeys;
+use League\Flysystem\FilesystemOperator;
 use RuntimeException;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -55,10 +56,10 @@ class PluginLifecycle
         }
 
         // Clean up any legacy io.php file from previous versions
-        $pathToLegacyIoPhp = dirname(__FILE__, 6) . '/public/io.php';
+        $publicFilesystem = $this->getPublicFilesystem();
 
-        if (file_exists($pathToLegacyIoPhp)) {
-            unlink($pathToLegacyIoPhp);
+        if ($publicFilesystem->fileExists('io.php')) {
+            $publicFilesystem->delete('io.php');
         }
 
         // The tables to be dropped during uninstallation
@@ -106,10 +107,10 @@ class PluginLifecycle
     public function update(): void
     {
         // Clean up any legacy io.php file that might exist from previous versions
-        $pathToLegacyIoPhp = dirname(__FILE__, 6) . '/public/io.php';
+        $publicFilesystem = $this->getPublicFilesystem();
 
-        if (file_exists($pathToLegacyIoPhp)) {
-            unlink($pathToLegacyIoPhp);
+        if ($publicFilesystem->fileExists('io.php')) {
+            $publicFilesystem->delete('io.php');
         }
     }
 
@@ -133,5 +134,27 @@ class PluginLifecycle
         }
 
         return $connection;
+    }
+
+    /**
+     * Get the Shopware public filesystem (Flysystem abstraction over the shop's public/ directory).
+     *
+     * @throws RuntimeException If the container is not initialized or the service is missing.
+     * @return FilesystemOperator
+     */
+    private function getPublicFilesystem(): FilesystemOperator
+    {
+        if ($this->container === null) {
+            throw new RuntimeException('There is no container');
+        }
+
+        /** @var FilesystemOperator $filesystem */
+        $filesystem = $this->container->get('shopware.filesystem.public');
+
+        if (!$filesystem instanceof FilesystemOperator) {
+            throw new RuntimeException('Public filesystem service is not initialized');
+        }
+
+        return $filesystem;
     }
 }
