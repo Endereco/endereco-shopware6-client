@@ -9,6 +9,7 @@ use Endereco\Shopware6Client\Service\Security\ConfigurableRateLimiterInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Framework\RateLimiter\Exception\RateLimitExceededException;
 use Shopware\Core\PlatformRequest;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -66,14 +67,14 @@ class EnderecoApiProxyController
      * @param Request $request The HTTP request containing data as JSON
      * @return Response The proxied response from Endereco API or error response
      */
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request, SalesChannelContext $salesChannelContext): Response
     {
         if ($request->getMethod() !== 'POST') {
             return new Response('Method not allowed', 405, ['Allow' => 'POST'] + self::ROBOTS_HEADER);
         }
 
         $clientIp = $request->getClientIp() ?? 'unknown';
-        $salesChannelId = $request->attributes->get(PlatformRequest::ATTRIBUTE_SALES_CHANNEL_ID);
+        $salesChannelId = $salesChannelContext->getSalesChannelId();
 
         $rateLimitingActive = $this->systemConfigService->getBool(
             'EnderecoShopware6Client.config.enderecoRateLimitingActive',
@@ -83,6 +84,11 @@ class EnderecoApiProxyController
         if ($rateLimitingActive) {
             $ipRateLimit = $this->systemConfigService->getInt(
                 'EnderecoShopware6Client.config.enderecoPerIpLimit',
+                $salesChannelId
+            );
+
+            $sessionRateLimit = $this->systemConfigService->getInt(
+                'EnderecoShopware6Client.config.enderecoPerSessionLimit',
                 $salesChannelId
             );
 
@@ -96,6 +102,17 @@ class EnderecoApiProxyController
                     'endereco_per_ip',
                     $clientIp,
                     $ipRateLimit,
+                    '1 hour'
+                );
+            } catch (RateLimitExceededException $e) {
+                return $this->tooManyRequestsResponse($e);
+            }
+
+            try {
+                $this->configurableRateLimiter->ensureAccepted(
+                    'endereco_per_session',
+                    $salesChannelContext->getToken(),
+                    $sessionRateLimit,
                     '1 hour'
                 );
             } catch (RateLimitExceededException $e) {
