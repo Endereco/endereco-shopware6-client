@@ -324,7 +324,7 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
                to ensure compatibility with template changes by PickwareDhl */
             if (
                 $event->getData()->has('pickwareDhlAddressRadioGroup') &&
-                $event->getData()->only('pickwareDhlAddressRadioGroup') !== 'regular'
+                $event->getData()->get('pickwareDhlAddressRadioGroup') !== 'regular'
             ) {
                 // If street splitting is enabled, add NotBlank validation rule
                 // to 'enderecoStreet' and 'enderecoHousenumber'
