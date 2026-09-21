@@ -122,7 +122,7 @@ class EnderecoApiProxyController
             try {
                 $this->configurableRateLimiter->ensureAccepted(
                     'endereco_global_rate_limit',
-                    'global_rate_limit',
+                    'global_rate_limit_' . $salesChannelId,
                     $globalRateLimit,
                     '1 hour'
                 );
