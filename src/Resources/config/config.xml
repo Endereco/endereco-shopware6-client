@@ -728,6 +728,7 @@
             <label lang="de-DE">Max. Anfragen pro IP und Stunde</label>
             <helpText>Maximum number of requests to the Endereco proxy endpoint allowed from a single IP address per hour.</helpText>
             <helpText lang="de-DE">Maximale Anzahl an Anfragen an den Endereco-Proxy-Endpunkt pro IP-Adresse und Stunde.</helpText>
+            <min>1</min>
             <defaultValue>100</defaultValue>
         </input-field>
 
@@ -737,6 +738,7 @@
             <label lang="de-DE">Max. Anfragen pro Session und Stunde</label>
             <helpText>Maximum number of requests to the Endereco proxy endpoint allowed from a session per hour.</helpText>
             <helpText lang="de-DE">Maximale Anzahl an Anfragen an den Endereco-Proxy-Endpunkt pro Session und Stunde.</helpText>
+            <min>1</min>
             <defaultValue>50</defaultValue>
         </input-field>
 
@@ -754,6 +756,7 @@
                 Dieser Wert ist sehr individuell. Wenn du Unterstützung benötigst, um ein angemessenes
                 Limit zu bestimmen, kontaktiere uns gerne unter support@endereco.de.
             </helpText>
+            <min>1</min>
             <defaultValue>5000</defaultValue>
         </input-field>
     </card>

@@ -33,6 +33,13 @@ final class ConfigurableRateLimiter implements ConfigurableRateLimiterInterface
         string $interval
     ): void {
 
+        if ($limit <= 0) {
+            // A limit of 0 or negative is a misconfiguration.
+            // Without this guard, Symfony's SlidingWindowLimiter::reserve() would throw an
+            // InvalidArgumentException, that would surface as an uncaught 500.
+            return;
+        }
+
         $factory = new RateLimiterFactory(
             ['id' => $id, 'policy' => 'sliding_window', 'limit' => $limit, 'interval' => $interval],
             $this->storage
