@@ -7,6 +7,7 @@ namespace Endereco\Shopware6Client\Controller\Storefront;
 use Endereco\Shopware6Client\Service\ApiConfiguration\ApiConfigurationFetcherInterface;
 use Endereco\Shopware6Client\Service\Security\ConfigurableRateLimiterInterface;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use Shopware\Core\Framework\RateLimiter\Exception\RateLimitExceededException;
 use Shopware\Core\PlatformRequest;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -102,7 +103,9 @@ class EnderecoApiProxyController
                     'endereco_per_ip',
                     $clientIp,
                     $ipRateLimit,
-                    '1 hour'
+                    '1 hour',
+                    LogLevel::WARNING,
+                    $salesChannelId
                 );
             } catch (RateLimitExceededException $e) {
                 return $this->tooManyRequestsResponse($e);
@@ -113,7 +116,9 @@ class EnderecoApiProxyController
                     'endereco_per_session',
                     $salesChannelContext->getToken(),
                     $sessionRateLimit,
-                    '1 hour'
+                    '1 hour',
+                    LogLevel::WARNING,
+                    $salesChannelId
                 );
             } catch (RateLimitExceededException $e) {
                 return $this->tooManyRequestsResponse($e);
@@ -124,7 +129,9 @@ class EnderecoApiProxyController
                     'endereco_global_rate_limit',
                     'global_rate_limit_' . $salesChannelId,
                     $globalRateLimit,
-                    '1 hour'
+                    '1 hour',
+                    LogLevel::CRITICAL,
+                    $salesChannelId
                 );
             } catch (RateLimitExceededException $e) {
                 return $this->tooManyRequestsResponse($e);
