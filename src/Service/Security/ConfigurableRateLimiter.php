@@ -86,7 +86,7 @@ final class ConfigurableRateLimiter implements ConfigurableRateLimiterInterface
         $packed = inet_pton($ip);
 
         if ($packed === false) {
-            return $ip; // invalid ip, e.g. the 'unknown'-fallback
+            return 'unknown'; // invalid ip, e.g. the 'unknown'-fallback
         }
 
         $mask = strlen($packed) === 4
@@ -95,7 +95,7 @@ final class ConfigurableRateLimiter implements ConfigurableRateLimiterInterface
 
         $masked = inet_ntop($packed & $mask);
 
-        return $masked === false ? $ip : $masked;
+        return $masked === false ? 'unknown' : $masked;
     }
 
     private function anonymizeSessionToken(string $key): string
