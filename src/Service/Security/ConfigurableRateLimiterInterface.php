@@ -14,6 +14,8 @@ interface ConfigurableRateLimiterInterface
      *                     global limiter)
      * @param int $limit Limit, that is read from the plugin configuration
      * @param string $interval Sliding window size, e.g. "1 hour"
+     * @param string $logLevel Log level for the log message when limit is reached
+     * @param string $salesChannelId id of the sales channel, the limiter is used in
      *
      * @throws RateLimitExceededException
      */
@@ -21,6 +23,8 @@ interface ConfigurableRateLimiterInterface
         string $id,
         string $key,
         int $limit,
-        string $interval
+        string $interval,
+        string $logLevel,
+        string $salesChannelId,
     ): void;
 }
