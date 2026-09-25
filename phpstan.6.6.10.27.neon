@@ -11,5 +11,5 @@ parameters:
         - ./vendor
         - ./node_modules
     bootstrapFiles:
-        - shops/6.6.10.22/vendor/autoload.php
+        - shops/6.6.10.27/vendor/autoload.php
     checkGenericClassInNonGenericObjectType: false
