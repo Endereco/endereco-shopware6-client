@@ -35,6 +35,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services->set(ConfigurableRateLimiter::class)
         ->args([
             '$storage' => service('endereco.rate_limiter_storage'),
+            '$logger' => service('monolog.logger.endereco_shopware6_client'),
         ]);
     $services->alias(ConfigurableRateLimiterInterface::class, ConfigurableRateLimiter::class);
 };
