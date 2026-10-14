@@ -227,7 +227,7 @@ final class PersistNativeAndExtensionFields implements CustomerAddressPersistenc
         ?string $additionalInfo,
         CustomerAddressEntity $addressEntity
     ): bool {
-        if ($addressEntity->getStreet() !== $street) {
+        if ($this->isNativeStringChanged($addressEntity->getStreet(), $street)) {
             return true;
         }
 
@@ -237,13 +237,42 @@ final class PersistNativeAndExtensionFields implements CustomerAddressPersistenc
             if (
                 $getter !== null &&
                 method_exists($addressEntity, $getter) &&
-                $addressEntity->$getter() !== $additionalInfo
+                $this->isNativeStringChanged($addressEntity->$getter(), $additionalInfo)
             ) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Checks if a native string field would change when persisted
+     *
+     * Shopware persists empty and whitespace-only strings as NULL for fields without
+     * AllowEmptyString, so these are treated as equal when comparing to avoid writes
+     * that change nothing.
+     *
+     * @param string|null $current Value currently stored in the entity
+     * @param string|null $new New value to compare against
+     *
+     * @return bool True if the persisted values would differ
+     */
+    private function isNativeStringChanged(?string $current, ?string $new): bool
+    {
+        return $this->blankToNull($current) !== $this->blankToNull($new);
+    }
+
+    /**
+     * Converts empty and whitespace-only strings to NULL, leaves everything else unchanged
+     *
+     * @param string|null $value Value to convert
+     *
+     * @return string|null NULL for blank values, otherwise the original value
+     */
+    private function blankToNull(?string $value): ?string
+    {
+        return ($value === null || trim($value) === '') ? null : $value;
     }
 
     /**
