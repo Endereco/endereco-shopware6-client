@@ -354,7 +354,11 @@ class EnderecoService
             // the data in it ASAP.
             // Update extension entity using normalized data
             $this->extensionEntityUpdater->updateFromPayload($extensionData, $addressExtension);
-        } elseif ($addressCheckResult->isFullyCorrect() && !empty($addressCheckResult->getPredictions())) {
+        } elseif (
+            $addressCheckResult->isFullyCorrect()
+            && !empty($addressCheckResult->getPredictions())
+            && $this->isAutocorrectionAllowedInSettings($context)
+        ) {
             $correction = $addressCheckResult->getPredictions()[0];
 
             $fullStreet = $this->buildFullStreet(
