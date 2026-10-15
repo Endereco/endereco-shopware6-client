@@ -357,7 +357,11 @@ class EnderecoService
             // the data in it ASAP.
             // Update extension entity using normalized data
             $this->extensionEntityUpdater->updateFromPayload($extensionData, $addressExtension);
-        } elseif ($addressCheckResult->isFullyCorrect() && !empty($addressCheckResult->getPredictions())) {
+        } elseif (
+            $addressCheckResult->isFullyCorrect()
+            && !empty($addressCheckResult->getPredictions())
+            && $this->isAutocorrectionAllowedInSettings($context)
+        ) {
             $correction = $addressCheckResult->getPredictions()[0];
 
             $fullStreet = $this->buildFullStreet(
@@ -419,9 +423,19 @@ class EnderecoService
             // Use the existing extensionData from above (line 347-353)
             $this->extensionEntityUpdater->updateFromPayload($extensionData, $addressExtension);
         } else {
+            $statuses = $addressCheckResult->getStatusesAsString();
+
+            // A fully correct address is left untouched, but still has to be marked as finished.
+            // Otherwise the SDK in the storefront applies the first prediction and reformats the address.
+            if ($addressCheckResult->isFullyCorrect()) {
+                $statuses = $statuses
+                    ? $statuses . ',address_selected_automatically'
+                    : 'address_selected_automatically';
+            }
+
             // If there was no automatic correction, save the statuses and predictions from the address check result
             $extensionData = new EnderecoExtensionData();
-            $extensionData->setAmsStatus($addressCheckResult->getStatusesAsString())
+            $extensionData->setAmsStatus($statuses)
                 ->setAmsPredictions($addressCheckResult->getPredictions())
                 ->setAmsTimestamp(time())
                 ->setAmsRequestPayload($addressCheckResult->getAddressSignature());
