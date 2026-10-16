@@ -6,6 +6,9 @@ namespace Endereco\Shopware6Client\Controller\Storefront;
 
 use Endereco\Shopware6Client\Service\ApiConfiguration\ApiConfigurationFetcherInterface;
 use Endereco\Shopware6Client\Service\Security\ConfigurableRateLimiterInterface;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\TransferException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Shopware\Core\Framework\RateLimiter\Exception\RateLimitExceededException;
@@ -15,9 +18,6 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * Proxy controller for Endereco API requests.
@@ -38,14 +38,14 @@ class EnderecoApiProxyController
 {
     private const ROBOTS_HEADER = ['X-Robots-Tag' => 'noindex, nofollow'];
 
-    private HttpClientInterface $httpClient;
+    private Client $httpClient;
     private ApiConfigurationFetcherInterface $apiConfigurationFetcher;
     private LoggerInterface $logger;
     private ConfigurableRateLimiterInterface $configurableRateLimiter;
     private SystemConfigService $systemConfigService;
 
     public function __construct(
-        HttpClientInterface $httpClient,
+        Client $httpClient,
         ApiConfigurationFetcherInterface $apiConfigurationFetcher,
         LoggerInterface $logger,
         ConfigurableRateLimiterInterface $configurableRateLimiter,
@@ -171,16 +171,22 @@ class EnderecoApiProxyController
             ]);
 
             return new Response(
-                $response->getContent(false),
+                (string) $response->getBody(),
                 $response->getStatusCode(),
                 ['Content-Type' => 'application/json'] + self::ROBOTS_HEADER
             );
-        } catch (HttpExceptionInterface $e) {
+        } catch (RequestException $e) {
+            $apiResponse = $e->getResponse();
+
+            if ($apiResponse === null) {
+                // Request failed without receiving a response (e.g. cURL error)
+                return $this->transportErrorResponse($e, $salesChannelId);
+            }
+
             // HTTP errors from Endereco API (4xx, 5xx responses)
             // Return the actual status code and response body from the API for easier debugging
-            $apiResponse = $e->getResponse();
             $statusCode = $apiResponse->getStatusCode();
-            $responseBody = $apiResponse->getContent(false);
+            $responseBody = (string) $apiResponse->getBody();
 
             $this->logger->warning('Endereco API returned HTTP error', [
                 'status_code' => $statusCode,
@@ -193,18 +199,9 @@ class EnderecoApiProxyController
                 $statusCode,
                 ['Content-Type' => 'application/json'] + self::ROBOTS_HEADER
             );
-        } catch (TransportExceptionInterface $e) {
+        } catch (TransferException $e) {
             // Network/timeout errors (connection failed, timeout, DNS issues, etc.)
-            $this->logger->warning('Endereco API transport error', [
-                'error' => $e->getMessage(),
-                'sales_channel_id' => $salesChannelId,
-            ]);
-
-            return new Response(
-                '{"error":"Unable to reach Endereco service"}',
-                503,
-                ['Content-Type' => 'application/json'] + self::ROBOTS_HEADER
-            );
+            return $this->transportErrorResponse($e, $salesChannelId);
         } catch (\Throwable $e) {
             // Unexpected programming errors
             $this->logger->critical('Unexpected error in Endereco proxy controller', [
@@ -221,6 +218,20 @@ class EnderecoApiProxyController
                 ['Content-Type' => 'application/json'] + self::ROBOTS_HEADER
             );
         }
+    }
+
+    private function transportErrorResponse(TransferException $e, ?string $salesChannelId): Response
+    {
+        $this->logger->warning('Endereco API transport error', [
+            'error' => $e->getMessage(),
+            'sales_channel_id' => $salesChannelId,
+        ]);
+
+        return new Response(
+            '{"error":"Unable to reach Endereco service"}',
+            503,
+            ['Content-Type' => 'application/json'] + self::ROBOTS_HEADER
+        );
     }
 
     private function tooManyRequestsResponse(RateLimitExceededException $e): Response
