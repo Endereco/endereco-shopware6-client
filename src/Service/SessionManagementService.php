@@ -34,7 +34,7 @@ class SessionManagementService
         RequestStack $requestStack,
         LoggerInterface $logger
     ) {
-        $this->httpClient = new Client(['timeout' => 3.0, 'connection_timeout' => 2.0]);
+        $this->httpClient = new Client(['timeout' => 3.0, 'connect_timeout' => 2.0]);
         $this->systemConfigService = $systemConfigService;
         $this->requestHeadersGenerator = $requestHeadersGenerator;
         $this->payloadPreparator = $payloadPreparator;
