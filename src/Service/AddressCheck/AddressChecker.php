@@ -44,7 +44,7 @@ final class AddressChecker implements AddressCheckerInterface
         $this->requestHeadersGenerator = $requestHeadersGenerator;
         $this->addressCheckPayloadBuilder = $addressCheckPayloadBuilder;
         $this->payloadPreparator = $payloadPreparator;
-        $this->httpClient = new Client(['timeout' => 3.0, 'connection_timeout' => 2.0]);
+        $this->httpClient = new Client(['timeout' => 3.0, 'connect_timeout' => 2.0]);
         $this->logger = $logger;
     }
 
