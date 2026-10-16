@@ -102,7 +102,7 @@ class EnderecoService
         LoggerInterface $logger,
         PluginStatusService $pluginStatusService
     ) {
-        $this->httpClient = new Client(['timeout' => 3.0, 'connection_timeout' => 2.0]);
+        $this->httpClient = new Client(['timeout' => 3.0, 'connect_timeout' => 2.0]);
         $this->systemConfigService = $systemConfigService;
         $this->countryStateRepository = $countryStateRepository;
         $this->customerAddressRepository = $customerAddressRepository;
