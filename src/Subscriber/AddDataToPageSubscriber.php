@@ -25,6 +25,17 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class AddDataToPageSubscriber implements EventSubscriberInterface
 {
+    /**
+     * Widget routes that load a page through the GenericPageLoader, but never render an Endereco form.
+     * Their controller (CheckoutController) is whitelisted by default, so without this list the full
+     * Endereco settings (countries, states, salutations, plugin version) would be loaded on every page view,
+     * because the browser requests the header cart widget after each page load.
+     */
+    private const ROUTES_WITHOUT_ENDERECO_SETTINGS = [
+        'frontend.checkout.info',  // header cart widget
+        'frontend.cart.offcanvas', // offcanvas cart
+    ];
+
     protected SystemConfigService $systemConfigService;
 
     protected EnderecoService $enderecoService;
@@ -130,6 +141,11 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
                     break;
                 }
             }
+        }
+
+        $currentRoute = (string) $event->getRequest()->attributes->get('_route');
+        if (in_array($currentRoute, self::ROUTES_WITHOUT_ENDERECO_SETTINGS, true)) {
+            $loadEnderecoSettings = false;
         }
 
         $loadEnderecoSettings = $loadEnderecoSettings && $isPluginActive;
