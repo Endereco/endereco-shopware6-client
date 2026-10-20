@@ -41,6 +41,23 @@ use Shopware\Core\Checkout\Customer\CustomerDefinition;
 
 class CustomerAddressSubscriber implements EventSubscriberInterface
 {
+    /**
+     * Routes on which the address integrity insurances are relevant. On all other routes
+     * (e.g. category or product pages) the customer's addresses are loaded by the
+     * sales channel context as well, but the insurance results are not needed there.
+     *
+     * Relevant are pages that render an existing address in a form or in the correction modal,
+     * and the routes saving such a form: if saving fails validation, the stored accountable
+     * sessions are closed at the end of the insurance run (see ensureAddressesIntegrity()).
+     */
+    private const INSURANCE_RELEVANT_ROUTES = [
+        'frontend.checkout.confirm.page',
+        'frontend.account.address.edit.page',
+        'frontend.account.address.edit.save',
+        'frontend.account.address.create',
+        'frontend.account.addressmanager',
+    ];
+
     protected SystemConfigService $systemConfigService;
     protected EnderecoService $enderecoService;
     protected SessionManagementService $sessionManagementService;
@@ -258,6 +275,10 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
             return;
         }
 
+        if (!$this->isInsuranceRelevantRoute()) {
+            return;
+        }
+
         $context = $event->getContext();
 
         // Retrieve the sales channel ID and check if Endereco service is active for the channel
@@ -283,6 +304,29 @@ class CustomerAddressSubscriber implements EventSubscriberInterface
         $this->enderecoService->closeStoredSessions($context, $salesChannelId);
     }
 
+    /**
+     * Checks if the route of the main request is one where the address integrity insurances are relevant.
+     *
+     * Processes without a request (e.g. CLI commands or message queue workers) are always relevant.
+     * The main request is used on purpose, so ESI sub requests (e.g. header and footer) are
+     * judged by the page they belong to.
+     *
+     * @return bool
+     */
+    private function isInsuranceRelevantRoute(): bool
+    {
+        $mainRequest = $this->requestStack->getMainRequest();
+        if (!$mainRequest instanceof Request) {
+            return true;
+        }
+
+        $route = $mainRequest->attributes->get('_route');
+        if (!is_string($route)) {
+            return true;
+        }
+
+        return in_array($route, self::INSURANCE_RELEVANT_ROUTES, true);
+    }
 
     /**
      * Modifies form validation rules during a BuildValidationEvent.
