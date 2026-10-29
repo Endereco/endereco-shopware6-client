@@ -3,7 +3,7 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # List of supported Shopware versions
-declare -a versions=("6.7.0.1" "6.7.1.2" "6.7.2.2" "6.7.3.1" "6.7.4.2" "6.7.5.1" "6.7.6.2" "6.7.7.1" "6.7.8.2" "6.7.9.1" "6.7.10.2" "6.7.11.1" "6.7.12.2" "6.7.13.1" "6.7.14.2" "6.7.15.1")
+declare -a versions=("6.7.0.1" "6.7.1.2" "6.7.2.2" "6.7.3.1" "6.7.4.2" "6.7.5.1" "6.7.6.2" "6.7.7.1" "6.7.8.2" "6.7.9.1" "6.7.10.2" "6.7.11.1" "6.7.12.2" "6.7.13.1" "6.7.14.2" "6.7.15.1" "6.7.16.0")
 
 # Function to determine which dockware image to use based on version
 get_dockware_image() {
@@ -37,13 +37,13 @@ read -p "Enable XDebug for debugging? (y/N): " enable_xdebug
 # Check if the version is valid
 if containsElement "$version" "${versions[@]}"; then
     echo "Preparing to start Shopware 6 in Dockware container with version $version"
-    
+
     # Check and remove existing container if necessary
     if [ "$(docker ps -aq -f name=^shopware-$version$)" ]; then
         echo "Removing existing container named shopware-$version"
         docker rm -f shopware-$version
     fi
-    
+
     # Determine which dockware image to use
     dockware_image=$(get_dockware_image "$version")
     echo "Using Docker image: $dockware_image:$version"
