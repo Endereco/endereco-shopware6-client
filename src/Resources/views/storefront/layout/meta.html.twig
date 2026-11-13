@@ -65,6 +65,9 @@
                     window.EnderecoIntegrator.config.agentName = '{{ page.endereco_config.enderecoAgentInfo }}';
 
                     window.EnderecoIntegrator.config.apiUrl = '{{ path('frontend.endereco.service_proxy') }}';
+                    {% if page.endereco_config.enderecoEnforceRequestSignature %}
+                    window.EnderecoIntegrator.config.requestSigningSecret = '{{ page.endereco_config.enderecoRequestSigningSecret }}';
+                    {% endif %}
 
                     {% set cssPath = asset('bundles/enderecoshopware6client/endereco.min.css') ~ '?var=' ~ page.endereco_config.enderecoVersion %}
 
