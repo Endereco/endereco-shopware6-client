@@ -759,4 +759,18 @@
             <defaultValue>50000</defaultValue>
         </input-field>
     </card>
+
+    <card>
+        <title>Additional protection against bot requests</title>
+        <title lang="de-DE">Zusätzlicher Schutz vor Botanfragen</title>
+
+        <input-field type="bool">
+            <name>enderecoEnforceRequestSignature</name>
+            <label>Enforce request signature</label>
+            <label lang="de-DE">Anfragen-Signatur erzwingen</label>
+            <helpText>If enabled, the storefront signs its requests to the Endereco proxy endpoint and requests without a valid signature are rejected. This can serve to protect the Endereco proxy endpoint against bot requests. If disabled, requests are neither signed nor checked.</helpText>
+            <helpText lang="de-DE">Ist diese Einstellung aktiv, signiert die Storefront ihre Anfragen an den Endereco-Proxy-Endpunkt, und Anfragen ohne gültige Signatur werden abgelehnt. Dies kann als Schutz des Endereco-Proxy-Endpunkts gegen Bot-anfragen dienen. Ist sie deaktiviert, werden Anfragen weder signiert noch geprüft.</helpText>
+            <defaultValue>false</defaultValue>
+        </input-field>
+    </card>
 </config>

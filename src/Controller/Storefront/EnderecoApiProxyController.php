@@ -6,6 +6,8 @@ namespace Endereco\Shopware6Client\Controller\Storefront;
 
 use Endereco\Shopware6Client\Service\ApiConfiguration\ApiConfigurationFetcherInterface;
 use Endereco\Shopware6Client\Service\Security\ConfigurableRateLimiterInterface;
+use Endereco\Shopware6Client\Service\Security\RequestSignatureFailureLoggerInterface;
+use Endereco\Shopware6Client\Service\Security\RequestSignatureValidatorInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\TransferException;
@@ -43,19 +45,25 @@ class EnderecoApiProxyController
     private LoggerInterface $logger;
     private ConfigurableRateLimiterInterface $configurableRateLimiter;
     private SystemConfigService $systemConfigService;
+    private RequestSignatureValidatorInterface $requestSignatureValidator;
+    private RequestSignatureFailureLoggerInterface $requestSignatureFailureLogger;
 
     public function __construct(
         Client $httpClient,
         ApiConfigurationFetcherInterface $apiConfigurationFetcher,
         LoggerInterface $logger,
         ConfigurableRateLimiterInterface $configurableRateLimiter,
-        SystemConfigService $systemConfigService
+        SystemConfigService $systemConfigService,
+        RequestSignatureValidatorInterface $requestSignatureValidator,
+        RequestSignatureFailureLoggerInterface $requestSignatureFailureLogger
     ) {
+        $this->requestSignatureFailureLogger = $requestSignatureFailureLogger;
         $this->httpClient = $httpClient;
         $this->apiConfigurationFetcher = $apiConfigurationFetcher;
         $this->logger = $logger;
         $this->configurableRateLimiter = $configurableRateLimiter;
         $this->systemConfigService = $systemConfigService;
+        $this->requestSignatureValidator = $requestSignatureValidator;
     }
 
     /**
@@ -76,6 +84,32 @@ class EnderecoApiProxyController
 
         $clientIp = $request->getClientIp() ?? 'unknown';
         $salesChannelId = $request->attributes->get(PlatformRequest::ATTRIBUTE_SALES_CHANNEL_ID);
+        $content = $request->getContent();
+
+        // Checked before rate limiting, so rejected requests don't consume rate limit
+        // quota - otherwise unsigned requests could exhaust the global limit and lock
+        // out real customers.
+        // The signing secret is only handed to the JS-SDK while enforcement is enabled,
+        // so requests are only signed and therefore only validated in that case.
+        $enforceSignature = $this->systemConfigService->getBool(
+            'EnderecoShopware6Client.config.enderecoEnforceRequestSignature',
+            $salesChannelId
+        );
+
+        if ($enforceSignature) {
+            $signatureValid = $this->requestSignatureValidator->isValid(
+                $content,
+                $request->headers->get('X-Signature'),
+                $request->headers->get('X-Timestamp'),
+                $salesChannelId
+            );
+
+            if (!$signatureValid) {
+                $this->requestSignatureFailureLogger->logFailure($salesChannelId);
+
+                return $this->invalidSignatureResponse();
+            }
+        }
 
         $rateLimitingActive = $this->systemConfigService->getBool(
             'EnderecoShopware6Client.config.enderecoRateLimitingActive',
@@ -137,8 +171,6 @@ class EnderecoApiProxyController
                 return $this->tooManyRequestsResponse($e);
             }
         }
-
-        $content = $request->getContent();
 
         if (!$content) {
             return new Response('Request body is empty. We expect a valid JSON.', 400, self::ROBOTS_HEADER);
@@ -243,6 +275,15 @@ class EnderecoApiProxyController
                 'Content-Type' => 'application/json',
                 'Retry-After' => (string) $e->getWaitTime(),
             ] + self::ROBOTS_HEADER
+        );
+    }
+
+    private function invalidSignatureResponse(): Response
+    {
+        return new Response(
+            '{"error":"Invalid or missing request signature"}',
+            403,
+            ['Content-Type' => 'application/json'] + self::ROBOTS_HEADER
         );
     }
 }
