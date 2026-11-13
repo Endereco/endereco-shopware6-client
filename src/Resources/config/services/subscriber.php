@@ -19,6 +19,7 @@ use Endereco\Shopware6Client\Service\EnderecoService\PluginVersionFetcherInterfa
 use Endereco\Shopware6Client\Service\PluginStatusService;
 use Endereco\Shopware6Client\Service\OrderAddressToCustomerAddressDataMatcherInterface;
 use Endereco\Shopware6Client\Service\ProcessContextService;
+use Endereco\Shopware6Client\Service\Security\RequestSigningSecretProviderInterface;
 use Endereco\Shopware6Client\Subscriber\AddDataToPageSubscriber;
 use Endereco\Shopware6Client\Subscriber\ConvertCartToOrderSubscriber;
 use Endereco\Shopware6Client\Subscriber\CustomerAddressSubscriber;
@@ -45,6 +46,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$salutationRepository' => service('salutation.repository'),
             '$pluginRepository' => service('plugin.repository'),
             '$additionalAddressFieldChecker' => service(AdditionalAddressFieldCheckerInterface::class),
+            '$requestSigningSecretProvider' => service(RequestSigningSecretProviderInterface::class),
         ])
         ->tag('kernel.event_subscriber');
 

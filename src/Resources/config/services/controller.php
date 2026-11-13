@@ -12,6 +12,8 @@ use Endereco\Shopware6Client\Controller\Storefront\AddressController;
 use Endereco\Shopware6Client\Service\ApiConfiguration\ApiConfigurationFetcherInterface;
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\Security\ConfigurableRateLimiterInterface;
+use Endereco\Shopware6Client\Service\Security\RequestSignatureFailureLoggerInterface;
+use Endereco\Shopware6Client\Service\Security\RequestSignatureValidatorInterface;
 use Endereco\Shopware6Client\Service\SessionManagementService;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -51,6 +53,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             '$logger' => service('monolog.logger.endereco_shopware6_client'),
             '$configurableRateLimiter' => service(ConfigurableRateLimiterInterface::class),
             '$systemConfigService' => service(SystemConfigService::class),
+            '$requestSignatureValidator' => service(RequestSignatureValidatorInterface::class),
+            '$requestSignatureFailureLogger' => service(RequestSignatureFailureLoggerInterface::class),
         ])
         ->tag('controller.service_arguments')
         ->public();

@@ -6,6 +6,7 @@ use Endereco\Shopware6Client\Service\AddressCheck\AdditionalAddressFieldCheckerI
 use Endereco\Shopware6Client\Service\EnderecoService;
 use Endereco\Shopware6Client\Service\EnderecoService\AgentInfoGeneratorInterface;
 use Endereco\Shopware6Client\Service\EnderecoService\PluginVersionFetcher;
+use Endereco\Shopware6Client\Service\Security\RequestSigningSecretProviderInterface;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -41,6 +42,7 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
     protected EntityRepository $salutationRepository;
     protected EntityRepository $pluginRepository;
     private AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker;
+    private RequestSigningSecretProviderInterface $requestSigningSecretProvider;
 
     public function __construct(
         SystemConfigService $systemConfigService,
@@ -51,7 +53,8 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
         EntityRepository $stateRepository,
         EntityRepository $salutationRepository,
         EntityRepository $pluginRepository,
-        AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker
+        AdditionalAddressFieldCheckerInterface $additionalAddressFieldChecker,
+        RequestSigningSecretProviderInterface $requestSigningSecretProvider
     ) {
         $this->systemConfigService = $systemConfigService;
         $this->countryRepository = $countryRepository;
@@ -62,6 +65,7 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
         $this->agentInfoGenerator = $agentInfoGenerator;
         $this->pluginVersionFetcher = $pluginVersionFetcher;
         $this->additionalAddressFieldChecker = $additionalAddressFieldChecker;
+        $this->requestSigningSecretProvider = $requestSigningSecretProvider;
     }
 
     /** @return array<string, string> */
@@ -183,6 +187,16 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
         $configContainer->enderecoRemoteUrl =
             $this->systemConfigService
                 ->get('EnderecoShopware6Client.config.enderecoRemoteUrl', $salesChannelId);
+
+        // The signing secret is only exposed to the storefront (and the JS-SDK only signs)
+        // while signature enforcement is enabled.
+        $configContainer->enderecoEnforceRequestSignature =
+            $this->systemConfigService
+                ->getBool('EnderecoShopware6Client.config.enderecoEnforceRequestSignature', $salesChannelId);
+
+        $configContainer->enderecoRequestSigningSecret = $configContainer->enderecoEnforceRequestSignature
+            ? $this->requestSigningSecretProvider->getSecret($salesChannelId)
+            : '';
 
         $configContainer->pluginActive =
             $this->systemConfigService
