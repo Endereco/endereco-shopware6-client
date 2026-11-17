@@ -167,8 +167,8 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
      *
      * The method fetches the following settings:
      * - 'EnderecoShopware6Client.config.enderecoPreselectDefaultCountryCode': Sets the default country preselection.
-     * - 'EnderecoShopware6Client.config.enderecoApiKey': Sets the API key for the Endereco service.
-     * - 'EnderecoShopware6Client.config.enderecoRemoteUrl': Sets the remote URL for the Endereco service.
+     * - 'EnderecoShopware6Client.config.enderecoApiKey': Only used to determine whether the plugin is active,
+     *                                                    it is not stored in the configContainer.
      *
      * These settings are stored in the passed configContainer object.
      *
@@ -180,13 +180,8 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
             $this->systemConfigService
                 ->get('EnderecoShopware6Client.config.enderecoPreselectDefaultCountryCode', $salesChannelId);
 
-        $configContainer->enderecoApiKey =
-            $this->systemConfigService
-                ->get('EnderecoShopware6Client.config.enderecoApiKey', $salesChannelId);
-
-        $configContainer->enderecoRemoteUrl =
-            $this->systemConfigService
-                ->get('EnderecoShopware6Client.config.enderecoRemoteUrl', $salesChannelId);
+        $apiKey = $this->systemConfigService
+            ->get('EnderecoShopware6Client.config.enderecoApiKey', $salesChannelId);
 
         // The signing secret is only exposed to the storefront (and the JS-SDK only signs)
         // while signature enforcement is enabled.
@@ -201,7 +196,7 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
         $configContainer->pluginActive =
             $this->systemConfigService
                 ->get('EnderecoShopware6Client.config.enderecoActiveInThisChannel', $salesChannelId)
-            && !empty($configContainer->enderecoApiKey);
+            && !empty($apiKey);
     }
 
     /**
@@ -443,9 +438,6 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
         $configContainer->enderecoTriggerOnSubmit =
             $this->systemConfigService
                 ->get('EnderecoShopware6Client.config.enderecoTriggerOnSubmit', $salesChannelId);
-        $configContainer->enderecoSmartAutocomplete =
-            $this->systemConfigService
-                ->get('EnderecoShopware6Client.config.enderecoSmartAutocomplete', $salesChannelId);
         $configContainer->enderecoContinueSubmit =
             $this->systemConfigService
                 ->get('EnderecoShopware6Client.config.enderecoContinueSubmit', $salesChannelId);
@@ -458,12 +450,6 @@ class AddDataToPageSubscriber implements EventSubscriberInterface
         $configContainer->enderecoSplitStreet =
             $this->systemConfigService
                 ->get('EnderecoShopware6Client.config.enderecoSplitStreetAndHouseNumber', $salesChannelId);
-        $configContainer->enderecoCheckAddressEnabled =
-            $this->systemConfigService
-                ->get('EnderecoShopware6Client.config.enderecoCheckExistingAddress', $salesChannelId);
-        $configContainer->enderecoCheckPayPalExpressAddress =
-            $this->systemConfigService
-                ->get('EnderecoShopware6Client.config.enderecoCheckPayPalExpressAddress', $salesChannelId);
 
         $criteria = (new Criteria())->addFilter(new EqualsFilter('active', 1));
 
