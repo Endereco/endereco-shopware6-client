@@ -1,0 +1,55 @@
+{
+    "enderecoshopware6client": {
+        "texts": {
+            "popUpHeadline": "Sprawdź swój adres",
+            "popUpSubline": "Wprowadzony adres może zawierać błąd. Wybierz jedną z poniższych propozycji.",
+            "yourInput": "Wprowadzony adres:",
+            "editYourInput": "(edytuj)",
+            "ourSuggestions": "Proponowane adresy:",
+            "useSelected": "Użyj wybranego adresu",
+            "general_address": "Sprawdź swój adres",
+            "billing_address": "Sprawdź adres rozliczeniowy",
+            "shipping_address": "Sprawdź adres dostawy",
+            "mistakeNoPredictionSubline": "Nie udało się zweryfikować Twojego adresu. Sprawdź go i popraw lub potwierdź.",
+            "notFoundSubline": "Nie udało się zweryfikować Twojego adresu. Sprawdź go i popraw lub potwierdź.",
+            "confirmAddress": "Potwierdź adres",
+            "editAddress": "Edytuj adres",
+            "warningText": "Nieprawidłowy adres może spowodować problemy z dostawą i dodatkowe koszty.",
+            "confirmMyAddressCheckbox": "Potwierdzam, że mój adres jest poprawny i umożliwia doręczenie przesyłki."
+        },
+        "statuses": {
+            "email_not_correct": "Adres e-mail jest nieprawidłowy.",
+            "email_cant_receive": "Na ten adres e-mail nie można dostarczyć wiadomości.",
+            "email_syntax_error": "Sprawdź poprawność adresu e-mail.",
+            "email_no_mx": "Ten adres e-mail nie istnieje. Sprawdź pisownię.",
+            "building_number_is_missing": "Brak numeru domu.",
+            "building_number_not_found": "Nie znaleziono tego numeru domu.",
+            "street_name_needs_correction": "Nazwa ulicy jest nieprawidłowa.",
+            "locality_needs_correction": "Nazwa miejscowości jest nieprawidłowa.",
+            "postal_code_needs_correction": "Kod pocztowy jest nieprawidłowy.",
+            "country_code_needs_correction": "Podany adres znajduje się w innym kraju.",
+            "phone_invalid": "Numer telefonu jest nieprawidłowy.",
+            "phone_format_needs_correction": "Format numeru telefonu jest nieprawidłowy.",
+            "phone_should_be_fixed": "Wymagany jest numer telefonu stacjonarnego.",
+            "phone_should_be_mobile": "Wymagany jest numer telefonu komórkowego."
+        },
+        "errorMessages": {
+            "address_has_missing_building_number_content": "W adresie brakuje numeru domu.",
+            "address_has_unresolvable_building_number_content": "Nie udało się zweryfikować adresu z podanym numerem domu.",
+            "packstation_has_unresolvable_address": "Nie znaleziono podanego automatu Packstation.",
+            "postoffice_has_unresolvable_address": "Nie znaleziono adresu placówki pocztowej.",
+            "packstation_has_unresolvable_postnummer": "Numer klienta DHL (Postnummer) jest nieprawidłowy."
+        },
+        "requiredFormat": {
+            "hintFormatE164": "Wpisz numer w formacie E.164, np. +48512345678",
+            "hintFormatInternational": "Wpisz numer w formacie międzynarodowym, np. +48 512 345 678",
+            "hintFormatNational": "Wpisz numer w formacie krajowym, np. 512 345 678"
+        },
+        "inputFields": {
+            "enderedoStreetLabel": "Ulica",
+            "enderedoStreetPlaceholder": "Wpisz ulicę",
+            "enderedoHousenumberLabel": "Numer domu",
+            "enderedoHousenumberPlaceholder": "Wpisz numer domu"
+        }
+    }
+}
