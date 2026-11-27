@@ -22,11 +22,6 @@
         "label": {
             "de-DE": "Endereco Address-Management Services für Shopware (Download)",
             "en-GB": "Endereco Address-Management Services for Shopware (Download)"
-        },
-        "hooks": {
-            "pre-commit": [
-                "composer qa"
-            ]
         }
     },
     "autoload": {
@@ -47,6 +42,7 @@
         "spaze/phpstan-disallowed-calls": "^4.6"
     },
     "scripts": {
+        "hooks": "git config core.hooksPath .githooks || exit 0",
         "qa": [
             "@phpcs",
             "@eslint",
@@ -80,6 +76,7 @@
         "phpcheckimports": "php check_imports.php",
         "serve": "./playground.sh",
         "post-install-cmd": [
+            "@hooks",
             "chmod +x test_php_versions.sh",
             "chmod +x fetch_shops.sh",
             "chmod +x build.sh",
@@ -88,6 +85,7 @@
             "chmod +x playground.sh"
         ],
         "post-update-cmd": [
+            "@hooks",
             "chmod +x test_php_versions.sh",
             "chmod +x fetch_shops.sh",
             "chmod +x build.sh",
